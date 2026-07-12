@@ -1,0 +1,666 @@
+import { Ionicons } from '@expo/vector-icons';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
+import {
+  Linking,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { AccountSection } from '@/components/account-section';
+import { AiSendNote } from '@/components/ai-send-note';
+import { GlowBackground, GradientButton, TitleAccent } from '@/components/futuristic';
+import { AppPalette } from '@/constants/app-colors';
+import { AiConfigError, learnUserProfile } from '@/lib/ai';
+import { AiProfile, clearAiProfile, getAiProfile, isProfileStale, saveAiProfile } from '@/lib/ai-profile';
+import { getAiUsage, PLAN_AI_LIMITS } from '@/lib/ai-usage';
+import { materializePhotos } from '@/lib/backup';
+import {
+  CloudBackupDecryptError,
+  CloudBackupNotFoundError,
+  downloadCloudBackup,
+  MIN_PASSPHRASE_LENGTH,
+  uploadCloudBackup,
+} from '@/lib/cloud-backup';
+import { confirmAsync } from '@/lib/confirm';
+import { candidateMessage, previewBestCandidate } from '@/lib/daily-message';
+import {
+  cancelProactiveNotifications,
+  requestNotifyPermission,
+  scheduleProactiveMessage,
+} from '@/lib/notifications';
+import { embedPhotos, exportAllData } from '@/lib/export';
+import { LANGUAGE_OPTIONS, useStrings } from '@/lib/i18n';
+import { makeThemed, useTheme } from '@/lib/theme';
+import { useJournal } from '@/store/journal-context';
+import { usePeople } from '@/store/people-context';
+import { ThemeName, useSettings } from '@/store/settings-context';
+
+// 運営への問い合わせ先（メールが開けない端末でも読めるよう、画面上にも表示する）
+const SUPPORT_EMAIL = 'sarjavex.official@gmail.com';
+
+function formatConsentDate(iso?: string) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+export default function SettingsScreen() {
+  const { styles, AppColors } = useTheme(themed);
+  const L = useStrings();
+  const { people, clearAllPeople, restorePeople } = usePeople();
+  const { entries, clearAllEntries, restoreEntries } = useJournal();
+  const { settings, setAiLearningConsent, setLanguage, setTheme, setTimezone, setProactiveNotify, setNotifyHour } =
+    useSettings();
+
+  const THEMES: { key: ThemeName; label: string }[] = [
+    { key: 'dark', label: L.themeDark },
+    { key: 'light', label: L.themeLight },
+  ];
+  const [exportDone, setExportDone] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [aiUsedCount, setAiUsedCount] = useState<number | null>(null);
+
+  // AIの理解ノート（使うほどAIが本人を学ぶ機能）の状態
+  const [aiProfile, setAiProfile] = useState<AiProfile | null>(null);
+  const [isLearning, setIsLearning] = useState(false);
+  const [learnError, setLearnError] = useState<string | null>(null);
+
+  // 他画面でAIを使った後も最新の回数を見せるため、タブを開くたびに読み直す
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      getAiUsage().then((usage) => {
+        if (active) setAiUsedCount(usage.count);
+      });
+      getAiProfile().then((p) => {
+        if (active) setAiProfile(p);
+      });
+      return () => {
+        active = false;
+      };
+    }, []),
+  );
+
+  const recordCount = entries.length + people.reduce((sum, p) => sum + p.memos.length, 0);
+  const consentDate = formatConsentDate(settings.aiLearningConsentUpdatedAt);
+
+  // AIからの話しかけ（通知）設定
+  const NOTIFY_HOURS = [7, 8, 9, 21];
+  const [notifyError, setNotifyError] = useState<string | null>(null);
+  const [notifyInfo, setNotifyInfo] = useState<string | null>(null);
+
+  async function rescheduleNotification(hour: number) {
+    const candidate = await previewBestCandidate(people, entries);
+    if (candidate) {
+      await scheduleProactiveMessage(candidateMessage(candidate, L), hour);
+      setNotifyInfo(L.notifyScheduled(hour));
+    } else {
+      await cancelProactiveNotifications();
+      setNotifyInfo(null);
+    }
+  }
+
+  async function handleToggleNotify(next: boolean) {
+    setNotifyError(null);
+    setNotifyInfo(null);
+    if (!next) {
+      setProactiveNotify(false);
+      await cancelProactiveNotifications();
+      return;
+    }
+    if (Platform.OS === 'web') {
+      setNotifyError(L.notifyWebNote);
+      return;
+    }
+    const granted = await requestNotifyPermission();
+    if (!granted) {
+      setNotifyError(L.notifyPermissionDenied);
+      return;
+    }
+    setProactiveNotify(true);
+    await rescheduleNotification(settings.notifyHour ?? 8);
+  }
+
+  async function handleSelectNotifyHour(hour: number) {
+    setNotifyHour(hour);
+    if (settings.proactiveNotify && Platform.OS !== 'web') {
+      await rescheduleNotification(hour);
+    }
+  }
+
+  const privacyItems = [
+    { icon: 'phone-portrait-outline' as const, title: L.privacyLocalTitle, desc: L.privacyLocalDesc },
+    { icon: 'sparkles-outline' as const, title: L.privacyAiTitle, desc: L.privacyAiDesc },
+    { icon: 'megaphone-outline' as const, title: L.privacyAdsTitle, desc: L.privacyAdsDesc },
+  ];
+
+  async function handleToggleAiLearning(next: boolean) {
+    if (next) {
+      const proceed = await confirmAsync(L.consentEnableTitle, L.consentEnableMessage);
+      if (!proceed) return;
+      setAiLearningConsent(true);
+    } else {
+      const proceed = await confirmAsync(L.consentDisableTitle, L.consentDisableMessage);
+      if (!proceed) return;
+      setAiLearningConsent(false);
+    }
+  }
+
+  async function handleExport() {
+    setExportDone(false);
+    setExportError(null);
+    try {
+      await exportAllData(people, entries);
+      setExportDone(true);
+    } catch {
+      setExportError(L.exportFailed);
+    }
+  }
+
+  // 暗号化クラウドバックアップ（合言葉ベースのE2E方式。cloud-backup.ts参照）
+  const [cloudPass, setCloudPass] = useState('');
+  const [cloudBusy, setCloudBusy] = useState<'save' | 'restore' | null>(null);
+  const [cloudMsg, setCloudMsg] = useState<string | null>(null);
+  const [cloudErr, setCloudErr] = useState<string | null>(null);
+
+  async function handleCloudBackup() {
+    const pass = cloudPass.trim();
+    setCloudMsg(null);
+    setCloudErr(null);
+    if (pass.length < MIN_PASSPHRASE_LENGTH) {
+      setCloudErr(L.cloudBackupTooShort);
+      return;
+    }
+    setCloudBusy('save');
+    try {
+      // 写真もデータとして埋め込んでから暗号化する（ZIPエクスポートと同じ扱い）
+      await uploadCloudBackup(pass, { people: await embedPhotos(people), journal: entries });
+      setCloudMsg(L.cloudBackupSaved);
+    } catch (e) {
+      setCloudErr((e as Error).message);
+    } finally {
+      setCloudBusy(null);
+    }
+  }
+
+  async function handleCloudRestore() {
+    const pass = cloudPass.trim();
+    setCloudMsg(null);
+    setCloudErr(null);
+    if (pass.length < MIN_PASSPHRASE_LENGTH) {
+      setCloudErr(L.cloudBackupTooShort);
+      return;
+    }
+    setCloudBusy('restore');
+    try {
+      const backup = await downloadCloudBackup(pass);
+      // ZIPからの復元と同じ経路: 既存データに追加され、同じIDは重複しない
+      const j = restoreEntries(backup.journal);
+      const p = restorePeople(await materializePhotos(backup.people));
+      setCloudMsg(L.backupRestored(j, p));
+    } catch (e) {
+      if (e instanceof CloudBackupNotFoundError) setCloudErr(L.cloudBackupNotFound);
+      else if (e instanceof CloudBackupDecryptError) setCloudErr(L.cloudBackupWrongPass);
+      else setCloudErr((e as Error).message);
+    } finally {
+      setCloudBusy(null);
+    }
+  }
+
+  // 直近の記録＋人物メモから学習用の抜粋を作る（新しい順に最大15件・各100字）
+  function buildLearningExcerpts(): string[] {
+    return [
+      ...entries.map((e) => ({ date: e.date, text: e.text })),
+      ...people.flatMap((p) => p.memos.map((m) => ({ date: m.date, text: `${p.name}: ${m.text}` }))),
+    ]
+      .sort((a, b) => (a.date < b.date ? 1 : -1))
+      .slice(0, 15)
+      .map((r) => r.text.slice(0, 100));
+  }
+
+  async function handleLearnProfile() {
+    setLearnError(null);
+    setIsLearning(true);
+    try {
+      // 前回の理解を渡して「上書き」ではなく「育てる」。学習のたびに理解が積み上がる
+      const summary = await learnUserProfile(
+        buildLearningExcerpts(),
+        aiProfile?.summary ?? null,
+        settings.language,
+      );
+      setAiProfile(await saveAiProfile(summary, recordCount));
+      getAiUsage().then((usage) => setAiUsedCount(usage.count));
+    } catch (e) {
+      setLearnError(e instanceof AiConfigError ? e.message : (e as Error).message);
+    } finally {
+      setIsLearning(false);
+    }
+  }
+
+  async function handleClearProfile() {
+    const proceed = await confirmAsync(L.aiProfileClearTitle, L.aiProfileClearMessage);
+    if (!proceed) return;
+    await clearAiProfile();
+    setAiProfile(null);
+  }
+
+  async function handleDeleteAll() {
+    const proceed = await confirmAsync(L.deleteAllTitle, L.deleteAllMessage(people.length, recordCount));
+    if (!proceed) return;
+    clearAllPeople();
+    clearAllEntries();
+  }
+
+  return (
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <GlowBackground />
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={styles.title}>{L.settingsTitle}</Text>
+        <TitleAccent style={{ marginTop: -8 }} />
+
+        <AccountSection />
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>{L.languageSection}</Text>
+          <View style={styles.langRow}>
+            {LANGUAGE_OPTIONS.map((lang) => (
+              <Pressable
+                key={lang.key}
+                style={[styles.langChip, settings.language === lang.key && styles.langChipSelected]}
+                onPress={() => setLanguage(lang.key)}>
+                <Text
+                  style={[
+                    styles.langChipText,
+                    settings.language === lang.key && styles.langChipTextSelected,
+                  ]}>
+                  {lang.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>{L.countrySection}</Text>
+          <Text style={styles.dataSummary}>{L.countryDesc}</Text>
+          <View style={styles.countryWrap}>
+            {[{ tz: 'auto', label: L.countryAuto }, ...L.countries].map((c) => {
+              const selected = (settings.timezone ?? 'auto') === c.tz;
+              return (
+                <Pressable
+                  key={c.tz}
+                  style={[styles.countryChip, selected && styles.countryChipSelected]}
+                  onPress={() => setTimezone(c.tz)}>
+                  <Text style={[styles.countryChipText, selected && styles.countryChipTextSelected]}>
+                    {c.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>{L.notifySection}</Text>
+          <View style={styles.privacyRow}>
+            <Ionicons
+              name="notifications-outline"
+              size={18}
+              color={AppColors.accent}
+              style={styles.privacyIcon}
+            />
+            <View style={{ flex: 1 }}>
+              <View style={styles.consentTitleRow}>
+                <Text style={styles.privacyTitle}>{L.notifyToggleTitle}</Text>
+                <Switch
+                  value={!!settings.proactiveNotify}
+                  onValueChange={handleToggleNotify}
+                  trackColor={{ false: AppColors.line, true: AppColors.primary }}
+                  thumbColor="#ffffff"
+                />
+              </View>
+              <Text style={styles.privacyDesc}>{L.notifyToggleDesc}</Text>
+            </View>
+          </View>
+          {settings.proactiveNotify && (
+            <>
+              <Text style={styles.dataSummary}>{L.notifyHourLabel}</Text>
+              <View style={styles.countryWrap}>
+                {NOTIFY_HOURS.map((h) => {
+                  const selected = (settings.notifyHour ?? 8) === h;
+                  return (
+                    <Pressable
+                      key={h}
+                      style={[styles.countryChip, selected && styles.countryChipSelected]}
+                      onPress={() => handleSelectNotifyHour(h)}>
+                      <Text style={[styles.countryChipText, selected && styles.countryChipTextSelected]}>
+                        {L.notifyHourOption(h)}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </>
+          )}
+          {notifyInfo && <Text style={styles.successText}>{notifyInfo}</Text>}
+          {notifyError && <Text style={styles.errorText}>{notifyError}</Text>}
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>{L.themeSection}</Text>
+          <View style={styles.langRow}>
+            {THEMES.map((t) => (
+              <Pressable
+                key={t.key}
+                style={[styles.langChip, settings.theme === t.key && styles.langChipSelected]}
+                onPress={() => setTheme(t.key)}>
+                <Ionicons
+                  name={t.key === 'dark' ? 'moon-outline' : 'sunny-outline'}
+                  size={15}
+                  color={settings.theme === t.key ? AppColors.primary : AppColors.muted}
+                />
+                <Text
+                  style={[styles.langChipText, settings.theme === t.key && styles.langChipTextSelected]}>
+                  {t.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>{L.planSection}</Text>
+          <Text style={styles.dataSummary}>
+            {L.planCurrent(
+              settings.currentPlan === 'standard'
+                ? '⭐ Standard'
+                : settings.currentPlan === 'pro'
+                  ? '⚡ Pro'
+                  : '🌱 Free',
+            )}
+          </Text>
+          {aiUsedCount !== null && (
+            <Text style={styles.dataSummary}>
+              {L.aiUsage(aiUsedCount, PLAN_AI_LIMITS[settings.currentPlan] ?? PLAN_AI_LIMITS.free)}
+            </Text>
+          )}
+          <Pressable style={styles.actionButton} onPress={() => router.push('/plans')}>
+            <Ionicons name="pricetags-outline" size={16} color={AppColors.primary} />
+            <Text style={styles.actionButtonText}>{L.planLink}</Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>{L.aiProfileSection}</Text>
+          <Text style={styles.dataSummary}>{L.aiProfileDesc}</Text>
+          {aiProfile ? (
+            <View style={styles.profileBox}>
+              <Text style={styles.profileLabel}>{L.aiProfileLabel}</Text>
+              <Text style={styles.profileText}>{aiProfile.summary}</Text>
+              <Text style={styles.profileMeta}>
+                {L.aiProfileLearnedAt(aiProfile.updatedAt, aiProfile.learnedFromCount)}
+              </Text>
+            </View>
+          ) : (
+            <Text style={styles.dataSummary}>{L.aiProfileEmpty}</Text>
+          )}
+          {aiProfile && isProfileStale(aiProfile, recordCount) && (
+            <Text style={styles.profileHint}>{L.aiProfileStaleHint}</Text>
+          )}
+          <AiSendNote text={L.aiProfileSendNote} />
+          <GradientButton
+            label={L.aiProfileLearnButton}
+            iconName="school-outline"
+            onPress={handleLearnProfile}
+            loading={isLearning}
+            disabled={recordCount === 0}
+          />
+          {learnError && <Text style={styles.errorText}>{learnError}</Text>}
+          {aiProfile && (
+            <Pressable onPress={handleClearProfile} hitSlop={8}>
+              <Text style={styles.profileClearText}>{L.aiProfileClear}</Text>
+            </Pressable>
+          )}
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>{L.privacySection}</Text>
+          {privacyItems.map((item) => (
+            <View key={item.title} style={styles.privacyRow}>
+              <Ionicons name={item.icon} size={18} color={AppColors.accent} style={styles.privacyIcon} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.privacyTitle}>{item.title}</Text>
+                <Text style={styles.privacyDesc}>{item.desc}</Text>
+              </View>
+            </View>
+          ))}
+
+          <View style={styles.consentDivider} />
+
+          <View style={styles.privacyRow}>
+            <Ionicons name="school-outline" size={18} color={AppColors.accent} style={styles.privacyIcon} />
+            <View style={{ flex: 1 }}>
+              <View style={styles.consentTitleRow}>
+                <Text style={styles.privacyTitle}>{L.consentTitle}</Text>
+                <Switch
+                  value={settings.aiLearningConsent}
+                  onValueChange={handleToggleAiLearning}
+                  trackColor={{ false: AppColors.line, true: AppColors.primary }}
+                  thumbColor="#ffffff"
+                />
+              </View>
+              <Text style={styles.privacyDesc}>
+                {L.consentDesc}
+                {settings.aiLearningConsent ? L.consentOn : L.consentOff}
+              </Text>
+              {consentDate && <Text style={styles.consentHistory}>{L.consentLastChanged(consentDate)}</Text>}
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>{L.dataSection}</Text>
+          <Text style={styles.dataSummary}>{L.dataSummary(people.length, recordCount)}</Text>
+
+          <Pressable style={styles.actionButton} onPress={() => router.push('/import-history')}>
+            <Ionicons name="cloud-download-outline" size={16} color={AppColors.primary} />
+            <Text style={styles.actionButtonText}>{L.importLink}</Text>
+          </Pressable>
+
+          <Pressable style={styles.actionButton} onPress={handleExport}>
+            <Ionicons name="download-outline" size={16} color={AppColors.primary} />
+            <Text style={styles.actionButtonText}>{L.exportButton}</Text>
+          </Pressable>
+          <Text style={styles.exportHintText}>{L.exportHint}</Text>
+          {exportDone && <Text style={styles.successText}>{L.exportDone}</Text>}
+          {exportError && <Text style={styles.errorText}>{exportError}</Text>}
+
+          <Pressable style={styles.dangerButton} onPress={handleDeleteAll}>
+            <Ionicons name="trash-outline" size={16} color={AppColors.danger} />
+            <Text style={styles.dangerButtonText}>{L.deleteAllButton}</Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>{L.cloudBackupSection}</Text>
+          <Text style={styles.dataSummary}>{L.cloudBackupDesc}</Text>
+          <TextInput
+            style={styles.passInput}
+            value={cloudPass}
+            onChangeText={(t) => {
+              setCloudPass(t);
+              setCloudMsg(null);
+              setCloudErr(null);
+            }}
+            placeholder={L.cloudBackupPassPlaceholder}
+            placeholderTextColor={AppColors.muted}
+            secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          <GradientButton
+            label={L.cloudBackupSave}
+            iconName="cloud-upload-outline"
+            onPress={handleCloudBackup}
+            loading={cloudBusy === 'save'}
+            disabled={cloudBusy !== null}
+          />
+          <Pressable
+            style={styles.actionButton}
+            onPress={handleCloudRestore}
+            disabled={cloudBusy !== null}>
+            <Ionicons name="cloud-download-outline" size={16} color={AppColors.primary} />
+            <Text style={styles.actionButtonText}>
+              {cloudBusy === 'restore' ? '…' : L.cloudBackupRestore}
+            </Text>
+          </Pressable>
+          {cloudMsg && <Text style={styles.successText}>{cloudMsg}</Text>}
+          {cloudErr && <Text style={styles.errorText}>{cloudErr}</Text>}
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>{L.aboutSection}</Text>
+          <View style={styles.aboutRow}>
+            <Text style={styles.aboutLabel}>{L.aboutName}</Text>
+            <Text style={styles.aboutValue}>Memory Twin</Text>
+          </View>
+          <View style={styles.aboutRow}>
+            <Text style={styles.aboutLabel}>{L.aboutCompany}</Text>
+            <Text style={styles.aboutValue}>Sarjavex</Text>
+          </View>
+          <View style={styles.aboutRow}>
+            <Text style={styles.aboutLabel}>{L.aboutVersion}</Text>
+            <Text style={styles.aboutValue}>{L.aboutVersionValue}</Text>
+          </View>
+          {/* ストア審査(UGCガイドライン)対応: 運営への連絡手段をアプリ内に明記する */}
+          <Pressable
+            style={styles.actionButton}
+            onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}`)}>
+            <Ionicons name="mail-outline" size={16} color={AppColors.primary} />
+            <Text style={styles.actionButtonText}>{L.contactButton}</Text>
+          </Pressable>
+          <Text style={styles.contactEmail}>{SUPPORT_EMAIL}</Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const makeStyles = (AppColors: AppPalette) =>
+  StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: AppColors.background },
+  content: { padding: 20, paddingTop: 12, gap: 16, paddingBottom: 100 },
+  title: { fontSize: 26, fontWeight: '800', color: AppColors.text, letterSpacing: -0.5 },
+  card: {
+    backgroundColor: AppColors.card,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: AppColors.line,
+    padding: 18,
+    gap: 14,
+  },
+  cardTitle: { fontSize: 16, fontWeight: '800', color: AppColors.text },
+  langRow: { flexDirection: 'row', gap: 10 },
+  langChip: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: 6,
+    alignItems: 'center',
+    paddingVertical: 12,
+    minHeight: 44,
+    justifyContent: 'center',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: AppColors.line,
+  },
+  langChipSelected: { borderColor: AppColors.primary, backgroundColor: AppColors.primarySoft },
+  langChipText: { fontSize: 14, color: AppColors.muted, fontWeight: '600' },
+  langChipTextSelected: { color: AppColors.primary, fontWeight: '800' },
+  countryWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  countryChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    minHeight: 36,
+    justifyContent: 'center',
+    borderRadius: 999,
+    borderWidth: 1.5,
+    borderColor: AppColors.line,
+  },
+  countryChipSelected: { borderColor: AppColors.primary, backgroundColor: AppColors.primarySoft },
+  countryChipText: { fontSize: 13, color: AppColors.muted, fontWeight: '600' },
+  countryChipTextSelected: { color: AppColors.primary, fontWeight: '800' },
+  privacyRow: { flexDirection: 'row', gap: 12 },
+  privacyIcon: { marginTop: 2 },
+  privacyTitle: { fontSize: 14, fontWeight: '700', color: AppColors.text },
+  privacyDesc: { fontSize: 12, color: AppColors.muted, lineHeight: 17, marginTop: 2 },
+  consentDivider: { height: 1, backgroundColor: AppColors.line },
+  consentTitleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  consentHistory: { fontSize: 11, color: AppColors.muted, marginTop: 4 },
+  dataSummary: { fontSize: 13, color: AppColors.muted },
+  actionButton: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1.5,
+    borderColor: AppColors.primary,
+    borderRadius: 12,
+    paddingVertical: 13,
+    minHeight: 44,
+  },
+  actionButtonText: { color: AppColors.primary, fontWeight: '700', fontSize: 14 },
+  successText: { fontSize: 13, color: AppColors.success, textAlign: 'center' },
+  exportHintText: { fontSize: 12, color: AppColors.muted, lineHeight: 17, marginTop: -6 },
+  errorText: { fontSize: 13, color: AppColors.danger, textAlign: 'center' },
+  dangerButton: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1.5,
+    borderColor: AppColors.danger,
+    borderRadius: 12,
+    paddingVertical: 13,
+    minHeight: 44,
+  },
+  dangerButtonText: { color: AppColors.danger, fontWeight: '700', fontSize: 14 },
+  aboutRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  contactEmail: { fontSize: 12, color: AppColors.muted, textAlign: 'center', marginTop: -6 },
+  profileBox: {
+    backgroundColor: AppColors.background,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: AppColors.line,
+    padding: 12,
+    gap: 6,
+  },
+  profileLabel: { fontSize: 11, fontWeight: '800', color: AppColors.accent },
+  profileText: { fontSize: 13, color: AppColors.text, lineHeight: 20 },
+  profileMeta: { fontSize: 11, color: AppColors.muted },
+  profileHint: { fontSize: 12, color: AppColors.primary, lineHeight: 17 },
+  profileClearText: { fontSize: 13, color: AppColors.muted, textAlign: 'center', textDecorationLine: 'underline' },
+  passInput: {
+    borderWidth: 1,
+    borderColor: AppColors.line,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    minHeight: 44,
+    color: AppColors.text,
+    fontSize: 14,
+    backgroundColor: AppColors.background,
+  },
+  aboutLabel: { fontSize: 14, color: AppColors.muted, fontWeight: '600' },
+  aboutValue: { fontSize: 14, color: AppColors.text },
+});
+
+const themed = makeThemed(makeStyles);
