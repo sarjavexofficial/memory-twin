@@ -441,6 +441,9 @@ export const ko: Dict = {
     '암호에서 만든 키로 이 기기에서 암호화한 뒤, 로그인 중인 계정에 연결해 클라우드에 하나만 보관합니다(같은 계정＋같은 암호는 덮어쓰기). 운영자도 내용을 읽을 수 없습니다. 기기를 바꾼 후 같은 계정으로 로그인하고 같은 암호를 입력하면 복원할 수 있습니다. 암호를 잊으면 아무도 복원할 수 없습니다.',
   cloudBackupNeedSignIn:
     '클라우드 백업은 위의 “계정”에서 로그인하면 사용할 수 있습니다(보관 위치를 본인 전용으로 하기 위해서입니다).',
+  importLimitReached: '무료 플랜에서는 3회까지 가져올 수 있습니다. Standard / Pro는 무제한입니다.',
+  reportFreeUsed:
+    '무료 플랜에서 볼 수 있는 월간 리포트는 1회뿐입니다. Standard / Pro로 업그레이드하면 리포트와 AI 요약을 언제든지 볼 수 있습니다.',
   cloudBackupPassPlaceholder: '암호(8자 이상)',
   cloudBackupSave: '암호화하여 백업',
   cloudBackupRestore: '이 암호로 복원',
@@ -478,7 +481,7 @@ export const ko: Dict = {
   planStandardTag: '매일 쓰는 사람의 표준 플랜. 기억을 지키고 필요한 날에 받습니다.',
   planProTag: '기록도 질문도 많은 헤비 유저를 위한 최상위 플랜.',
   planFreeFeatures: [
-    '다른 AI 앱의 히스토리를 1회 가져올 수 있음',
+    '다른 AI 앱의 히스토리를 3회까지 가져올 수 있음',
     '잊고 있던 결정·약속·미완료를 30건까지 발견',
     'AI에게 "그게 뭐였지?"를 월 20회까지 질문 가능',
     '오늘 떠올릴 것을 하루 1건 전달',
@@ -508,7 +511,7 @@ export const ko: Dict = {
     { label: '기록·인물 메모·타임라인', free: '○', standard: '○', pro: '○' },
     { label: '기기 내 저장(자동 전송 없음)', free: '○', standard: '○', pro: '○' },
     { label: '데이터 내보내기·삭제', free: '○', standard: '○', pro: '○' },
-    { label: '다른 AI 앱의 히스토리 가져오기', free: '1회만', standard: '무제한', pro: '무제한' },
+    { label: '다른 AI 앱의 히스토리 가져오기', free: '3회까지', standard: '무제한', pro: '무제한' },
     { label: '결정·약속·미완료 자동 추출', free: '30건까지', standard: '○', pro: '○' },
     { label: 'AI 검색(근거 포함 답변)', free: '월 20회', standard: '월 500회', pro: '월 1,500회' },
     { label: 'Today Recall(오늘 필요한 기억)', free: '하루 1건', standard: '최대 3건', pro: '최대 10건' },
@@ -516,7 +519,7 @@ export const ko: Dict = {
     { label: '주간·월간 돌아보기(AI)', free: '—', standard: '○', pro: '○' },
     { label: '올해의 당신(기기 내 집계)', free: '○', standard: '○', pro: '○' },
     { label: '암호화 클라우드 동기화', free: '○', standard: '○', pro: '○' },
-    { label: '월간 리포트(통계+AI 요약)', free: '통계만', standard: '○', pro: '○' },
+    { label: '월간 리포트(통계+AI 요약)', free: '1회만', standard: '○', pro: '○' },
   ] as { label: string; free: string; standard: string; pro: string; planned?: boolean }[],
   paymentSection: '결제·해지 안내',
   paymentIap:

@@ -19,6 +19,7 @@ import {
   SavedNarrative,
   saveNarrative,
 } from '@/lib/monthly-report';
+import { hasUsedFreeMonthlyReport, markFreeMonthlyReportUsed } from '@/lib/usage-limits';
 import { makeThemed, useTheme } from '@/lib/theme';
 import { useJournal } from '@/store/journal-context';
 import { usePeople } from '@/store/people-context';
@@ -115,6 +116,27 @@ export default function MonthlyReportScreen() {
 
   const hasData = stats.totalRecords > 0;
 
+  // 無料プランは全体で1回だけ閲覧できる（プラン比較表の「1回のみ」と対応）。
+  // 中身のあるレポートを見た時点で1回分を消費し、次回からは案内だけを出す
+  const [freeUsedUp, setFreeUsedUp] = useState(false);
+  useEffect(() => {
+    if (!isFreePlan) {
+      setFreeUsedUp(false);
+      return;
+    }
+    let active = true;
+    (async () => {
+      if (await hasUsedFreeMonthlyReport()) {
+        if (active) setFreeUsedUp(true);
+      } else if (hasData) {
+        await markFreeMonthlyReportUsed();
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [isFreePlan, hasData]);
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <GlowBackground />
@@ -133,6 +155,17 @@ export default function MonthlyReportScreen() {
         <TitleAccent />
         <Text style={styles.desc}>{L.reportDesc}</Text>
 
+        {freeUsedUp ? (
+          // 無料プランの1回分は使用済み: 案内とアップグレード導線だけを出す
+          <View style={styles.card}>
+            <Text style={styles.upgradeText}>{L.reportFreeUsed}</Text>
+            <Pressable style={styles.planButton} onPress={() => router.push('/plans')}>
+              <Ionicons name="pricetags-outline" size={16} color={AppColors.primary} />
+              <Text style={styles.planButtonText}>{L.planLink}</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <>
         <View style={styles.monthRow}>
           {(
             [
@@ -214,15 +247,9 @@ export default function MonthlyReportScreen() {
                     />
                   )}
                 </>
-              ) : isFreePlan ? (
-                <>
-                  <Text style={styles.upgradeText}>{L.reportUpgradeNote}</Text>
-                  <Pressable style={styles.planButton} onPress={() => router.push('/plans')}>
-                    <Ionicons name="pricetags-outline" size={16} color={AppColors.primary} />
-                    <Text style={styles.planButtonText}>{L.planLink}</Text>
-                  </Pressable>
-                </>
               ) : (
+                // 無料プランの1回きりの閲覧でもAIまとめまで体験できるようにする
+                // （ここに来られる時点で閲覧権はあるので、プランでの出し分けはしない）
                 <>
                   <AiSendNote text={L.reportAiSendNote} />
                   <GradientButton
@@ -240,6 +267,8 @@ export default function MonthlyReportScreen() {
               <Ionicons name="share-outline" size={16} color={AppColors.primary} />
               <Text style={styles.shareButtonText}>{L.reportShareButton}</Text>
             </Pressable>
+          </>
+        )}
           </>
         )}
       </ScrollView>

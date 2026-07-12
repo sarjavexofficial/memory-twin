@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,8 +12,10 @@ import { AiConfigError, ExtractedItem, extractCommitments } from '@/lib/ai';
 import { BackupPayload, classifyJsonText, materializePhotos, PickedData, readBackupZip } from '@/lib/backup';
 import { displayTag, useStrings } from '@/lib/i18n';
 import { ImportedRecord, parseAiHistory } from '@/lib/import';
+import { FREE_IMPORT_LIMIT, getImportCount, incrementImportCount } from '@/lib/usage-limits';
 import { useJournal } from '@/store/journal-context';
 import { usePeople } from '@/store/people-context';
+import { useSettings } from '@/store/settings-context';
 
 const PREVIEW_LIMIT = 30;
 
@@ -21,6 +23,15 @@ export default function ImportHistoryScreen() {
   const L = useStrings();
   const { addEntries, restoreEntries } = useJournal();
   const { restorePeople } = usePeople();
+  const { settings } = useSettings();
+
+  // 無料プランのインポート回数制限（3回まで）。バックアップ復元は自分のデータなので数えない
+  const [importCount, setImportCount] = useState(0);
+  useEffect(() => {
+    getImportCount().then(setImportCount);
+  }, []);
+  const importLimitReached =
+    settings.currentPlan === 'free' && importCount >= FREE_IMPORT_LIMIT;
   const [rawText, setRawText] = useState('');
   const [records, setRecords] = useState<ImportedRecord[] | null>(null);
   const [backup, setBackup] = useState<BackupPayload | null>(null);
@@ -159,7 +170,10 @@ export default function ImportHistoryScreen() {
 
   function handleImport() {
     if (!records || records.length === 0) return;
+    if (importLimitReached) return; // ボタンは出し分けているが、念のため処理側でも防ぐ
     addEntries(records.map((r) => ({ date: r.date, text: r.text, source: r.source })));
+    incrementImportCount();
+    setImportCount((c) => c + 1);
     setImportedCount(records.length);
     setLastImported(records);
     setRecords(null);
@@ -254,10 +268,20 @@ export default function ImportHistoryScreen() {
             {records.length > PREVIEW_LIMIT && (
               <Text style={styles.moreText}>{L.importMoreRecords(records.length - PREVIEW_LIMIT)}</Text>
             )}
-            <Pressable style={styles.importButton} onPress={handleImport}>
-              <Ionicons name="checkmark" size={16} color={AppColors.background} />
-              <Text style={styles.parseButtonText}>{L.importDo(records.length)}</Text>
-            </Pressable>
+            {importLimitReached ? (
+              <>
+                <Text style={styles.error}>{L.importLimitReached}</Text>
+                <Pressable style={styles.importButton} onPress={() => router.push('/plans')}>
+                  <Ionicons name="pricetags-outline" size={16} color={AppColors.background} />
+                  <Text style={styles.parseButtonText}>{L.planLink}</Text>
+                </Pressable>
+              </>
+            ) : (
+              <Pressable style={styles.importButton} onPress={handleImport}>
+                <Ionicons name="checkmark" size={16} color={AppColors.background} />
+                <Text style={styles.parseButtonText}>{L.importDo(records.length)}</Text>
+              </Pressable>
+            )}
           </View>
         )}
 

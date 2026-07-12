@@ -465,6 +465,10 @@ const ja = {
     '合言葉から作った鍵でこの端末上で暗号化してから、サインイン中のアカウントに紐づけてクラウドに1つだけ保管します（同じアカウント＋同じ合言葉で上書き）。中身は運営にも読めません。機種変更後は、同じアカウントでサインインして同じ合言葉を入れると復元できます。合言葉を忘れると、誰にも復元できません。',
   cloudBackupNeedSignIn:
     'クラウドバックアップは、上の「アカウント」でサインインすると使えます（保管場所をあなた専用にするため）。',
+  importLimitReached:
+    '無料プランで取り込めるのは3回までです。Standard / Proなら何度でも取り込めます。',
+  reportFreeUsed:
+    '無料プランで見られる月次レポートは1回だけです。Standard / Proにすると、毎月いつでもレポートとAIのまとめを見られます。',
   cloudBackupPassPlaceholder: '合言葉（8文字以上）',
   cloudBackupSave: '暗号化してバックアップ',
   cloudBackupRestore: 'この合言葉で復元',
@@ -503,7 +507,7 @@ const ja = {
   planStandardTag: '毎日使う人の標準プラン。記憶を守り、必要な日に受け取る。',
   planProTag: '記録も相談も多い、ヘビーユーザー向けの最上位プラン。',
   planFreeFeatures: [
-    '他のAIアプリの履歴を1回だけ取り込める',
+    '他のAIアプリの履歴を3回まで取り込める',
     '忘れていた決定・約束・やり残しを30件まで発見',
     'AIに「あれ何だったっけ？」と月20回まで質問できる',
     '今日思い出すべきことを1日1件お届け',
@@ -533,7 +537,7 @@ const ja = {
     { label: '記録・人物メモ・タイムライン', free: '○', standard: '○', pro: '○' },
     { label: '端末内保存（自動送信なし）', free: '○', standard: '○', pro: '○' },
     { label: 'データエクスポート・削除', free: '○', standard: '○', pro: '○' },
-    { label: '他のAIアプリの履歴インポート', free: '1回のみ', standard: '何度でも', pro: '何度でも' },
+    { label: '他のAIアプリの履歴インポート', free: '3回まで', standard: '何度でも', pro: '何度でも' },
     { label: '決定・約束・未完了の自動抽出', free: '30件まで', standard: '○', pro: '○' },
     { label: 'AI検索（根拠付き回答）', free: '月20回', standard: '月500回', pro: '月1,500回' },
     { label: 'Today Recall（今日必要な記憶）', free: '1日1件', standard: '最大3件', pro: '最大10件' },
@@ -541,7 +545,7 @@ const ja = {
     { label: '週次・月次振り返り（AI）', free: '—', standard: '○', pro: '○' },
     { label: '今年のあなた（端末内集計）', free: '○', standard: '○', pro: '○' },
     { label: '暗号化クラウド同期', free: '○', standard: '○', pro: '○' },
-    { label: '月次レポート（統計＋AIまとめ）', free: '統計のみ', standard: '○', pro: '○' },
+    { label: '月次レポート（統計＋AIまとめ）', free: '1回のみ', standard: '○', pro: '○' },
   ] as { label: string; free: string; standard: string; pro: string; planned?: boolean }[],
   paymentSection: 'お支払い・解約について',
   paymentIap:
@@ -1006,6 +1010,9 @@ const en: typeof ja = {
     'Your data is encrypted on this device with a key derived from your passphrase, then stored in the cloud tied to your signed-in account (the same account + passphrase overwrites it). We cannot read the contents. After switching devices, sign in with the same account and restore with the same passphrase. If you forget the passphrase, no one can recover the backup.',
   cloudBackupNeedSignIn:
     'Sign in under “Account” above to use cloud backup (this keeps your storage slot private to you).',
+  importLimitReached: 'The free plan includes up to 3 imports. Standard / Pro allows unlimited imports.',
+  reportFreeUsed:
+    'The free plan includes one monthly report. Upgrade to Standard / Pro to view reports and AI summaries anytime.',
   cloudBackupPassPlaceholder: 'Passphrase (8+ characters)',
   cloudBackupSave: 'Encrypt & back up',
   cloudBackupRestore: 'Restore with this passphrase',
@@ -1042,7 +1049,7 @@ const en: typeof ja = {
   planStandardTag: 'The everyday plan: protect your memory, get it back when needed.',
   planProTag: 'The top plan for heavy recorders and askers.',
   planFreeFeatures: [
-    'Import your history from another AI app once',
+    'Import history from another AI app up to 3 times',
     'Discover up to 30 forgotten decisions, promises, and open items',
     'Ask the AI "what was that again?" up to 20 times a month',
     'Get 1 thing to remember delivered each day',
@@ -1072,7 +1079,7 @@ const en: typeof ja = {
     { label: 'Records, people memos & timeline', free: '○', standard: '○', pro: '○' },
     { label: 'On-device storage (no auto-upload)', free: '○', standard: '○', pro: '○' },
     { label: 'Data export & deletion', free: '○', standard: '○', pro: '○' },
-    { label: 'Import history from other AI apps', free: 'Once', standard: 'Unlimited', pro: 'Unlimited' },
+    { label: 'Import history from other AI apps', free: 'Up to 3', standard: 'Unlimited', pro: 'Unlimited' },
     { label: 'Decision / promise / open-item extraction', free: 'Up to 30', standard: '○', pro: '○' },
     { label: 'AI search with sources', free: '20/month', standard: '500/month', pro: '1,500/month' },
     { label: 'Today Recall', free: '1/day', standard: 'Up to 3', pro: 'Up to 10' },
@@ -1080,7 +1087,7 @@ const en: typeof ja = {
     { label: 'Weekly & monthly AI reviews', free: '—', standard: '○', pro: '○' },
     { label: 'Your year so far (on-device stats)', free: '○', standard: '○', pro: '○' },
     { label: 'Encrypted cloud sync', free: '○', standard: '○', pro: '○' },
-    { label: 'Monthly report (stats + AI narrative)', free: 'Stats only', standard: '○', pro: '○' },
+    { label: 'Monthly report (stats + AI narrative)', free: 'Once only', standard: '○', pro: '○' },
   ] as { label: string; free: string; standard: string; pro: string; planned?: boolean }[],
   paymentSection: 'Payment & cancellation',
   paymentIap:

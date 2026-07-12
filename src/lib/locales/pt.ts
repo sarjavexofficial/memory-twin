@@ -458,6 +458,9 @@ export const pt: Dict = {
     'Seus dados são criptografados neste aparelho com uma chave derivada da sua frase secreta e guardados na nuvem vinculados à conta conectada (a mesma conta + frase sobrescreve). Nós não conseguimos ler o conteúdo. Após trocar de aparelho, entre com a mesma conta e restaure com a mesma frase. Se esquecê-la, ninguém poderá recuperar o backup.',
   cloudBackupNeedSignIn:
     'Entre em “Conta” acima para usar o backup na nuvem (isso mantém seu espaço de armazenamento exclusivo).',
+  importLimitReached: 'O plano gratuito permite até 3 importações. Standard / Pro: importações ilimitadas.',
+  reportFreeUsed:
+    'O plano gratuito inclui apenas um relatório mensal. Assine Standard / Pro para ver relatórios e resumos da IA quando quiser.',
   cloudBackupPassPlaceholder: 'Frase secreta (mín. 8 caracteres)',
   cloudBackupSave: 'Criptografar e fazer backup',
   cloudBackupRestore: 'Restaurar com esta frase',
@@ -495,7 +498,7 @@ export const pt: Dict = {
   planStandardTag: 'O plano do dia a dia: proteja sua memória e receba de volta quando precisar.',
   planProTag: 'O plano topo para quem registra e pergunta muito.',
   planFreeFeatures: [
-    'Importe o histórico de outro app de IA uma vez',
+    'Importe o histórico de outro app de IA até 3 vezes',
     'Descubra até 30 decisões, promessas e pendências esquecidas',
     'Pergunte à IA "o que era aquilo mesmo?" até 20 vezes por mês',
     'Receba 1 lembrança por dia',
@@ -526,7 +529,7 @@ export const pt: Dict = {
     { label: 'Registros, memos de pessoas e timeline', free: '○', standard: '○', pro: '○' },
     { label: 'Armazenamento no aparelho (sem envio automático)', free: '○', standard: '○', pro: '○' },
     { label: 'Exportação e exclusão de dados', free: '○', standard: '○', pro: '○' },
-    { label: 'Importar histórico de outros apps de IA', free: 'Uma vez', standard: 'Ilimitado', pro: 'Ilimitado' },
+    { label: 'Importar histórico de outros apps de IA', free: 'Até 3 vezes', standard: 'Ilimitado', pro: 'Ilimitado' },
     { label: 'Extração de decisões / promessas / pendências', free: 'Até 30', standard: '○', pro: '○' },
     { label: 'Busca com IA (respostas com fontes)', free: '20/mês', standard: '500/mês', pro: '1.500/mês' },
     { label: 'Today Recall', free: '1/dia', standard: 'Até 3', pro: 'Até 10' },
@@ -534,7 +537,7 @@ export const pt: Dict = {
     { label: 'Retrospectivas semanais e mensais (IA)', free: '—', standard: '○', pro: '○' },
     { label: 'Seu ano até agora (estatísticas no aparelho)', free: '○', standard: '○', pro: '○' },
     { label: 'Sincronização criptografada na nuvem', free: '○', standard: '○', pro: '○' },
-    { label: 'Relatório mensal (estatísticas + resumo da IA)', free: 'Só estatísticas', standard: '○', pro: '○' },
+    { label: 'Relatório mensal (estatísticas + resumo da IA)', free: 'Uma vez', standard: '○', pro: '○' },
   ] as { label: string; free: string; standard: string; pro: string; planned?: boolean }[],
   paymentSection: 'Pagamento e cancelamento',
   paymentIap:

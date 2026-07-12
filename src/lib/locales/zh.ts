@@ -432,6 +432,8 @@ export const zh: Dict = {
   cloudBackupDesc:
     '用口令生成的密钥在本机加密后，绑定到当前登录的账号保存到云端（相同账号＋相同口令会覆盖）。运营方也无法读取内容。换机后用相同账号登录并输入相同口令即可恢复。忘记口令则任何人都无法恢复。',
   cloudBackupNeedSignIn: '请先在上方「账号」登录后再使用云备份（以确保存储位置仅属于你）。',
+  importLimitReached: '免费方案最多可导入3次。Standard / Pro 可不限次数导入。',
+  reportFreeUsed: '免费方案只能查看1次每月报告。升级到 Standard / Pro 可随时查看报告和AI总结。',
   cloudBackupPassPlaceholder: '口令（至少8个字符）',
   cloudBackupSave: '加密并备份',
   cloudBackupRestore: '用此口令恢复',
@@ -465,7 +467,7 @@ export const zh: Dict = {
   planStandardTag: '每天使用者的标准方案。守护记忆，在需要的那天送达。',
   planProTag: '记录和提问都很多的重度用户最高级方案。',
   planFreeFeatures: [
-    '可从其他AI应用导入1次历史',
+    '可从其他AI应用导入3次历史',
     '发现最多30条被遗忘的决定、约定和未完成事项',
     '每月最多20次问AI“那是什么来着？”',
     '每天送上1条今天该想起的事',
@@ -495,7 +497,7 @@ export const zh: Dict = {
     { label: '记录・人物备忘・时间线', free: '○', standard: '○', pro: '○' },
     { label: '设备内保存（不自动上传）', free: '○', standard: '○', pro: '○' },
     { label: '数据导出・删除', free: '○', standard: '○', pro: '○' },
-    { label: '导入其他AI应用的历史', free: '仅1次', standard: '不限次数', pro: '不限次数' },
+    { label: '导入其他AI应用的历史', free: '最多3次', standard: '不限次数', pro: '不限次数' },
     { label: '自动提取决定・约定・未完成', free: '最多30条', standard: '○', pro: '○' },
     { label: 'AI搜索（附依据回答）', free: '每月20次', standard: '每月500次', pro: '每月1,500次' },
     { label: 'Today Recall（今日需要的记忆）', free: '每天1条', standard: '最多3条', pro: '最多10条' },
@@ -503,7 +505,7 @@ export const zh: Dict = {
     { label: '每周・每月回顾（AI）', free: '—', standard: '○', pro: '○' },
     { label: '今年的你（设备内统计）', free: '○', standard: '○', pro: '○' },
     { label: '加密云同步', free: '○', standard: '○', pro: '○' },
-    { label: '每月报告（统计＋AI总结）', free: '仅统计', standard: '○', pro: '○' },
+    { label: '每月报告（统计＋AI总结）', free: '仅1次', standard: '○', pro: '○' },
   ] as { label: string; free: string; standard: string; pro: string; planned?: boolean }[],
   paymentSection: '支付与退订',
   paymentIap:

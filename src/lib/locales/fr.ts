@@ -466,6 +466,9 @@ export const fr: Dict = {
     'Vos données sont chiffrées sur cet appareil avec une clé dérivée de votre phrase secrète, puis stockées dans le cloud, liées à votre compte connecté (le même compte + la même phrase écrase la précédente). Nous ne pouvons pas en lire le contenu. Après un changement d’appareil, connectez-vous avec le même compte et restaurez avec la même phrase. Si vous l’oubliez, personne ne peut récupérer la sauvegarde.',
   cloudBackupNeedSignIn:
     'Connectez-vous dans « Compte » ci-dessus pour utiliser la sauvegarde cloud (votre espace de stockage reste ainsi personnel).',
+  importLimitReached: 'Le forfait gratuit permet 3 imports au maximum. Standard / Pro : imports illimités.',
+  reportFreeUsed:
+    'Le forfait gratuit inclut un seul rapport mensuel. Passez à Standard / Pro pour consulter rapports et résumés IA à tout moment.',
   cloudBackupPassPlaceholder: 'Phrase secrète (8 caractères min.)',
   cloudBackupSave: 'Chiffrer et sauvegarder',
   cloudBackupRestore: 'Restaurer avec cette phrase',
@@ -504,7 +507,7 @@ export const fr: Dict = {
   planStandardTag: 'La formule du quotidien : protéger votre mémoire, la retrouver au bon moment.',
   planProTag: 'La formule supérieure pour les gros utilisateurs.',
   planFreeFeatures: [
-    'Importer une fois l’historique d’une autre appli d’IA',
+    'Importer jusqu’à 3 fois l’historique d’une autre appli d’IA',
     'Découvrir jusqu’à 30 décisions, promesses et tâches oubliées',
     'Demander à l’IA « c’était quoi déjà ? » jusqu’à 20 fois par mois',
     'Recevoir chaque jour 1 chose à se rappeler',
@@ -534,7 +537,7 @@ export const fr: Dict = {
     { label: 'Notes, mémos de personnes et timeline', free: '○', standard: '○', pro: '○' },
     { label: 'Stockage sur l’appareil (aucun envoi auto)', free: '○', standard: '○', pro: '○' },
     { label: 'Export et suppression des données', free: '○', standard: '○', pro: '○' },
-    { label: 'Import d’historique d’autres applis d’IA', free: '1 fois', standard: 'Illimité', pro: 'Illimité' },
+    { label: 'Import d’historique d’autres applis d’IA', free: '3 fois max', standard: 'Illimité', pro: 'Illimité' },
     { label: 'Extraction décisions / promesses / en cours', free: '30 max', standard: '○', pro: '○' },
     { label: 'Recherche IA avec sources', free: '20/mois', standard: '500/mois', pro: '1 500/mois' },
     { label: 'Today Recall', free: '1/jour', standard: '3 max', pro: '10 max' },
@@ -542,7 +545,7 @@ export const fr: Dict = {
     { label: 'Bilans IA hebdo & mensuels', free: '—', standard: '○', pro: '○' },
     { label: 'Votre année (stats sur l’appareil)', free: '○', standard: '○', pro: '○' },
     { label: 'Synchronisation cloud chiffrée', free: '○', standard: '○', pro: '○' },
-    { label: 'Rapport mensuel (stats + récit de l’IA)', free: 'Stats seules', standard: '○', pro: '○' },
+    { label: 'Rapport mensuel (stats + récit de l’IA)', free: '1 fois', standard: '○', pro: '○' },
   ] as { label: string; free: string; standard: string; pro: string; planned?: boolean }[],
   paymentSection: 'Paiement et résiliation',
   paymentIap:
