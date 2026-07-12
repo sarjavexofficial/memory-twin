@@ -385,6 +385,7 @@ export const zh: Dict = {
   aboutVersion: '版本',
   aboutVersionValue: '0.1.0（开发版）',
   contactButton: '联系我们',
+  contactMailFailed: '如果邮件应用没有打开，请长按上方地址复制，然后用任意邮件应用发送。',
 
   reportLink: '查看月度报告',
   reportTitle: '月度报告',
@@ -423,7 +424,8 @@ export const zh: Dict = {
 
   cloudBackupSection: '加密云备份',
   cloudBackupDesc:
-    '用口令生成的密钥在本机加密后，作为一个整体保存到云端（相同口令会覆盖）。运营方也无法读取内容。换机后用相同口令即可恢复。忘记口令则任何人都无法恢复。',
+    '用口令生成的密钥在本机加密后，绑定到当前登录的账号保存到云端（相同账号＋相同口令会覆盖）。运营方也无法读取内容。换机后用相同账号登录并输入相同口令即可恢复。忘记口令则任何人都无法恢复。',
+  cloudBackupNeedSignIn: '请先在上方「账号」登录后再使用云备份（以确保存储位置仅属于你）。',
   cloudBackupPassPlaceholder: '口令（至少8个字符）',
   cloudBackupSave: '加密并备份',
   cloudBackupRestore: '用此口令恢复',
@@ -431,6 +433,8 @@ export const zh: Dict = {
   cloudBackupNotFound: '没有找到该口令的备份。',
   cloudBackupWrongPass: '恢复失败。口令可能不正确。',
   cloudBackupTooShort: '口令至少需要8个字符。',
+  cloudBackupWeakPass: '这个口令太容易被猜到，无法使用。请避免纯数字、重复字符和常见单词。',
+  cloudBackupRateLimited: '今天的备份次数已达上限，请明天再试。',
 
   // プラン
   plansTitle: '付费方案',

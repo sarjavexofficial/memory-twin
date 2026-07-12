@@ -413,6 +413,8 @@ const ja = {
   aboutVersion: 'バージョン',
   aboutVersionValue: '0.1.0（開発版）',
   contactButton: 'お問い合わせ',
+  contactMailFailed:
+    'メールが開かない場合は、上のアドレスを長押しでコピーして、お使いのメールアプリから送ってください。',
 
   // 月次レポート
   reportLink: '月次レポートを見る',
@@ -454,7 +456,9 @@ const ja = {
   // 暗号化クラウドバックアップ
   cloudBackupSection: 'クラウドバックアップ（暗号化）',
   cloudBackupDesc:
-    '合言葉から作った鍵でこの端末上で暗号化してから、クラウドに1つだけ保管します（同じ合言葉で上書き）。中身は運営にも読めません。機種変更後は同じ合言葉で復元できます。合言葉を忘れると、誰にも復元できません。',
+    '合言葉から作った鍵でこの端末上で暗号化してから、サインイン中のアカウントに紐づけてクラウドに1つだけ保管します（同じアカウント＋同じ合言葉で上書き）。中身は運営にも読めません。機種変更後は、同じアカウントでサインインして同じ合言葉を入れると復元できます。合言葉を忘れると、誰にも復元できません。',
+  cloudBackupNeedSignIn:
+    'クラウドバックアップは、上の「アカウント」でサインインすると使えます（保管場所をあなた専用にするため）。',
   cloudBackupPassPlaceholder: '合言葉（8文字以上）',
   cloudBackupSave: '暗号化してバックアップ',
   cloudBackupRestore: 'この合言葉で復元',
@@ -462,6 +466,9 @@ const ja = {
   cloudBackupNotFound: 'この合言葉のバックアップは見つかりませんでした。',
   cloudBackupWrongPass: '復元できませんでした。合言葉が違う可能性があります。',
   cloudBackupTooShort: '合言葉は8文字以上にしてください。',
+  cloudBackupWeakPass:
+    'この合言葉は推測されやすいため使えません。数字だけ・同じ文字の繰り返し・ありがちな単語は避けてください。',
+  cloudBackupRateLimited: '本日のバックアップ回数の上限に達しました。明日また試してください。',
 
   // プラン
   plansTitle: '料金プラン',
@@ -932,6 +939,8 @@ const en: typeof ja = {
   aboutVersion: 'Version',
   aboutVersionValue: '0.1.0 (dev)',
   contactButton: 'Contact us',
+  contactMailFailed:
+    'If a mail app didn’t open, long-press the address above to copy it, then email us from any mail app.',
 
   reportLink: 'View monthly report',
   reportTitle: 'Monthly Report',
@@ -972,7 +981,9 @@ const en: typeof ja = {
 
   cloudBackupSection: 'Encrypted cloud backup',
   cloudBackupDesc:
-    'Your data is encrypted on this device with a key derived from your passphrase, then stored as a single blob in the cloud (the same passphrase overwrites it). We cannot read the contents. After switching devices, restore with the same passphrase. If you forget it, no one can recover the backup.',
+    'Your data is encrypted on this device with a key derived from your passphrase, then stored in the cloud tied to your signed-in account (the same account + passphrase overwrites it). We cannot read the contents. After switching devices, sign in with the same account and restore with the same passphrase. If you forget the passphrase, no one can recover the backup.',
+  cloudBackupNeedSignIn:
+    'Sign in under “Account” above to use cloud backup (this keeps your storage slot private to you).',
   cloudBackupPassPlaceholder: 'Passphrase (8+ characters)',
   cloudBackupSave: 'Encrypt & back up',
   cloudBackupRestore: 'Restore with this passphrase',
@@ -980,6 +991,9 @@ const en: typeof ja = {
   cloudBackupNotFound: 'No backup found for this passphrase.',
   cloudBackupWrongPass: 'Could not restore. The passphrase may be wrong.',
   cloudBackupTooShort: 'The passphrase must be at least 8 characters.',
+  cloudBackupWeakPass:
+    'This passphrase is too easy to guess. Avoid digits only, repeated characters, and common words.',
+  cloudBackupRateLimited: "You've reached today's backup limit. Please try again tomorrow.",
 
   plansTitle: 'Pricing',
   plansSubtitle: 'Your memory grows into another you.',

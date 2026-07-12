@@ -6,6 +6,7 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  Share,
   StyleSheet,
   Switch,
   Text,
@@ -25,7 +26,9 @@ import { materializePhotos } from '@/lib/backup';
 import {
   CloudBackupDecryptError,
   CloudBackupNotFoundError,
+  CloudBackupRateLimitError,
   downloadCloudBackup,
+  isWeakPassphrase,
   MIN_PASSPHRASE_LENGTH,
   uploadCloudBackup,
 } from '@/lib/cloud-backup';
@@ -39,6 +42,7 @@ import {
 import { embedPhotos, exportAllData } from '@/lib/export';
 import { LANGUAGE_OPTIONS, useStrings } from '@/lib/i18n';
 import { makeThemed, useTheme } from '@/lib/theme';
+import { useAuth } from '@/store/auth-context';
 import { useJournal } from '@/store/journal-context';
 import { usePeople } from '@/store/people-context';
 import { ThemeName, useSettings } from '@/store/settings-context';
@@ -67,6 +71,7 @@ export default function SettingsScreen() {
   ];
   const [exportDone, setExportDone] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [contactErr, setContactErr] = useState<string | null>(null);
   const [aiUsedCount, setAiUsedCount] = useState<number | null>(null);
 
   // AIの理解ノート（使うほどAIが本人を学ぶ機能）の状態
@@ -166,7 +171,9 @@ export default function SettingsScreen() {
     }
   }
 
-  // 暗号化クラウドバックアップ（合言葉ベースのE2E方式。cloud-backup.ts参照）
+  // 暗号化クラウドバックアップ（合言葉ベースのE2E方式・アカウント紐付け。cloud-backup.ts参照）
+  // 保管場所をアカウントごとに分けるため、サインイン中のみ利用できる
+  const { account } = useAuth();
   const [cloudPass, setCloudPass] = useState('');
   const [cloudBusy, setCloudBusy] = useState<'save' | 'restore' | null>(null);
   const [cloudMsg, setCloudMsg] = useState<string | null>(null);
@@ -176,17 +183,30 @@ export default function SettingsScreen() {
     const pass = cloudPass.trim();
     setCloudMsg(null);
     setCloudErr(null);
+    if (!account) {
+      setCloudErr(L.cloudBackupNeedSignIn);
+      return;
+    }
     if (pass.length < MIN_PASSPHRASE_LENGTH) {
       setCloudErr(L.cloudBackupTooShort);
+      return;
+    }
+    // 合言葉がそのまま暗号鍵になるため、推測されやすいものは保存前に弾く
+    if (isWeakPassphrase(pass)) {
+      setCloudErr(L.cloudBackupWeakPass);
       return;
     }
     setCloudBusy('save');
     try {
       // 写真もデータとして埋め込んでから暗号化する（ZIPエクスポートと同じ扱い）
-      await uploadCloudBackup(pass, { people: await embedPhotos(people), journal: entries });
+      await uploadCloudBackup(account, pass, {
+        people: await embedPhotos(people),
+        journal: entries,
+      });
       setCloudMsg(L.cloudBackupSaved);
     } catch (e) {
-      setCloudErr((e as Error).message);
+      if (e instanceof CloudBackupRateLimitError) setCloudErr(L.cloudBackupRateLimited);
+      else setCloudErr((e as Error).message);
     } finally {
       setCloudBusy(null);
     }
@@ -196,13 +216,17 @@ export default function SettingsScreen() {
     const pass = cloudPass.trim();
     setCloudMsg(null);
     setCloudErr(null);
+    if (!account) {
+      setCloudErr(L.cloudBackupNeedSignIn);
+      return;
+    }
     if (pass.length < MIN_PASSPHRASE_LENGTH) {
       setCloudErr(L.cloudBackupTooShort);
       return;
     }
     setCloudBusy('restore');
     try {
-      const backup = await downloadCloudBackup(pass);
+      const backup = await downloadCloudBackup(account, pass);
       // ZIPからの復元と同じ経路: 既存データに追加され、同じIDは重複しない
       const j = restoreEntries(backup.journal);
       const p = restorePeople(await materializePhotos(backup.people));
@@ -210,9 +234,43 @@ export default function SettingsScreen() {
     } catch (e) {
       if (e instanceof CloudBackupNotFoundError) setCloudErr(L.cloudBackupNotFound);
       else if (e instanceof CloudBackupDecryptError) setCloudErr(L.cloudBackupWrongPass);
+      else if (e instanceof CloudBackupRateLimitError) setCloudErr(L.cloudBackupRateLimited);
       else setCloudErr((e as Error).message);
     } finally {
       setCloudBusy(null);
+    }
+  }
+
+  // お問い合わせ: 標準メール→Gmailアプリ→共有シートの順に試す。
+  // メールアプリ未設定のiPhoneでも、どれかの経路で必ずアドレスに辿り着けるようにする
+  async function handleContact() {
+    setContactErr(null);
+    if (Platform.OS === 'web') {
+      // ブラウザは「メーラーが開けたか」を検知できないため、開く試みと合わせて常にコピー案内を出す
+      try {
+        window.location.href = `mailto:${SUPPORT_EMAIL}`;
+      } catch {
+        // mailtoがブロックされても下の案内文で連絡先には辿り着ける
+      }
+      setContactErr(L.contactMailFailed);
+      return;
+    }
+    try {
+      await Linking.openURL(`mailto:${SUPPORT_EMAIL}`);
+      return;
+    } catch {
+      // 標準メールが未設定（Mailアプリ削除済みなど）
+    }
+    try {
+      await Linking.openURL(`googlegmail://co?to=${SUPPORT_EMAIL}`);
+      return;
+    } catch {
+      // Gmailアプリも入っていない
+    }
+    try {
+      await Share.share({ message: SUPPORT_EMAIL });
+    } catch {
+      setContactErr(L.contactMailFailed);
     }
   }
 
@@ -493,36 +551,43 @@ export default function SettingsScreen() {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>{L.cloudBackupSection}</Text>
           <Text style={styles.dataSummary}>{L.cloudBackupDesc}</Text>
-          <TextInput
-            style={styles.passInput}
-            value={cloudPass}
-            onChangeText={(t) => {
-              setCloudPass(t);
-              setCloudMsg(null);
-              setCloudErr(null);
-            }}
-            placeholder={L.cloudBackupPassPlaceholder}
-            placeholderTextColor={AppColors.muted}
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-          <GradientButton
-            label={L.cloudBackupSave}
-            iconName="cloud-upload-outline"
-            onPress={handleCloudBackup}
-            loading={cloudBusy === 'save'}
-            disabled={cloudBusy !== null}
-          />
-          <Pressable
-            style={styles.actionButton}
-            onPress={handleCloudRestore}
-            disabled={cloudBusy !== null}>
-            <Ionicons name="cloud-download-outline" size={16} color={AppColors.primary} />
-            <Text style={styles.actionButtonText}>
-              {cloudBusy === 'restore' ? '…' : L.cloudBackupRestore}
-            </Text>
-          </Pressable>
+          {!account ? (
+            // 保管場所はアカウントに紐づくため、サインインするまで操作できない
+            <Text style={styles.exportHintText}>{L.cloudBackupNeedSignIn}</Text>
+          ) : (
+            <>
+              <TextInput
+                style={styles.passInput}
+                value={cloudPass}
+                onChangeText={(t) => {
+                  setCloudPass(t);
+                  setCloudMsg(null);
+                  setCloudErr(null);
+                }}
+                placeholder={L.cloudBackupPassPlaceholder}
+                placeholderTextColor={AppColors.muted}
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              <GradientButton
+                label={L.cloudBackupSave}
+                iconName="cloud-upload-outline"
+                onPress={handleCloudBackup}
+                loading={cloudBusy === 'save'}
+                disabled={cloudBusy !== null}
+              />
+              <Pressable
+                style={styles.actionButton}
+                onPress={handleCloudRestore}
+                disabled={cloudBusy !== null}>
+                <Ionicons name="cloud-download-outline" size={16} color={AppColors.primary} />
+                <Text style={styles.actionButtonText}>
+                  {cloudBusy === 'restore' ? '…' : L.cloudBackupRestore}
+                </Text>
+              </Pressable>
+            </>
+          )}
           {cloudMsg && <Text style={styles.successText}>{cloudMsg}</Text>}
           {cloudErr && <Text style={styles.errorText}>{cloudErr}</Text>}
         </View>
@@ -542,13 +607,15 @@ export default function SettingsScreen() {
             <Text style={styles.aboutValue}>{L.aboutVersionValue}</Text>
           </View>
           {/* ストア審査(UGCガイドライン)対応: 運営への連絡手段をアプリ内に明記する */}
-          <Pressable
-            style={styles.actionButton}
-            onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}`)}>
+          <Pressable style={styles.actionButton} onPress={handleContact}>
             <Ionicons name="mail-outline" size={16} color={AppColors.primary} />
             <Text style={styles.actionButtonText}>{L.contactButton}</Text>
           </Pressable>
-          <Text style={styles.contactEmail}>{SUPPORT_EMAIL}</Text>
+          {/* selectable: 長押しでコピーできるように（メールアプリが無い端末の最終手段） */}
+          <Text style={styles.contactEmail} selectable>
+            {SUPPORT_EMAIL}
+          </Text>
+          {contactErr && <Text style={styles.errorText}>{contactErr}</Text>}
         </View>
       </ScrollView>
     </SafeAreaView>

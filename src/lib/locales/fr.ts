@@ -412,6 +412,8 @@ export const fr: Dict = {
   aboutVersion: 'Version',
   aboutVersionValue: '0.1.0 (dev)',
   contactButton: 'Nous contacter',
+  contactMailFailed:
+    'Si aucune messagerie ne s’ouvre, appuyez longuement sur l’adresse ci-dessus pour la copier, puis écrivez-nous depuis votre messagerie.',
 
   reportLink: 'Voir le rapport mensuel',
   reportTitle: 'Rapport mensuel',
@@ -452,6 +454,23 @@ export const fr: Dict = {
   aiProfileClearTitle: 'Supprimer ce que l’IA a appris ?',
   aiProfileClearMessage:
     'La compréhension de l’IA est réinitialisée et les réponses ne sont plus personnalisées. Vos enregistrements sont conservés.',
+
+  cloudBackupSection: 'Sauvegarde chiffrée dans le cloud',
+  cloudBackupDesc:
+    'Vos données sont chiffrées sur cet appareil avec une clé dérivée de votre phrase secrète, puis stockées dans le cloud, liées à votre compte connecté (le même compte + la même phrase écrase la précédente). Nous ne pouvons pas en lire le contenu. Après un changement d’appareil, connectez-vous avec le même compte et restaurez avec la même phrase. Si vous l’oubliez, personne ne peut récupérer la sauvegarde.',
+  cloudBackupNeedSignIn:
+    'Connectez-vous dans « Compte » ci-dessus pour utiliser la sauvegarde cloud (votre espace de stockage reste ainsi personnel).',
+  cloudBackupPassPlaceholder: 'Phrase secrète (8 caractères min.)',
+  cloudBackupSave: 'Chiffrer et sauvegarder',
+  cloudBackupRestore: 'Restaurer avec cette phrase',
+  cloudBackupSaved: 'Chiffré et enregistré dans le cloud.',
+  cloudBackupNotFound: 'Aucune sauvegarde trouvée pour cette phrase.',
+  cloudBackupWrongPass: 'Restauration impossible. La phrase est peut-être incorrecte.',
+  cloudBackupTooShort: 'La phrase doit contenir au moins 8 caractères.',
+  cloudBackupWeakPass:
+    'Cette phrase est trop facile à deviner. Évitez les chiffres seuls, les caractères répétés et les mots courants.',
+  cloudBackupRateLimited:
+    'Vous avez atteint la limite de sauvegardes du jour. Réessayez demain.',
 
   // プラン
   plansTitle: 'Tarifs',

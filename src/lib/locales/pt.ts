@@ -406,6 +406,8 @@ export const pt: Dict = {
   aboutVersion: 'Versão',
   aboutVersionValue: '0.1.0 (dev)',
   contactButton: 'Fale conosco',
+  contactMailFailed:
+    'Se nenhum app de e-mail abrir, toque e segure o endereço acima para copiá-lo e nos escreva pelo seu app de e-mail.',
 
   reportLink: 'Ver relatório mensal',
   reportTitle: 'Relatório mensal',
@@ -444,6 +446,22 @@ export const pt: Dict = {
   aiProfileClearTitle: 'Apagar o que a IA aprendeu?',
   aiProfileClearMessage:
     'A compreensão da IA será redefinida e as respostas deixarão de ser personalizadas. Seus registros não são apagados.',
+
+  cloudBackupSection: 'Backup criptografado na nuvem',
+  cloudBackupDesc:
+    'Seus dados são criptografados neste aparelho com uma chave derivada da sua frase secreta e guardados na nuvem vinculados à conta conectada (a mesma conta + frase sobrescreve). Nós não conseguimos ler o conteúdo. Após trocar de aparelho, entre com a mesma conta e restaure com a mesma frase. Se esquecê-la, ninguém poderá recuperar o backup.',
+  cloudBackupNeedSignIn:
+    'Entre em “Conta” acima para usar o backup na nuvem (isso mantém seu espaço de armazenamento exclusivo).',
+  cloudBackupPassPlaceholder: 'Frase secreta (mín. 8 caracteres)',
+  cloudBackupSave: 'Criptografar e fazer backup',
+  cloudBackupRestore: 'Restaurar com esta frase',
+  cloudBackupSaved: 'Criptografado e salvo na nuvem.',
+  cloudBackupNotFound: 'Nenhum backup encontrado para esta frase.',
+  cloudBackupWrongPass: 'Não foi possível restaurar. A frase pode estar errada.',
+  cloudBackupTooShort: 'A frase deve ter pelo menos 8 caracteres.',
+  cloudBackupWeakPass:
+    'Esta frase é fácil demais de adivinhar. Evite só números, caracteres repetidos e palavras comuns.',
+  cloudBackupRateLimited: 'Você atingiu o limite de backups de hoje. Tente novamente amanhã.',
 
   // プラン
   plansTitle: 'Planos',

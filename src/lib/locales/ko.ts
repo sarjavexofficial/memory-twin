@@ -392,6 +392,8 @@ export const ko: Dict = {
   aboutVersion: '버전',
   aboutVersionValue: '0.1.0(개발판)',
   contactButton: '문의하기',
+  contactMailFailed:
+    '메일 앱이 열리지 않으면 위 주소를 길게 눌러 복사한 뒤, 사용 중인 메일 앱에서 보내 주세요.',
 
   reportLink: '월간 리포트 보기',
   reportTitle: '월간 리포트',
@@ -430,7 +432,9 @@ export const ko: Dict = {
 
   cloudBackupSection: '암호화 클라우드 백업',
   cloudBackupDesc:
-    '암호에서 만든 키로 이 기기에서 암호화한 뒤 클라우드에 하나만 보관합니다(같은 암호는 덮어쓰기). 운영자도 내용을 읽을 수 없습니다. 기기를 바꾼 후 같은 암호로 복원할 수 있습니다. 암호를 잊으면 아무도 복원할 수 없습니다.',
+    '암호에서 만든 키로 이 기기에서 암호화한 뒤, 로그인 중인 계정에 연결해 클라우드에 하나만 보관합니다(같은 계정＋같은 암호는 덮어쓰기). 운영자도 내용을 읽을 수 없습니다. 기기를 바꾼 후 같은 계정으로 로그인하고 같은 암호를 입력하면 복원할 수 있습니다. 암호를 잊으면 아무도 복원할 수 없습니다.',
+  cloudBackupNeedSignIn:
+    '클라우드 백업은 위의 “계정”에서 로그인하면 사용할 수 있습니다(보관 위치를 본인 전용으로 하기 위해서입니다).',
   cloudBackupPassPlaceholder: '암호(8자 이상)',
   cloudBackupSave: '암호화하여 백업',
   cloudBackupRestore: '이 암호로 복원',
@@ -438,6 +442,9 @@ export const ko: Dict = {
   cloudBackupNotFound: '이 암호의 백업을 찾지 못했습니다.',
   cloudBackupWrongPass: '복원하지 못했습니다. 암호가 다를 수 있습니다.',
   cloudBackupTooShort: '암호는 8자 이상으로 해 주세요.',
+  cloudBackupWeakPass:
+    '이 암호는 추측되기 쉬워 사용할 수 없습니다. 숫자만, 같은 문자 반복, 흔한 단어는 피해 주세요.',
+  cloudBackupRateLimited: '오늘의 백업 횟수 상한에 도달했습니다. 내일 다시 시도해 주세요.',
 
   // プラン
   plansTitle: '요금제',
