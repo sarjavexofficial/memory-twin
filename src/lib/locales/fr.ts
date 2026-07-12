@@ -40,6 +40,8 @@ export const fr: Dict = {
     `Votre promesse envers ${person} — « ${action} » — a dépassé son échéance (${due}). Un petit message aujourd’hui ?`,
   dailyMsgUpcoming: (person: string, action: string, due: string) =>
     `Votre promesse envers ${person} — « ${action} » — arrive à échéance le ${due}. Tout est prêt ?`,
+  dailyMsgUndated: (person: string, action: string) =>
+    `Votre promesse envers ${person} — « ${action} » — n’a pas encore de date. On en fixe une ? Je vous la rappellerai avant que vous l’oubliiez.`,
   dailyMsgStale: (person: string, days: number) =>
     `Cela fait ${days} jours sans contact avec ${person}. Même un court message ferait plaisir.`,
   dailyMsgSleep:
@@ -47,6 +49,7 @@ export const fr: Dict = {
   dailyWhy: 'Pourquoi ce sujet ?',
   dailyReasonOverdue: 'Les promesses échues sont signalées en priorité.',
   dailyReasonUpcoming: 'Les promesses à échéance proche sont signalées tant qu’il est encore temps.',
+  dailyReasonUndated: 'Les promesses sans date s’oublient vite : je propose d’en fixer une.',
   dailyReasonStale:
     'Les personnes sans contact depuis plus de 30 jours sont signalées avant que le lien ne se distende.',
   dailyReasonSleep: 'Une baisse consécutive du temps de sommeil a été détectée dans vos derniers enregistrements.',

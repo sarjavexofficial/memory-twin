@@ -54,12 +54,15 @@ const ja = {
     `${person}さんとの「${action}」が期限（${due}）を過ぎたままです。今日、ひと声かけてみませんか？`,
   dailyMsgUpcoming: (person: string, action: string, due: string) =>
     `${person}さんとの「${action}」の期限が${due}に迫っています。準備は進んでいますか？`,
+  dailyMsgUndated: (person: string, action: string) =>
+    `${person}さんとの「${action}」、いつ頃やるか決めませんか？日付を決めると、忘れる前に思い出させます。`,
   dailyMsgStale: (person: string, days: number) =>
     `${person}さんと${days}日連絡していないようです。短いメッセージだけでも送ってみますか？`,
   dailyMsgSleep: '睡眠が3回続けて6時間を下回っています。今日は少し早めに休むのはどうでしょう。',
   dailyWhy: 'なぜこの話題？',
   dailyReasonOverdue: '未完了の約束のうち、期限を過ぎているものを最優先でお知らせしています。',
   dailyReasonUpcoming: '期限が近い約束を、間に合ううちにお知らせしています。',
+  dailyReasonUndated: '期限のない約束は忘れやすいため、日付決めを後押ししています。',
   dailyReasonStale: '連絡の間隔が30日以上あいた人を、関係が疎遠になる前にお知らせしています。',
   dailyReasonSleep: '直近の記録から、睡眠時間の連続した低下を検知しました。',
   dailySourceLabel: '根拠にした記録',
@@ -647,12 +650,15 @@ const en: typeof ja = {
     `Your promise to ${person} — "${action}" — is past its due date (${due}). How about reaching out today?`,
   dailyMsgUpcoming: (person: string, action: string, due: string) =>
     `Your promise to ${person} — "${action}" — is due ${due}. Are you on track?`,
+  dailyMsgUndated: (person: string, action: string) =>
+    `Your promise with ${person} — “${action}” — has no date yet. Want to pick one? I'll remind you before you forget.`,
   dailyMsgStale: (person: string, days: number) =>
     `It's been ${days} days since you contacted ${person}. Even a short message might be nice.`,
   dailyMsgSleep: 'Your sleep has been under 6 hours for 3 records in a row. Maybe turn in early tonight.',
   dailyWhy: 'Why this topic?',
   dailyReasonOverdue: 'Overdue promises are surfaced with the highest priority.',
   dailyReasonUpcoming: 'Promises with upcoming due dates are surfaced while there is still time.',
+  dailyReasonUndated: 'Promises without a date are easy to forget, so I suggest setting one.',
   dailyReasonStale: 'People you have not contacted for 30+ days are surfaced before the relationship goes quiet.',
   dailyReasonSleep: 'Detected a consecutive drop in sleep hours from your recent records.',
   dailySourceLabel: 'Source records',

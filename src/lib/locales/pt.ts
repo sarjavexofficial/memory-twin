@@ -40,12 +40,15 @@ export const pt: Dict = {
     `Sua promessa com ${person} — "${action}" — passou do prazo (${due}). Que tal mandar uma mensagem hoje?`,
   dailyMsgUpcoming: (person: string, action: string, due: string) =>
     `Sua promessa com ${person} — "${action}" — vence em ${due}. Está tudo encaminhado?`,
+  dailyMsgUndated: (person: string, action: string) =>
+    `Sua promessa com ${person} — "${action}" — ainda não tem data. Que tal definir uma? Eu lembro você antes que esqueça.`,
   dailyMsgStale: (person: string, days: number) =>
     `Já faz ${days} dias que você não fala com ${person}. Até uma mensagem curta já seria legal.`,
   dailyMsgSleep: 'Seu sono ficou abaixo de 6 horas por 3 registros seguidos. Que tal dormir mais cedo hoje?',
   dailyWhy: 'Por que este assunto?',
   dailyReasonOverdue: 'Promessas vencidas são avisadas com prioridade máxima.',
   dailyReasonUpcoming: 'Promessas com prazo próximo são avisadas enquanto ainda dá tempo.',
+  dailyReasonUndated: 'Promessas sem data são fáceis de esquecer, então sugiro definir uma.',
   dailyReasonStale: 'Pessoas sem contato há mais de 30 dias são lembradas antes que a relação esfrie.',
   dailyReasonSleep: 'Detectada uma queda consecutiva nas horas de sono nos seus registros recentes.',
   dailySourceLabel: 'Registros de origem',

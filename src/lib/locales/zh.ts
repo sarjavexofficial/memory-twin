@@ -38,12 +38,15 @@ export const zh: Dict = {
     `你和${person}的“${action}”已经过了期限（${due}）。今天要不要联系一下？`,
   dailyMsgUpcoming: (person: string, action: string, due: string) =>
     `你和${person}的“${action}”即将在${due}到期。准备得怎么样了？`,
+  dailyMsgUndated: (person: string, action: string) =>
+    `你和${person}的“${action}”还没有定日期。要不要定一个？定了日期我会在你忘记之前提醒你。`,
   dailyMsgStale: (person: string, days: number) =>
     `你已经${days}天没有联系${person}了。哪怕发一条简短的消息也好？`,
   dailyMsgSleep: '睡眠已连续3次不足6小时。今天要不要早点休息？',
   dailyWhy: '为什么是这个话题？',
   dailyReasonOverdue: '已过期限的约定会被最优先提醒。',
   dailyReasonUpcoming: '临近期限的约定会趁还来得及时提醒你。',
+  dailyReasonUndated: '没有日期的约定容易被遗忘，所以建议定一个日期。',
   dailyReasonStale: '超过30天没有联系的人，会在关系疏远之前提醒你。',
   dailyReasonSleep: '从最近的记录中检测到睡眠时间连续下降。',
   dailySourceLabel: '依据的记录',

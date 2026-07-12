@@ -124,6 +124,8 @@ export default function TodayScreen() {
         return L.dailyReasonOverdue;
       case 'upcoming-promise':
         return L.dailyReasonUpcoming;
+      case 'undated-promise':
+        return L.dailyReasonUndated;
       case 'stale-person':
         return L.dailyReasonStale;
       case 'short-sleep':

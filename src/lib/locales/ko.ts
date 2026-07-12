@@ -38,12 +38,15 @@ export const ko: Dict = {
     `${person}님과의 "${action}" 약속이 기한(${due})을 지났습니다. 오늘 연락해 보는 건 어떨까요?`,
   dailyMsgUpcoming: (person: string, action: string, due: string) =>
     `${person}님과의 "${action}" 기한이 ${due}로 다가오고 있습니다. 준비는 잘 되고 있나요?`,
+  dailyMsgUndated: (person: string, action: string) =>
+    `${person}님과의 "${action}", 언제 할지 정해 볼까요? 날짜를 정하면 잊기 전에 알려 드립니다.`,
   dailyMsgStale: (person: string, days: number) =>
     `${person}님과 ${days}일째 연락하지 않은 것 같아요. 짧은 메시지라도 보내 볼까요?`,
   dailyMsgSleep: '수면이 3회 연속 6시간을 밑돌고 있습니다. 오늘은 조금 일찍 쉬는 건 어떨까요.',
   dailyWhy: '왜 이 이야기?',
   dailyReasonOverdue: '기한이 지난 약속을 최우선으로 알려 드립니다.',
   dailyReasonUpcoming: '기한이 가까운 약속을 늦기 전에 알려 드립니다.',
+  dailyReasonUndated: '기한이 없는 약속은 잊기 쉬워서 날짜 정하기를 권해 드립니다.',
   dailyReasonStale: '연락 간격이 30일 이상 벌어진 사람을 사이가 멀어지기 전에 알려 드립니다.',
   dailyReasonSleep: '최근 기록에서 수면 시간의 연속 감소를 감지했습니다.',
   dailySourceLabel: '근거가 된 기록',

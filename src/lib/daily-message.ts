@@ -16,7 +16,12 @@ const FEEDBACK_KEY = 'memory-twin:speech-feedback';
 // 発話しきい値。スコアがこれ未満なら「今日は話さない」
 const SPEAK_THRESHOLD = 5;
 
-export type MessageCategory = 'overdue-promise' | 'upcoming-promise' | 'stale-person' | 'short-sleep';
+export type MessageCategory =
+  | 'overdue-promise'
+  | 'upcoming-promise'
+  | 'undated-promise'
+  | 'stale-person'
+  | 'short-sleep';
 
 export type DailyCandidate = {
   category: MessageCategory;
@@ -92,6 +97,18 @@ function buildCandidates(people: Person[], entries: JournalEntry[]): DailyCandid
           sourceDate: memo.date,
           sourceText: memo.text,
         });
+      } else if (!promise.dueDate) {
+        // 期限のない約束: 忘れやすいので「日付を決めませんか」と後押しする。
+        // 他に話題がない日にだけ出る低スコア（しきい値ちょうど）
+        list.push({
+          category: 'undated-promise',
+          score: 5,
+          personName: person.name,
+          personId: person.id,
+          action: promise.action,
+          sourceDate: memo.date,
+          sourceText: memo.text,
+        });
       }
     }
   }
@@ -145,6 +162,8 @@ export function candidateMessage(c: DailyCandidate, L: Dict, people: Person[] = 
       return L.dailyMsgOverdue(personName, action, c.dueDate ?? '');
     case 'upcoming-promise':
       return L.dailyMsgUpcoming(personName, action, c.dueDate ?? '');
+    case 'undated-promise':
+      return L.dailyMsgUndated(personName, action);
     case 'stale-person':
       return L.dailyMsgStale(personName, c.days ?? 0);
     case 'short-sleep':
@@ -178,7 +197,10 @@ export async function getTodayMessage(
     const raw = await AsyncStorage.getItem(MESSAGE_KEY);
     if (raw) {
       const stored = JSON.parse(raw) as DailyMessageRecord;
-      if (stored.date === todayIso) return stored; // 1日最大1件: 当日分は固定
+      // 1日最大1件: 一度「話した」日は固定。
+      // まだ話していない日（candidate: null）は、その後の記録で話題が生まれている
+      // 可能性があるため再評価する（朝は無言→夕方に約束を記録→その日のうちに拾える）
+      if (stored.date === todayIso && stored.candidate) return stored;
     }
   } catch {
     // 読み込み失敗時は再生成
