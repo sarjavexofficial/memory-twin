@@ -82,6 +82,9 @@ export const fr: Dict = {
   recallDoneMsg: (action: string) => `« ${action} » marqué comme fait.`,
   recallDoneMemoLink: (name: string) => `Ajouter une note sur ${name}`,
   recallUndo: 'Annuler',
+  streakBadge: (n: number) => `🔥 ${n} j d’affilée`,
+  streakStart: '🔥 Série lancée ! Écrivez demain pour 2 jours d’affilée',
+  streakKeepHint: (n: number) => `Écrivez aujourd’hui pour atteindre 🔥${n} jours !`,
 
   // Memory
   aiSearchButton: 'Demander à l’IA (avec sources)',

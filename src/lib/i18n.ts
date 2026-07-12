@@ -93,6 +93,9 @@ const ja = {
   recallDoneMsg: (action: string) => `「${action}」を完了にしました。`,
   recallDoneMemoLink: (name: string) => `${name}さんに一言メモを残す`,
   recallUndo: '元に戻す',
+  streakBadge: (n: number) => `🔥 ${n}日連続`,
+  streakStart: '🔥 記録スタート！明日も書けば2日連続',
+  streakKeepHint: (n: number) => `今日も書けば🔥${n}日連続に！`,
 
   // Memory
   aiSearchButton: 'AIに聞く（根拠付き）',
@@ -682,6 +685,9 @@ const en: typeof ja = {
   recallDoneMsg: (action: string) => `Marked “${action}” as done.`,
   recallDoneMemoLink: (name: string) => `Add a quick note about ${name}`,
   recallUndo: 'Undo',
+  streakBadge: (n: number) => `🔥 ${n}-day streak`,
+  streakStart: '🔥 Streak started! Write tomorrow to make it 2',
+  streakKeepHint: (n: number) => `Write today to keep your 🔥 streak at ${n}!`,
 
   aiSearchButton: 'Ask AI (with sources)',
   aiSearchSendNote: 'Only records relevant to your question are selected and sent to the AI.',

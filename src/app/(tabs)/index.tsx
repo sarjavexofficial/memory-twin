@@ -10,6 +10,7 @@ import { GlowBackground, GradientButton, TitleAccent } from '@/components/futuri
 import { AppPalette, glow } from '@/constants/app-colors';
 import { organizeJournalEntry } from '@/lib/ai';
 import { maybeAutoLearn } from '@/lib/auto-learn';
+import { computeStreak } from '@/lib/streak';
 import {
   candidateMessage,
   DailyCandidate,
@@ -160,6 +161,10 @@ export default function TodayScreen() {
     setCreatingProject(false);
   }
 
+  // 連続記録（サンプルデータ除外）。todayStr依存で日付が変わっても正しく再計算される
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const streak = useMemo(() => computeStreak(entries), [entries, todayStr]);
+
   const pendingPromises = useMemo<PromiseItem[]>(() => {
     const items: PromiseItem[] = [];
     for (const person of people) {
@@ -306,7 +311,21 @@ export default function TodayScreen() {
         )}
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>{L.recordToday}</Text>
+          <View style={styles.cardTitleRow}>
+            <Text style={styles.cardTitle}>{L.recordToday}</Text>
+            {/* 連続記録の炎。今日書いた直後は称賛、未記録なら「今日も書けばn日」で後押し */}
+            {streak.recordedToday && streak.current >= 2 && (
+              <View style={styles.streakChip}>
+                <Text style={styles.streakChipText}>{L.streakBadge(streak.current)}</Text>
+              </View>
+            )}
+          </View>
+          {streak.recordedToday && streak.current === 1 && (
+            <Text style={styles.streakHint}>{L.streakStart}</Text>
+          )}
+          {!streak.recordedToday && streak.current >= 1 && (
+            <Text style={styles.streakHint}>{L.streakKeepHint(streak.current + 1)}</Text>
+          )}
           <View style={styles.moodRow}>
             {MOOD_EMOJIS.map((emoji, i) => (
               <Pressable
@@ -563,6 +582,15 @@ const makeStyles = (AppColors: AppPalette) =>
     gap: 14,
   },
   cardTitle: { fontSize: 16, fontWeight: '800', color: AppColors.text },
+  cardTitleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  streakChip: {
+    backgroundColor: AppColors.dangerSoft,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  streakChipText: { fontSize: 12, fontWeight: '800', color: AppColors.danger },
+  streakHint: { fontSize: 12, color: AppColors.danger, fontWeight: '700', marginTop: -4 },
   dailyCard: {
     backgroundColor: AppColors.card,
     borderRadius: 18,

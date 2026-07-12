@@ -77,6 +77,9 @@ export const ko: Dict = {
   recallDoneMsg: (action: string) => `"${action}"을(를) 완료로 표시했습니다.`,
   recallDoneMemoLink: (name: string) => `${name}님에 대한 한마디 메모 남기기`,
   recallUndo: '되돌리기',
+  streakBadge: (n: number) => `🔥 ${n}일 연속`,
+  streakStart: '🔥 기록 시작! 내일도 쓰면 2일 연속',
+  streakKeepHint: (n: number) => `오늘도 쓰면 🔥${n}일 연속!`,
 
   // Memory
   aiSearchButton: 'AI에게 묻기(근거 포함)',

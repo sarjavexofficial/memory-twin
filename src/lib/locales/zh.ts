@@ -77,6 +77,9 @@ export const zh: Dict = {
   recallDoneMsg: (action: string) => `已将“${action}”标记为完成。`,
   recallDoneMemoLink: (name: string) => `给${name}留一句备忘`,
   recallUndo: '撤销',
+  streakBadge: (n: number) => `🔥 连续${n}天`,
+  streakStart: '🔥 记录开始！明天再写就是连续2天',
+  streakKeepHint: (n: number) => `今天写一条就是🔥连续${n}天！`,
 
   // Memory
   aiSearchButton: '问AI（附依据）',
