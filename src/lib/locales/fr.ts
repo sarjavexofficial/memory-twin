@@ -203,7 +203,7 @@ export const fr: Dict = {
 
   accountSection: 'Compte',
   accountDesc:
-    'La connexion est facultative. Vos enregistrements ne sont jamais envoyés automatiquement. Elle sert à la sauvegarde cloud chiffrée (Standard / Pro) et à la restauration des achats.',
+    'La connexion est facultative. Vos enregistrements ne sont jamais envoyés automatiquement. Elle sert à la sauvegarde cloud chiffrée et à la restauration des achats.',
   signInWithApple: 'Se connecter avec Apple',
   signInWithGoogle: 'Se connecter avec Google',
   signedInAs: (name: string) => `Connecté : ${name}`,
@@ -466,7 +466,6 @@ export const fr: Dict = {
     'Vos données sont chiffrées sur cet appareil avec une clé dérivée de votre phrase secrète, puis stockées dans le cloud, liées à votre compte connecté (le même compte + la même phrase écrase la précédente). Nous ne pouvons pas en lire le contenu. Après un changement d’appareil, connectez-vous avec le même compte et restaurez avec la même phrase. Si vous l’oubliez, personne ne peut récupérer la sauvegarde.',
   cloudBackupNeedSignIn:
     'Connectez-vous dans « Compte » ci-dessus pour utiliser la sauvegarde cloud (votre espace de stockage reste ainsi personnel).',
-  cloudBackupPaidOnly: 'La sauvegarde cloud est réservée aux forfaits Standard et Pro.',
   cloudBackupPassPlaceholder: 'Phrase secrète (8 caractères min.)',
   cloudBackupSave: 'Chiffrer et sauvegarder',
   cloudBackupRestore: 'Restaurer avec cette phrase',
@@ -510,6 +509,7 @@ export const fr: Dict = {
     'Demander à l’IA « c’était quoi déjà ? » jusqu’à 20 fois par mois',
     'Recevoir chaque jour 1 chose à se rappeler',
     'Tout reste stocké uniquement sur cet appareil',
+    'Sauvegarde cloud chiffrée pour changer d’appareil sereinement',
   ],
   planStandardFeatures: [
     'Import d’historique illimité — extraction sans limite',
@@ -518,7 +518,6 @@ export const fr: Dict = {
     'Bilans hebdo et mensuels rédigés par l’IA, avec un prochain pas',
     'Récit de l’IA ajouté à votre rapport mensuel',
     'Export et suppression des données à tout moment',
-    'Synchronisation cloud chiffrée',
   ],
   planProFeatures: [
     'Tout Standard, plus…',
@@ -533,7 +532,6 @@ export const fr: Dict = {
   compareNote: 'Cette version de développement est gratuite et complète.',
   compareRows: [
     { label: 'Notes, mémos de personnes et timeline', free: '○', standard: '○', pro: '○' },
-    { label: 'Saisie vocale (illimitée)', free: '○', standard: '○', pro: '○' },
     { label: 'Stockage sur l’appareil (aucun envoi auto)', free: '○', standard: '○', pro: '○' },
     { label: 'Export et suppression des données', free: '○', standard: '○', pro: '○' },
     { label: 'Import d’historique d’autres applis d’IA', free: '1 fois', standard: 'Illimité', pro: 'Illimité' },
@@ -543,7 +541,7 @@ export const fr: Dict = {
     { label: 'Partages vers Échos', free: '1/jour', standard: '3/jour', pro: '10/jour' },
     { label: 'Bilans IA hebdo & mensuels', free: '—', standard: '○', pro: '○' },
     { label: 'Votre année (stats sur l’appareil)', free: '○', standard: '○', pro: '○' },
-    { label: 'Synchronisation cloud chiffrée', free: '—', standard: '○', pro: '○' },
+    { label: 'Synchronisation cloud chiffrée', free: '○', standard: '○', pro: '○' },
     { label: 'Rapport mensuel (stats + récit de l’IA)', free: 'Stats seules', standard: '○', pro: '○' },
   ] as { label: string; free: string; standard: string; pro: string; planned?: boolean }[],
   paymentSection: 'Paiement et résiliation',
