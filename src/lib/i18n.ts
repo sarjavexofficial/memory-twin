@@ -476,6 +476,11 @@ const ja = {
   autoLearnNote:
     'ONにすると、記録が5件増えるたびに直近の抜粋（最大15件）が自動でAIに送られ、理解ノートが更新されます（AI利用回数を1回消費）。',
   trialBadge: (d: number) => `Pro無料体験中（あと${d}日）`,
+  importAutoNote:
+    '取り込みが終わると、忘れていた約束・決定・やり残しをAIが自動で発掘します（取り込んだ会話がAIに送信されます）。',
+  extractRevealTitle: (n: number) => `💎 ${n}件の「忘れもの」が見つかりました`,
+  reportShareImage: '画像で共有',
+  reportImageFailed: '画像の作成に失敗しました。',
   reportFreeUsed:
     '無料プランで見られる月次レポートは1回だけです。Standard / Proにすると、毎月いつでもレポートとAIのまとめを見られます。',
   cloudBackupPassPlaceholder: '合言葉（8文字以上）',
@@ -1037,6 +1042,11 @@ const en: typeof ja = {
   autoLearnNote:
     'When on, every 5 new records automatically send recent excerpts (up to 15) to the AI to refresh its understanding (uses 1 AI credit).',
   trialBadge: (d: number) => `Pro trial — ${d} day${d > 1 ? 's' : ''} left`,
+  importAutoNote:
+    'After importing, the AI automatically digs up forgotten promises, decisions and open items (the imported conversations are sent to the AI).',
+  extractRevealTitle: (n: number) => `💎 Found ${n} forgotten thing${n > 1 ? 's' : ''}`,
+  reportShareImage: 'Share as image',
+  reportImageFailed: 'Could not create the image.',
   reportFreeUsed:
     'The free plan includes one monthly report. Upgrade to Standard / Pro to view reports and AI summaries anytime.',
   cloudBackupPassPlaceholder: 'Passphrase (8+ characters)',

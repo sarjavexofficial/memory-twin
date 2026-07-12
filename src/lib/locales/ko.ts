@@ -451,6 +451,11 @@ export const ko: Dict = {
   autoLearnNote:
     '켜면 기록이 5건 늘어날 때마다 최근 발췌(최대 15건)가 자동으로 AI에 전송되어 이해 노트가 갱신됩니다(AI 사용 1회 소비).',
   trialBadge: (d: number) => `Pro 무료 체험 중(${d}일 남음)`,
+  importAutoNote:
+    '가져오기가 끝나면 잊고 있던 약속·결정·미완료를 AI가 자동으로 발굴합니다(가져온 대화가 AI로 전송됩니다).',
+  extractRevealTitle: (n: number) => `💎 ${n}건의 "잊고 있던 것"을 찾았습니다`,
+  reportShareImage: '이미지로 공유',
+  reportImageFailed: '이미지 생성에 실패했습니다.',
   reportFreeUsed:
     '무료 플랜에서 볼 수 있는 월간 리포트는 1회뿐입니다. Standard / Pro로 업그레이드하면 리포트와 AI 요약을 언제든지 볼 수 있습니다.',
   cloudBackupPassPlaceholder: '암호(8자 이상)',

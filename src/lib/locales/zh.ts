@@ -442,6 +442,10 @@ export const zh: Dict = {
   autoLearnNote:
     '开启后，每新增5条记录就会自动把最近的摘录（最多15条）发送给AI并更新理解笔记（消耗1次AI额度）。',
   trialBadge: (d: number) => `Pro免费体验中（还剩${d}天）`,
+  importAutoNote: '导入完成后，AI会自动发掘你忘记的约定、决定和未完成事项（导入的对话会发送给AI）。',
+  extractRevealTitle: (n: number) => `💎 找到了 ${n} 件“遗忘之物”`,
+  reportShareImage: '以图片分享',
+  reportImageFailed: '生成图片失败。',
   reportFreeUsed: '免费方案只能查看1次每月报告。升级到 Standard / Pro 可随时查看报告和AI总结。',
   cloudBackupPassPlaceholder: '口令（至少8个字符）',
   cloudBackupSave: '加密并备份',

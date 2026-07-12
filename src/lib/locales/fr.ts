@@ -476,6 +476,11 @@ export const fr: Dict = {
   autoLearnNote:
     'Si activé, tous les 5 nouveaux enregistrements, des extraits récents (15 max) sont envoyés à l’IA pour actualiser sa compréhension (consomme 1 utilisation IA).',
   trialBadge: (d: number) => `Essai Pro — ${d} jour${d > 1 ? 's' : ''} restant${d > 1 ? 's' : ''}`,
+  importAutoNote:
+    'Après l’import, l’IA déterre automatiquement promesses, décisions et tâches oubliées (les conversations importées sont envoyées à l’IA).',
+  extractRevealTitle: (n: number) => `💎 ${n} trésor${n > 1 ? 's' : ''} oublié${n > 1 ? 's' : ''} retrouvé${n > 1 ? 's' : ''}`,
+  reportShareImage: 'Partager en image',
+  reportImageFailed: 'Échec de la création de l’image.',
   reportFreeUsed:
     'Le forfait gratuit inclut un seul rapport mensuel. Passez à Standard / Pro pour consulter rapports et résumés IA à tout moment.',
   cloudBackupPassPlaceholder: 'Phrase secrète (8 caractères min.)',

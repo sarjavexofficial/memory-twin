@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Platform, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { captureRef } from 'react-native-view-shot';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AiSendNote } from '@/components/ai-send-note';
@@ -93,6 +94,24 @@ export default function MonthlyReportScreen() {
       setError(e instanceof AiConfigError ? e.message : (e as Error).message);
     } finally {
       setIsGenerating(false);
+    }
+  }
+
+  // 統計＋AIまとめを1枚の画像カードにして共有する（SNSにそのまま貼れる形）
+  const shotRef = useRef<View>(null);
+  async function handleShareImage() {
+    setError(null);
+    try {
+      const uri = await captureRef(shotRef, { format: 'png', quality: 1 });
+      const Sharing = await import('expo-sharing');
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, {
+          mimeType: 'image/png',
+          dialogTitle: `Memory Twin — ${monthLabel(month)}`,
+        });
+      }
+    } catch {
+      setError(L.reportImageFailed);
     }
   }
 
@@ -193,6 +212,8 @@ export default function MonthlyReportScreen() {
           <Text style={styles.empty}>{L.reportNoData}</Text>
         ) : (
           <>
+            {/* この範囲がそのまま共有画像になる（collapsable=falseで確実にキャプチャ可能にする） */}
+            <View ref={shotRef} collapsable={false} style={styles.shotArea}>
             <View style={styles.card}>
               <View style={styles.statRow}>
                 <Text style={styles.statLabel}>{L.reportStatDays}</Text>
@@ -262,7 +283,16 @@ export default function MonthlyReportScreen() {
               )}
               {error && <Text style={styles.errorText}>{error}</Text>}
             </View>
+            <Text style={styles.shotBrand}>Memory Twin — {monthLabel(month)}</Text>
+            </View>
 
+            {/* 画像キャプチャはネイティブのみ（Webは従来のテキスト共有） */}
+            {Platform.OS !== 'web' && (
+              <Pressable style={styles.shareButton} onPress={handleShareImage}>
+                <Ionicons name="image-outline" size={16} color={AppColors.primary} />
+                <Text style={styles.shareButtonText}>{L.reportShareImage}</Text>
+              </Pressable>
+            )}
             <Pressable style={styles.shareButton} onPress={handleShare}>
               <Ionicons name="share-outline" size={16} color={AppColors.primary} />
               <Text style={styles.shareButtonText}>{L.reportShareButton}</Text>
@@ -286,6 +316,8 @@ const makeStyles = (AppColors: AppPalette) =>
     title: { fontSize: 26, fontWeight: '800', color: AppColors.text, letterSpacing: -0.5 },
     desc: { fontSize: 13, color: AppColors.muted, lineHeight: 19, marginTop: -6 },
     monthRow: { flexDirection: 'row', gap: 10 },
+    shotArea: { gap: 14, backgroundColor: AppColors.background, borderRadius: 16, paddingBottom: 4 },
+    shotBrand: { fontSize: 11, color: AppColors.muted, textAlign: 'center', fontWeight: '700' },
     monthChip: {
       flex: 1,
       alignItems: 'center',

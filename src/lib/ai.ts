@@ -278,7 +278,8 @@ function profileContext(profileSummary: string | null | undefined): string[] {
   if (!profileSummary) return [];
   return [
     `これまでの利用から学んだ本人の理解: ${profileSummary}`,
-    '- この理解は口調や視点の参考にとどめ、事実の根拠には使わないこと。',
+    '- この理解は事実の根拠には使わないこと（根拠は常に記録から）。',
+    '- そのうえで、本人の文体・語彙・関心に口調と話題選びを少しだけ寄せ、「自分専用のAI」と感じられる話し方をすること。大げさな演技や馴れ馴れしさは出さない。',
     '',
   ];
 }

@@ -45,14 +45,15 @@ export default function ImportHistoryScreen() {
   const [approved, setApproved] = useState<boolean[]>([]);
   const [savedCount, setSavedCount] = useState<number | null>(null);
 
-  async function handleExtract() {
-    if (!lastImported || lastImported.length === 0) return;
+  // 取り込み直後の自動発掘（初日の魔法）でも使うため、対象レコードを引数で受け取る
+  async function runExtract(target: ImportedRecord[]) {
+    if (target.length === 0) return;
     setIsExtracting(true);
     setExtractError(null);
     setCandidates(null);
     setSavedCount(null);
     try {
-      const items = await extractCommitments(lastImported);
+      const items = await extractCommitments(target);
       setCandidates(items);
       setApproved(items.map(() => true));
     } catch (e) {
@@ -60,6 +61,10 @@ export default function ImportHistoryScreen() {
     } finally {
       setIsExtracting(false);
     }
+  }
+
+  function handleExtract() {
+    if (lastImported) runExtract(lastImported);
   }
 
   function handleApproveSave() {
@@ -178,6 +183,9 @@ export default function ImportHistoryScreen() {
     setLastImported(records);
     setRecords(null);
     setRawText('');
+    // 初日の魔法: 取り込みが終わったら、忘れていた約束・決定を自動で発掘する
+    // （取り込みボタンの下に「AIに送信される」旨を事前表示したうえでの自動実行）
+    runExtract(records);
   }
 
   return (
@@ -277,10 +285,13 @@ export default function ImportHistoryScreen() {
                 </Pressable>
               </>
             ) : (
-              <Pressable style={styles.importButton} onPress={handleImport}>
-                <Ionicons name="checkmark" size={16} color={AppColors.background} />
-                <Text style={styles.parseButtonText}>{L.importDo(records.length)}</Text>
-              </Pressable>
+              <>
+                <Pressable style={styles.importButton} onPress={handleImport}>
+                  <Ionicons name="checkmark" size={16} color={AppColors.background} />
+                  <Text style={styles.parseButtonText}>{L.importDo(records.length)}</Text>
+                </Pressable>
+                <Text style={styles.extractDesc}>{L.importAutoNote}</Text>
+              </>
             )}
           </View>
         )}
@@ -314,6 +325,8 @@ export default function ImportHistoryScreen() {
 
             {candidates && candidates.length > 0 && (
               <>
+                {/* 発掘結果の見出し。「宝物が見つかった」体験として演出する */}
+                <Text style={styles.revealTitle}>{L.extractRevealTitle(candidates.length)}</Text>
                 {candidates.map((item, i) => (
                   <Pressable
                     key={i}
@@ -456,6 +469,7 @@ const styles = StyleSheet.create({
   },
   doneText: { fontSize: 13, color: AppColors.success, fontWeight: '700' },
   extractDesc: { fontSize: 13, color: AppColors.muted, lineHeight: 19 },
+  revealTitle: { fontSize: 15, fontWeight: '800', color: AppColors.accent },
   candidateRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
   candidateType: { fontSize: 11, fontWeight: '800', color: AppColors.accent },
   candidateText: { fontSize: 13, color: AppColors.text, lineHeight: 18, marginTop: 1 },

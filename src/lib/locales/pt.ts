@@ -468,6 +468,12 @@ export const pt: Dict = {
   autoLearnNote:
     'Quando ativado, a cada 5 novos registros os trechos recentes (até 15) são enviados automaticamente à IA para atualizar a compreensão (consome 1 uso de IA).',
   trialBadge: (d: number) => `Teste Pro — falta${d > 1 ? 'm' : ''} ${d} dia${d > 1 ? 's' : ''}`,
+  importAutoNote:
+    'Após a importação, a IA desenterra automaticamente promessas, decisões e pendências esquecidas (as conversas importadas são enviadas à IA).',
+  extractRevealTitle: (n: number) =>
+    `💎 ${n} ${n > 1 ? 'coisas esquecidas encontradas' : 'coisa esquecida encontrada'}`,
+  reportShareImage: 'Compartilhar como imagem',
+  reportImageFailed: 'Não foi possível criar a imagem.',
   reportFreeUsed:
     'O plano gratuito inclui apenas um relatório mensal. Assine Standard / Pro para ver relatórios e resumos da IA quando quiser.',
   cloudBackupPassPlaceholder: 'Frase secreta (mín. 8 caracteres)',
