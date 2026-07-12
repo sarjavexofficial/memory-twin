@@ -213,7 +213,7 @@ const ja = {
   // アカウント（Apple / Google サインイン。任意）
   accountSection: 'アカウント',
   accountDesc:
-    'ログインは任意です。記録が自動でサーバーに送られることはありません。今後のクラウド同期（準備中）や購入情報の引き継ぎの土台になります。',
+    'ログインは任意です。記録が自動でサーバーに送られることはありません。暗号化クラウドバックアップ（Standard / Pro）や購入情報の引き継ぎに使います。',
   signInWithApple: 'Appleでサインイン',
   signInWithGoogle: 'Googleでサインイン',
   signedInAs: (name: string) => `サインイン中: ${name}`,
@@ -465,6 +465,8 @@ const ja = {
     '合言葉から作った鍵でこの端末上で暗号化してから、サインイン中のアカウントに紐づけてクラウドに1つだけ保管します（同じアカウント＋同じ合言葉で上書き）。中身は運営にも読めません。機種変更後は、同じアカウントでサインインして同じ合言葉を入れると復元できます。合言葉を忘れると、誰にも復元できません。',
   cloudBackupNeedSignIn:
     'クラウドバックアップは、上の「アカウント」でサインインすると使えます（保管場所をあなた専用にするため）。',
+  cloudBackupPaidOnly:
+    'クラウドバックアップは有料プラン（Standard / Pro）の機能です。',
   cloudBackupPassPlaceholder: '合言葉（8文字以上）',
   cloudBackupSave: '暗号化してバックアップ',
   cloudBackupRestore: 'この合言葉で復元',
@@ -516,7 +518,7 @@ const ja = {
     '1週間・1か月の振り返りをAIが作成し、次の一歩を提案',
     '月次レポートにAIのまとめ文が付く',
     'データの書き出し・削除はいつでも可能',
-    '暗号化クラウド同期（準備中）',
+    '暗号化クラウド同期',
   ],
   planProFeatures: [
     'Standardのすべてに加えて…',
@@ -528,7 +530,7 @@ const ja = {
   compareTitle: 'プラン比較表',
   compareFeature: '機能',
   comparePlanned: '準備中',
-  compareNote: '「準備中」と表示されている機能は、今後のアップデートで提供予定です。現在の開発版では課金は発生せず、すべての機能を試せます。',
+  compareNote: '現在の開発版では課金は発生せず、すべての機能を試せます。',
   compareRows: [
     { label: '記録・人物メモ・タイムライン', free: '○', standard: '○', pro: '○' },
     { label: '音声入力（回数無制限）', free: '○', standard: '○', pro: '○' },
@@ -541,7 +543,7 @@ const ja = {
     { label: 'こだまへの共有', free: '1日1回', standard: '1日3回', pro: '1日10回' },
     { label: '週次・月次振り返り（AI）', free: '—', standard: '○', pro: '○' },
     { label: '今年のあなた（端末内集計）', free: '○', standard: '○', pro: '○' },
-    { label: '暗号化クラウド同期', free: '—', standard: '○', pro: '○', planned: true },
+    { label: '暗号化クラウド同期', free: '—', standard: '○', pro: '○' },
     { label: '月次レポート（統計＋AIまとめ）', free: '統計のみ', standard: '○', pro: '○' },
   ] as { label: string; free: string; standard: string; pro: string; planned?: boolean }[],
   paymentSection: 'お支払い・解約について',
@@ -772,7 +774,7 @@ const en: typeof ja = {
 
   accountSection: 'Account',
   accountDesc:
-    'Signing in is optional. Your records are never uploaded automatically. It becomes the basis for future cloud sync (in preparation) and purchase restore.',
+    'Signing in is optional. Your records are never uploaded automatically. It is used for encrypted cloud backup (Standard / Pro) and purchase restore.',
   signInWithApple: 'Sign in with Apple',
   signInWithGoogle: 'Sign in with Google',
   signedInAs: (name: string) => `Signed in as ${name}`,
@@ -1007,6 +1009,7 @@ const en: typeof ja = {
     'Your data is encrypted on this device with a key derived from your passphrase, then stored in the cloud tied to your signed-in account (the same account + passphrase overwrites it). We cannot read the contents. After switching devices, sign in with the same account and restore with the same passphrase. If you forget the passphrase, no one can recover the backup.',
   cloudBackupNeedSignIn:
     'Sign in under “Account” above to use cloud backup (this keeps your storage slot private to you).',
+  cloudBackupPaidOnly: 'Cloud backup is available on the Standard and Pro plans.',
   cloudBackupPassPlaceholder: 'Passphrase (8+ characters)',
   cloudBackupSave: 'Encrypt & back up',
   cloudBackupRestore: 'Restore with this passphrase',
@@ -1056,7 +1059,7 @@ const en: typeof ja = {
     'AI writes your weekly & monthly reviews with a next step',
     'AI narrative added to your monthly report',
     'Export or delete your data anytime',
-    'Encrypted cloud sync (coming soon)',
+    'Encrypted cloud sync',
   ],
   planProFeatures: [
     'Everything in Standard, plus…',
@@ -1068,7 +1071,7 @@ const en: typeof ja = {
   compareTitle: 'Plan comparison',
   compareFeature: 'Feature',
   comparePlanned: 'Coming soon',
-  compareNote: 'Features marked "Coming soon" will arrive in future updates. In this dev version nothing is charged and every feature is available.',
+  compareNote: 'In this dev version nothing is charged and every feature is available.',
   compareRows: [
     { label: 'Records, people memos & timeline', free: '○', standard: '○', pro: '○' },
     { label: 'Voice input (unlimited)', free: '○', standard: '○', pro: '○' },
@@ -1081,7 +1084,7 @@ const en: typeof ja = {
     { label: 'Shares to Echoes', free: '1/day', standard: '3/day', pro: '10/day' },
     { label: 'Weekly & monthly AI reviews', free: '—', standard: '○', pro: '○' },
     { label: 'Your year so far (on-device stats)', free: '○', standard: '○', pro: '○' },
-    { label: 'Encrypted cloud sync', free: '—', standard: '○', pro: '○', planned: true },
+    { label: 'Encrypted cloud sync', free: '—', standard: '○', pro: '○' },
     { label: 'Monthly report (stats + AI narrative)', free: 'Stats only', standard: '○', pro: '○' },
   ] as { label: string; free: string; standard: string; pro: string; planned?: boolean }[],
   paymentSection: 'Payment & cancellation',

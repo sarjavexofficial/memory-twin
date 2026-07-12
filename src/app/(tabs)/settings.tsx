@@ -214,6 +214,11 @@ export default function SettingsScreen() {
     const pass = cloudPass.trim();
     setCloudMsg(null);
     setCloudErr(null);
+    // クラウド保管はサーバー費用がかかるため有料プラン限定（プラン比較表と対応）
+    if (settings.currentPlan === 'free') {
+      setCloudErr(L.cloudBackupPaidOnly);
+      return;
+    }
     if (!account) {
       setCloudErr(L.cloudBackupNeedSignIn);
       return;
@@ -247,6 +252,10 @@ export default function SettingsScreen() {
     const pass = cloudPass.trim();
     setCloudMsg(null);
     setCloudErr(null);
+    if (settings.currentPlan === 'free') {
+      setCloudErr(L.cloudBackupPaidOnly);
+      return;
+    }
     if (!account) {
       setCloudErr(L.cloudBackupNeedSignIn);
       return;
@@ -601,7 +610,16 @@ export default function SettingsScreen() {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>{L.cloudBackupSection}</Text>
           <Text style={styles.dataSummary}>{L.cloudBackupDesc}</Text>
-          {!account ? (
+          {settings.currentPlan === 'free' ? (
+            // クラウド保管はサーバー費用がかかるため有料プラン限定（プラン比較表と対応）
+            <>
+              <Text style={styles.exportHintText}>{L.cloudBackupPaidOnly}</Text>
+              <Pressable style={styles.actionButton} onPress={() => router.push('/plans')}>
+                <Ionicons name="sparkles-outline" size={16} color={AppColors.primary} />
+                <Text style={styles.actionButtonText}>{L.planLink}</Text>
+              </Pressable>
+            </>
+          ) : !account ? (
             // 保管場所はアカウントに紐づくため、サインインするまで操作できない
             <Text style={styles.exportHintText}>{L.cloudBackupNeedSignIn}</Text>
           ) : (

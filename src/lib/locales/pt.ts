@@ -200,7 +200,7 @@ export const pt: Dict = {
 
   accountSection: 'Conta',
   accountDesc:
-    'O login é opcional. Seus registros nunca são enviados automaticamente. Ele será a base da futura sincronização na nuvem (em preparação) e da restauração de compras.',
+    'O login é opcional. Seus registros nunca são enviados automaticamente. Ele é usado para o backup criptografado na nuvem (Standard / Pro) e a restauração de compras.',
   signInWithApple: 'Entrar com Apple',
   signInWithGoogle: 'Entrar com Google',
   signedInAs: (name: string) => `Conectado: ${name}`,
@@ -458,6 +458,7 @@ export const pt: Dict = {
     'Seus dados são criptografados neste aparelho com uma chave derivada da sua frase secreta e guardados na nuvem vinculados à conta conectada (a mesma conta + frase sobrescreve). Nós não conseguimos ler o conteúdo. Após trocar de aparelho, entre com a mesma conta e restaure com a mesma frase. Se esquecê-la, ninguém poderá recuperar o backup.',
   cloudBackupNeedSignIn:
     'Entre em “Conta” acima para usar o backup na nuvem (isso mantém seu espaço de armazenamento exclusivo).',
+  cloudBackupPaidOnly: 'O backup na nuvem está disponível nos planos Standard e Pro.',
   cloudBackupPassPlaceholder: 'Frase secreta (mín. 8 caracteres)',
   cloudBackupSave: 'Criptografar e fazer backup',
   cloudBackupRestore: 'Restaurar com esta frase',
@@ -508,7 +509,7 @@ export const pt: Dict = {
     'A IA escreve suas retrospectivas semanais e mensais com o próximo passo',
     'Resumo da IA incluído no relatório mensal',
     'Exporte ou exclua seus dados quando quiser',
-    'Sincronização criptografada na nuvem (em breve)',
+    'Sincronização criptografada na nuvem',
   ],
   planProFeatures: [
     'Tudo do Standard, e mais…',
@@ -521,7 +522,7 @@ export const pt: Dict = {
   compareFeature: 'Recurso',
   comparePlanned: 'Em breve',
   compareNote:
-    'Recursos marcados como "Em breve" chegarão em atualizações futuras. Nesta versão de desenvolvimento nada é cobrado e todos os recursos estão liberados.',
+    'Nesta versão de desenvolvimento nada é cobrado e todos os recursos estão liberados.',
   compareRows: [
     { label: 'Registros, memos de pessoas e timeline', free: '○', standard: '○', pro: '○' },
     { label: 'Entrada por voz (ilimitada)', free: '○', standard: '○', pro: '○' },
@@ -534,7 +535,7 @@ export const pt: Dict = {
     { label: 'Compartilhamentos nos Ecos', free: '1/dia', standard: '3/dia', pro: '10/dia' },
     { label: 'Retrospectivas semanais e mensais (IA)', free: '—', standard: '○', pro: '○' },
     { label: 'Seu ano até agora (estatísticas no aparelho)', free: '○', standard: '○', pro: '○' },
-    { label: 'Sincronização criptografada na nuvem', free: '—', standard: '○', pro: '○', planned: true },
+    { label: 'Sincronização criptografada na nuvem', free: '—', standard: '○', pro: '○' },
     { label: 'Relatório mensal (estatísticas + resumo da IA)', free: 'Só estatísticas', standard: '○', pro: '○' },
   ] as { label: string; free: string; standard: string; pro: string; planned?: boolean }[],
   paymentSection: 'Pagamento e cancelamento',

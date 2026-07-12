@@ -192,7 +192,7 @@ export const zh: Dict = {
   } as Record<string, string>,
 
   accountSection: '账户',
-  accountDesc: '登录是可选的。记录不会被自动上传。它将成为今后云同步（准备中）和购买恢复的基础。',
+  accountDesc: '登录是可选的。记录不会被自动上传。用于加密云备份（Standard / Pro）和购买恢复。',
   signInWithApple: '通过Apple登录',
   signInWithGoogle: '通过Google登录',
   signedInAs: (name: string) => `已登录：${name}`,
@@ -432,6 +432,7 @@ export const zh: Dict = {
   cloudBackupDesc:
     '用口令生成的密钥在本机加密后，绑定到当前登录的账号保存到云端（相同账号＋相同口令会覆盖）。运营方也无法读取内容。换机后用相同账号登录并输入相同口令即可恢复。忘记口令则任何人都无法恢复。',
   cloudBackupNeedSignIn: '请先在上方「账号」登录后再使用云备份（以确保存储位置仅属于你）。',
+  cloudBackupPaidOnly: '云备份是付费方案（Standard / Pro）的功能。',
   cloudBackupPassPlaceholder: '口令（至少8个字符）',
   cloudBackupSave: '加密并备份',
   cloudBackupRestore: '用此口令恢复',
@@ -478,7 +479,7 @@ export const zh: Dict = {
     'AI生成每周・每月回顾，并建议下一步',
     '每月报告附带AI总结',
     '随时可导出・删除数据',
-    '加密云同步（准备中）',
+    '加密云同步',
   ],
   planProFeatures: [
     '包含 Standard 的全部，另外…',
@@ -490,7 +491,7 @@ export const zh: Dict = {
   compareTitle: '方案对比表',
   compareFeature: '功能',
   comparePlanned: '准备中',
-  compareNote: '标有“准备中”的功能将在后续更新中提供。当前开发版不收费，可试用全部功能。',
+  compareNote: '当前开发版不收费，可试用全部功能。',
   compareRows: [
     { label: '记录・人物备忘・时间线', free: '○', standard: '○', pro: '○' },
     { label: '语音输入（次数不限）', free: '○', standard: '○', pro: '○' },
@@ -503,7 +504,7 @@ export const zh: Dict = {
     { label: '向回声分享', free: '每天1次', standard: '每天3次', pro: '每天10次' },
     { label: '每周・每月回顾（AI）', free: '—', standard: '○', pro: '○' },
     { label: '今年的你（设备内统计）', free: '○', standard: '○', pro: '○' },
-    { label: '加密云同步', free: '—', standard: '○', pro: '○', planned: true },
+    { label: '加密云同步', free: '—', standard: '○', pro: '○' },
     { label: '每月报告（统计＋AI总结）', free: '仅统计', standard: '○', pro: '○' },
   ] as { label: string; free: string; standard: string; pro: string; planned?: boolean }[],
   paymentSection: '支付与退订',
