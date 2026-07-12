@@ -10,7 +10,10 @@
     "ios": {
       "icon": "./assets/images/icon.png",
       "usesAppleSignIn": true,
-      "bundleIdentifier": "com.sarjavex.memorytwin"
+      "bundleIdentifier": "com.sarjavex.memorytwin",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
