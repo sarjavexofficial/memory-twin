@@ -73,6 +73,12 @@ export const pt: Dict = {
   todoMore: (n: number) => `mais ${n}`,
   staleTitle: 'Perdendo o contato?',
   promiseDue: (date: string) => ` ・ até ${date}`,
+  recallOverdue: 'Atrasado',
+  recallDueToday: 'Vence hoje',
+  recallDueSoon: (n: number) => `Faltam ${n} dia${n === 1 ? '' : 's'}`,
+  recallDoneMsg: (action: string) => `"${action}" concluído.`,
+  recallDoneMemoLink: (name: string) => `Deixar uma nota sobre ${name}`,
+  recallUndo: 'Desfazer',
 
   // Memory
   aiSearchButton: 'Perguntar à IA (com fontes)',

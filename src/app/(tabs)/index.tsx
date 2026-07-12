@@ -32,6 +32,13 @@ function daysSince(dateStr: string) {
   return Math.floor(diff / (1000 * 60 * 60 * 24));
 }
 
+// Today Recallの期限バッジ用: 期限切れ/今日/3日以内を区別する（それ以外はバッジなし）
+function dueDaysLeft(dueDate: string | undefined, today: string): number | null {
+  if (!dueDate) return null;
+  const diff = Math.round((new Date(dueDate).getTime() - new Date(today).getTime()) / 86400000);
+  return Number.isNaN(diff) ? null : diff;
+}
+
 type PromiseItem = { person: Person; memo: Memo };
 
 export default function TodayScreen() {
@@ -155,6 +162,24 @@ export default function TodayScreen() {
     items.sort((a, b) => (a.memo.promise!.dueDate ?? '9999').localeCompare(b.memo.promise!.dueDate ?? '9999'));
     return items;
   }, [people]);
+
+  // 完了直後のフォローアップ: 「どうだったか」をその場でメモに残す導線＋押し間違いの取り消し
+  const [justDone, setJustDone] = useState<{
+    personId: string;
+    memoId: string;
+    personName: string;
+    action: string;
+  } | null>(null);
+
+  function handlePromiseDone(item: PromiseItem) {
+    togglePromiseDone(item.person.id, item.memo.id);
+    setJustDone({
+      personId: item.person.id,
+      memoId: item.memo.id,
+      personName: item.person.name,
+      action: item.memo.promise!.action,
+    });
+  }
 
   const stalePeople = useMemo(
     () => people.filter((p) => daysSince(p.lastContact) >= STALE_THRESHOLD_DAYS),
@@ -404,33 +429,78 @@ export default function TodayScreen() {
               </View>
             )}
 
-            {pendingPromises.length > 0 && (
+            {(pendingPromises.length > 0 || justDone) && (
               <View style={styles.card}>
                 <View style={styles.digestHeaderRow}>
                   <Ionicons name="checkmark-done-outline" size={16} color={AppColors.accent} />
                   <Text style={styles.digestTitle}>{L.todoList}</Text>
                 </View>
-                {pendingPromises.slice(0, recallLimit).map((item) => (
-                  <Pressable
-                    key={item.memo.id}
-                    style={styles.promiseRow}
-                    onPress={() => router.push(`/person/${item.person.id}`)}>
-                    <Pressable
-                      hitSlop={10}
-                      onPress={() => togglePromiseDone(item.person.id, item.memo.id)}>
-                      <Ionicons name="ellipse-outline" size={20} color={AppColors.accent} />
-                    </Pressable>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.promiseAction} numberOfLines={1}>
-                        {item.memo.promise!.action}
-                      </Text>
-                      <Text style={styles.promiseSub}>
-                        {item.person.name}
-                        {item.memo.promise!.dueDate ? L.promiseDue(item.memo.promise!.dueDate) : ''}
-                      </Text>
+                {justDone && (
+                  <View style={styles.doneBanner}>
+                    <Text style={styles.doneBannerText}>{L.recallDoneMsg(justDone.action)}</Text>
+                    <View style={styles.doneBannerActions}>
+                      <Pressable
+                        onPress={() => {
+                          const target = justDone;
+                          setJustDone(null);
+                          router.push(`/person/${target.personId}`);
+                        }}>
+                        <Text style={styles.doneBannerLink}>
+                          {L.recallDoneMemoLink(justDone.personName)}
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => {
+                          togglePromiseDone(justDone.personId, justDone.memoId);
+                          setJustDone(null);
+                        }}>
+                        <Text style={styles.doneBannerUndo}>{L.recallUndo}</Text>
+                      </Pressable>
                     </View>
-                  </Pressable>
-                ))}
+                  </View>
+                )}
+                {pendingPromises.slice(0, recallLimit).map((item) => {
+                  // 期限が近い/過ぎた約束だけバッジで目立たせる（3日超先はバッジなしで静かに）
+                  const daysLeft = dueDaysLeft(item.memo.promise!.dueDate, todayStr);
+                  return (
+                    <Pressable
+                      key={item.memo.id}
+                      style={styles.promiseRow}
+                      onPress={() => router.push(`/person/${item.person.id}`)}>
+                      <Pressable hitSlop={10} onPress={() => handlePromiseDone(item)}>
+                        <Ionicons name="ellipse-outline" size={20} color={AppColors.accent} />
+                      </Pressable>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.promiseAction} numberOfLines={1}>
+                          {item.memo.promise!.action}
+                        </Text>
+                        <Text style={styles.promiseSub}>
+                          {item.person.name}
+                          {item.memo.promise!.dueDate ? L.promiseDue(item.memo.promise!.dueDate) : ''}
+                        </Text>
+                      </View>
+                      {daysLeft != null && daysLeft <= 3 && (
+                        <View
+                          style={[
+                            styles.dueBadge,
+                            daysLeft > 0 ? styles.dueBadgeSoon : styles.dueBadgeDanger,
+                          ]}>
+                          <Text
+                            style={[
+                              styles.dueBadgeText,
+                              daysLeft > 0 ? styles.dueBadgeTextSoon : styles.dueBadgeTextDanger,
+                            ]}>
+                            {daysLeft < 0
+                              ? L.recallOverdue
+                              : daysLeft === 0
+                                ? L.recallDueToday
+                                : L.recallDueSoon(daysLeft)}
+                          </Text>
+                        </View>
+                      )}
+                    </Pressable>
+                  );
+                })}
                 {pendingPromises.length > recallLimit && (
                   <Text style={styles.digestMore}>{L.todoMore(pendingPromises.length - recallLimit)}</Text>
                 )}
@@ -609,6 +679,22 @@ const makeStyles = (AppColors: AppPalette) =>
   promiseRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   promiseAction: { fontSize: 14, color: AppColors.text, fontWeight: '600' },
   promiseSub: { fontSize: 12, color: AppColors.muted, marginTop: 1 },
+  dueBadge: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 },
+  dueBadgeDanger: { backgroundColor: AppColors.dangerSoft },
+  dueBadgeSoon: { backgroundColor: AppColors.accentSoft },
+  dueBadgeText: { fontSize: 11, fontWeight: '800' },
+  dueBadgeTextDanger: { color: AppColors.danger },
+  dueBadgeTextSoon: { color: AppColors.accent },
+  doneBanner: { backgroundColor: AppColors.successSoft, borderRadius: 10, padding: 10, gap: 8 },
+  doneBannerText: { fontSize: 13, color: AppColors.text, lineHeight: 18 },
+  doneBannerActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
+  },
+  doneBannerLink: { fontSize: 13, color: AppColors.primary, fontWeight: '700', flexShrink: 1 },
+  doneBannerUndo: { fontSize: 13, color: AppColors.muted, fontWeight: '700' },
   staleChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   staleChip: {
     flexDirection: 'row',

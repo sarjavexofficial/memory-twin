@@ -71,6 +71,12 @@ export const zh: Dict = {
   todoMore: (n: number) => `另外还有 ${n} 条`,
   staleTitle: '可能正在疏远',
   promiseDue: (date: string) => ` ・ ${date}之前`,
+  recallOverdue: '已过期',
+  recallDueToday: '今天到期',
+  recallDueSoon: (n: number) => `还剩${n}天`,
+  recallDoneMsg: (action: string) => `已将“${action}”标记为完成。`,
+  recallDoneMemoLink: (name: string) => `给${name}留一句备忘`,
+  recallUndo: '撤销',
 
   // Memory
   aiSearchButton: '问AI（附依据）',

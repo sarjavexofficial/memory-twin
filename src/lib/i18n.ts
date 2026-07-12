@@ -87,6 +87,12 @@ const ja = {
   todoMore: (n: number) => `他 ${n} 件`,
   staleTitle: '疎遠になっているかも',
   promiseDue: (date: string) => ` ・ ${date}まで`,
+  recallOverdue: '期限切れ',
+  recallDueToday: '今日まで',
+  recallDueSoon: (n: number) => `あと${n}日`,
+  recallDoneMsg: (action: string) => `「${action}」を完了にしました。`,
+  recallDoneMemoLink: (name: string) => `${name}さんに一言メモを残す`,
+  recallUndo: '元に戻す',
 
   // Memory
   aiSearchButton: 'AIに聞く（根拠付き）',
@@ -645,6 +651,12 @@ const en: typeof ja = {
   todoMore: (n: number) => `${n} more`,
   staleTitle: 'Losing touch?',
   promiseDue: (date: string) => ` ・ due ${date}`,
+  recallOverdue: 'Overdue',
+  recallDueToday: 'Due today',
+  recallDueSoon: (n: number) => `In ${n} day${n > 1 ? 's' : ''}`,
+  recallDoneMsg: (action: string) => `Marked “${action}” as done.`,
+  recallDoneMemoLink: (name: string) => `Add a quick note about ${name}`,
+  recallUndo: 'Undo',
 
   aiSearchButton: 'Ask AI (with sources)',
   aiSearchSendNote: 'Only records relevant to your question are selected and sent to the AI.',

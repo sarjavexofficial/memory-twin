@@ -71,6 +71,12 @@ export const ko: Dict = {
   todoMore: (n: number) => `외 ${n}건`,
   staleTitle: '멀어지고 있을지도',
   promiseDue: (date: string) => ` ・ ${date}까지`,
+  recallOverdue: '기한 지남',
+  recallDueToday: '오늘까지',
+  recallDueSoon: (n: number) => `${n}일 남음`,
+  recallDoneMsg: (action: string) => `"${action}"을(를) 완료로 표시했습니다.`,
+  recallDoneMemoLink: (name: string) => `${name}님에 대한 한마디 메모 남기기`,
+  recallUndo: '되돌리기',
 
   // Memory
   aiSearchButton: 'AI에게 묻기(근거 포함)',
