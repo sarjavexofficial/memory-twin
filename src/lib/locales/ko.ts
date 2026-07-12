@@ -402,7 +402,7 @@ export const ko: Dict = {
   aboutCompany: '개발사',
   aboutName: '앱 이름',
   aboutVersion: '버전',
-  aboutVersionValue: '0.1.1(개발판)',
+  aboutVersionValue: '0.1.2(개발판)',
   contactButton: '문의하기',
   contactMailFailed:
     '메일 앱이 열리지 않으면 위 주소를 길게 눌러 복사한 뒤, 사용 중인 메일 앱에서 보내 주세요.',

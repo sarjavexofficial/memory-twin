@@ -422,7 +422,7 @@ export const fr: Dict = {
   aboutCompany: 'Développeur',
   aboutName: 'Nom de l’app',
   aboutVersion: 'Version',
-  aboutVersionValue: '0.1.1 (dev)',
+  aboutVersionValue: '0.1.2 (dev)',
   contactButton: 'Nous contacter',
   contactMailFailed:
     'Si aucune messagerie ne s’ouvre, appuyez longuement sur l’adresse ci-dessus pour la copier, puis écrivez-nous depuis votre messagerie.',

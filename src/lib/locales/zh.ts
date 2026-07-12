@@ -395,7 +395,7 @@ export const zh: Dict = {
   aboutCompany: '开发方',
   aboutName: '应用名称',
   aboutVersion: '版本',
-  aboutVersionValue: '0.1.1（开发版）',
+  aboutVersionValue: '0.1.2（开发版）',
   contactButton: '联系我们',
   contactMailFailed: '如果邮件应用没有打开，请长按上方地址复制，然后用任意邮件应用发送。',
 

@@ -361,12 +361,27 @@ export function refreshSamplePeople(people: Person[], language: Language): Perso
 }
 
 // 旧バージョンで保存されたシード（フラグなし）の移行。
-// idと名前が日本語サンプルに一致する未編集のものだけサンプル扱いに引き上げる
+// 名前の一致だけで判定すると、サンプル人物にメモを追加した人（sampleフラグは外れている）まで
+// サンプル扱いに戻してしまい、次のサンプル刷新で追記したメモ・約束が消える。
+// そのため「メモと約束まで未編集」の場合に限って引き上げる
 export function markLegacySamplePeople(people: Person[]): Person[] {
+  const templates = samplePeopleFor('ja');
   return people.map((p) => {
-    const idx = PERSON_SKELETON.findIndex((s) => s.id === p.id);
-    if (idx >= 0 && !p.sample && p.name === PEOPLE_TEXTS.ja[idx].name) return { ...p, sample: true };
-    return p;
+    if (p.sample) return p;
+    const t = templates.find((s) => s.id === p.id);
+    const untouched =
+      t &&
+      p.name === t.name &&
+      p.memos.length === t.memos.length &&
+      p.memos.every((m, i) => {
+        const tm = t.memos[i];
+        return (
+          m.text === tm.text &&
+          (m.promise?.action ?? null) === (tm.promise?.action ?? null) &&
+          (m.promise?.done ?? false) === (tm.promise?.done ?? false)
+        );
+      });
+    return untouched ? { ...p, sample: true } : p;
   });
 }
 
