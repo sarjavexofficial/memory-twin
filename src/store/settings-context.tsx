@@ -56,6 +56,7 @@ type Settings = {
   timezone?: string; // 住んでいる国のIANAタイムゾーン。'auto'=端末に従う
   proactiveNotify?: boolean; // AIからの能動メッセージを通知でも受け取る（初期OFF）
   notifyHour?: number; // 通知を受け取る時刻（その国の時刻・時のみ）
+  appLock?: boolean; // 起動・復帰時にFace ID/パスコードを要求（初期OFF。iPhoneのみ有効）
 };
 
 const DEFAULT_SETTINGS: Settings = {
@@ -77,6 +78,7 @@ type SettingsContextValue = {
   setTimezone: (tz: string) => void;
   setProactiveNotify: (value: boolean) => void;
   setNotifyHour: (hour: number) => void;
+  setAppLock: (value: boolean) => void;
 };
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -159,6 +161,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setSettings((prev) => ({ ...prev, notifyHour: hour }));
   }
 
+  function setAppLock(value: boolean) {
+    setSettings((prev) => ({ ...prev, appLock: value }));
+  }
+
   return (
     <SettingsContext.Provider
       value={{
@@ -173,6 +179,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         setTimezone,
         setProactiveNotify,
         setNotifyHour,
+        setAppLock,
       }}>
       {children}
     </SettingsContext.Provider>

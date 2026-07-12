@@ -6,7 +6,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AiSendNote } from '@/components/ai-send-note';
 import { DatePickerField } from '@/components/date-picker-field';
-import { VoiceInputButton } from '@/components/voice-input-button';
 import { AppPalette } from '@/constants/app-colors';
 import { AiConfigError, organizeMemo, OrganizedMemo } from '@/lib/ai';
 import { confirmAsync } from '@/lib/confirm';
@@ -194,10 +193,6 @@ export default function PersonDetailScreen() {
             style={styles.memoInput}
             multiline
             editable={!isOrganizing}
-          />
-          <VoiceInputButton
-            onText={(t) => setDraftMemo((prev) => (prev.trim() ? `${prev.trim()} ${t}` : t))}
-            disabled={isOrganizing}
           />
 
           <View style={styles.buttonRow}>

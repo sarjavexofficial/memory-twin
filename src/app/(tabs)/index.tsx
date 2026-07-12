@@ -7,7 +7,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AiSendNote } from '@/components/ai-send-note';
 import { DatePickerField } from '@/components/date-picker-field';
 import { GlowBackground, GradientButton, TitleAccent } from '@/components/futuristic';
-import { VoiceInputButton } from '@/components/voice-input-button';
 import { AppPalette, glow } from '@/constants/app-colors';
 import { organizeJournalEntry } from '@/lib/ai';
 import {
@@ -305,10 +304,6 @@ export default function TodayScreen() {
             placeholderTextColor={AppColors.muted}
             style={styles.textArea}
             multiline
-          />
-          <VoiceInputButton
-            onText={(t) => setText((prev) => (prev.trim() ? `${prev.trim()} ${t}` : t))}
-            disabled={isSaving}
           />
           <View style={styles.projectSection}>
             <Text style={styles.projectLabel}>{L.projectLabel}</Text>

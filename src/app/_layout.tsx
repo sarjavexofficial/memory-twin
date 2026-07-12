@@ -4,6 +4,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 
 import { AiWakingBanner } from '@/components/ai-waking-banner';
+import { AppLockGate } from '@/components/app-lock-gate';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { SaveErrorBanner } from '@/components/save-error-banner';
 import { warmUpSarjavex } from '@/lib/ai';
@@ -42,6 +43,7 @@ export default function RootLayout() {
             </Stack>
             <SaveErrorBanner />
             <AiWakingBanner />
+            <AppLockGate />
           </JournalProvider>
         </PeopleProvider>
         </AuthProvider>

@@ -446,6 +446,16 @@ export const ko: Dict = {
     '이 암호는 추측되기 쉬워 사용할 수 없습니다. 숫자만, 같은 문자 반복, 흔한 단어는 피해 주세요.',
   cloudBackupRateLimited: '오늘의 백업 횟수 상한에 도달했습니다. 내일 다시 시도해 주세요.',
 
+  appLockTitle: '앱 잠금',
+  appLockDesc:
+    '앱을 열 때와 백그라운드에서 돌아올 때 Face ID / Touch ID(또는 기기 암호)로 본인 확인을 합니다. 기록을 다른 사람에게 보이고 싶지 않을 때.',
+  appLockWebNote: '앱 잠금은 iPhone 앱에서만 사용할 수 있습니다.',
+  appLockUnavailable:
+    '이 기기에는 생체 인증도 암호도 설정되어 있지 않아 앱 잠금을 사용할 수 없습니다. 기기 설정에서 암호를 등록해 주세요.',
+  appLockPrompt: 'Memory Twin 잠금 해제',
+  appLockLockedMessage: '기록을 지키기 위해 잠겨 있습니다. 본인 확인 후 계속해 주세요.',
+  appLockUnlockButton: '잠금 해제',
+
   // プラン
   plansTitle: '요금제',
   plansSubtitle: '기억이 자라나, 또 하나의 내가 된다.',

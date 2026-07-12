@@ -463,6 +463,16 @@ export const pt: Dict = {
     'Esta frase é fácil demais de adivinhar. Evite só números, caracteres repetidos e palavras comuns.',
   cloudBackupRateLimited: 'Você atingiu o limite de backups de hoje. Tente novamente amanhã.',
 
+  appLockTitle: 'Bloqueio do app',
+  appLockDesc:
+    'Exige Face ID / Touch ID (ou a senha do aparelho) ao abrir o app e ao voltar do segundo plano. Para manter seus registros longe de olhares curiosos.',
+  appLockWebNote: 'O bloqueio do app só está disponível no app para iPhone.',
+  appLockUnavailable:
+    'Bloqueio indisponível: este aparelho não tem biometria nem senha configurada. Adicione uma senha nos ajustes do aparelho.',
+  appLockPrompt: 'Desbloquear o Memory Twin',
+  appLockLockedMessage: 'Bloqueado para proteger seus registros. Confirme que é você para continuar.',
+  appLockUnlockButton: 'Desbloquear',
+
   // プラン
   plansTitle: 'Planos',
   plansSubtitle: 'Sua memória cresce e vira um outro você.',

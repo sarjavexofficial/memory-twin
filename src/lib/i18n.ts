@@ -470,6 +470,17 @@ const ja = {
     'この合言葉は推測されやすいため使えません。数字だけ・同じ文字の繰り返し・ありがちな単語は避けてください。',
   cloudBackupRateLimited: '本日のバックアップ回数の上限に達しました。明日また試してください。',
 
+  // アプリロック（Face ID/パスコード）
+  appLockTitle: 'アプリロック',
+  appLockDesc:
+    '起動時とバックグラウンドからの復帰時に、Face ID / Touch ID（または端末のパスコード）で本人確認します。記録を他の人に見られたくないときに。',
+  appLockWebNote: 'アプリロックはiPhoneアプリでのみ利用できます。',
+  appLockUnavailable:
+    'この端末には生体認証もパスコードも設定されていないため、アプリロックを使えません。端末の設定でパスコードを登録してください。',
+  appLockPrompt: 'Memory Twinのロックを解除',
+  appLockLockedMessage: '記録を守るためロックされています。本人確認をして続けてください。',
+  appLockUnlockButton: 'ロック解除',
+
   // プラン
   plansTitle: '料金プラン',
   plansSubtitle: '記憶が育ち、もう一人の自分になる。',
@@ -994,6 +1005,16 @@ const en: typeof ja = {
   cloudBackupWeakPass:
     'This passphrase is too easy to guess. Avoid digits only, repeated characters, and common words.',
   cloudBackupRateLimited: "You've reached today's backup limit. Please try again tomorrow.",
+
+  appLockTitle: 'App Lock',
+  appLockDesc:
+    'Require Face ID / Touch ID (or your device passcode) when the app opens or returns from the background. For keeping your records away from prying eyes.',
+  appLockWebNote: 'App Lock is only available in the iPhone app.',
+  appLockUnavailable:
+    'App Lock is unavailable because this device has no biometrics or passcode set up. Please add a passcode in your device settings.',
+  appLockPrompt: 'Unlock Memory Twin',
+  appLockLockedMessage: 'Locked to protect your records. Verify it’s you to continue.',
+  appLockUnlockButton: 'Unlock',
 
   plansTitle: 'Pricing',
   plansSubtitle: 'Your memory grows into another you.',

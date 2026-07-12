@@ -121,69 +121,8 @@ async function callAi(prompt: string, maxTokens = 400): Promise<string> {
   return text;
 }
 
-// ---- 音声入力: 録音した音声をテキストに変換する（音声対応のGeminiのみ）----
-// 文字起こしは無料枠のAIで処理するため、プランの月間AI利用回数は消費しない（無料機能）
-
-// 文字起こしの対応言語（settings-context の Language と揃える）
+// アプリの対応言語（settings-context の Language と揃える。プロンプトの言語分岐に使う）
 export type TranscribeLanguage = 'ja' | 'en' | 'zh' | 'ko' | 'fr' | 'pt';
-
-// 言語ごとの文字起こし指示（Gemini直接続時に使用。Sarjavex API経由では言語コードだけ渡す）
-const TRANSCRIBE_PROMPTS: Record<TranscribeLanguage, string> = {
-  ja: 'この音声を日本語で正確に文字起こししてください。文字起こしした本文のみを出力し、説明や前置きは付けないでください。',
-  en: 'Transcribe this audio accurately in English. Output only the transcribed text, with no explanation or preamble.',
-  zh: '请把这段音频准确转写为中文。只输出转写的正文，不要任何说明或前言。',
-  ko: '이 음성을 한국어로 정확하게 받아써 주세요. 받아쓴 본문만 출력하고 설명이나 서두는 붙이지 마세요.',
-  fr: 'Transcris fidèlement cet audio en français. N’écris que le texte transcrit, sans explication ni préambule.',
-  pt: 'Transcreva este áudio com precisão em português. Escreva apenas o texto transcrito, sem explicações nem preâmbulo.',
-};
-
-export async function transcribeAudio(
-  base64Audio: string,
-  mimeType: string,
-  language: TranscribeLanguage,
-): Promise<string> {
-  // 自社API経由（本番の形）
-  if (SARJAVEX_API_URL) {
-    const text = await callSarjavex('/v1/transcribe', { audio: base64Audio, mimeType, language });
-    return text.trim();
-  }
-  if (!GEMINI_API_KEY) {
-    throw new AiConfigError(
-      '音声入力を使うにはAI接続設定が必要です。無料で始めるには https://aistudio.google.com でAPIキーを取得し、.env に EXPO_PUBLIC_GEMINI_API_KEY として設定してください。',
-    );
-  }
-
-  const prompt = TRANSCRIBE_PROMPTS[language] ?? TRANSCRIBE_PROMPTS.ja;
-
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: prompt },
-              { inline_data: { mime_type: mimeType, data: base64Audio } },
-            ],
-          },
-        ],
-        generationConfig: { maxOutputTokens: 800 },
-      }),
-    },
-  );
-
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`音声の文字起こしに失敗しました（${response.status}）: ${body.slice(0, 200)}`);
-  }
-
-  const data = await response.json();
-  const text: string = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-  // 音声入力は無料機能のため recordAiUse() は呼ばない（利用回数にカウントしない）
-  return text.trim();
-}
 
 // ---- こだま: 共有前にひとことを匿名化・整文する ----
 // 個人情報（人名・地名など）を伏せる安全処理のため、プランの月間AI利用回数は消費しない（無料機能）

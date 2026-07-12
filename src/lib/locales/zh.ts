@@ -436,6 +436,14 @@ export const zh: Dict = {
   cloudBackupWeakPass: '这个口令太容易被猜到，无法使用。请避免纯数字、重复字符和常见单词。',
   cloudBackupRateLimited: '今天的备份次数已达上限，请明天再试。',
 
+  appLockTitle: '应用锁',
+  appLockDesc: '在启动和从后台返回时，使用面容ID / 触控ID（或设备密码）验证本人。不想让别人看到记录时使用。',
+  appLockWebNote: '应用锁仅在iPhone应用中可用。',
+  appLockUnavailable: '此设备未设置生物识别或密码，无法使用应用锁。请先在设备设置中添加密码。',
+  appLockPrompt: '解锁 Memory Twin',
+  appLockLockedMessage: '为保护你的记录已锁定。请验证本人后继续。',
+  appLockUnlockButton: '解锁',
+
   // プラン
   plansTitle: '付费方案',
   plansSubtitle: '记忆不断成长，成为另一个你。',

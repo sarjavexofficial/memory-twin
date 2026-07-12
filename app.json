@@ -49,7 +49,13 @@
       ],
       "expo-web-browser",
       "expo-apple-authentication",
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "アプリロック（記録の保護）のためにFace IDを使用します。"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

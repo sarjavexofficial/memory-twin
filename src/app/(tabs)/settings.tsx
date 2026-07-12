@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as LocalAuthentication from 'expo-local-authentication';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
@@ -62,8 +63,16 @@ export default function SettingsScreen() {
   const L = useStrings();
   const { people, clearAllPeople, restorePeople } = usePeople();
   const { entries, clearAllEntries, restoreEntries } = useJournal();
-  const { settings, setAiLearningConsent, setLanguage, setTheme, setTimezone, setProactiveNotify, setNotifyHour } =
-    useSettings();
+  const {
+    settings,
+    setAiLearningConsent,
+    setLanguage,
+    setTheme,
+    setTimezone,
+    setProactiveNotify,
+    setNotifyHour,
+    setAppLock,
+  } = useSettings();
 
   const THEMES: { key: ThemeName; label: string }[] = [
     { key: 'dark', label: L.themeDark },
@@ -147,6 +156,28 @@ export default function SettingsScreen() {
     { icon: 'sparkles-outline' as const, title: L.privacyAiTitle, desc: L.privacyAiDesc },
     { icon: 'megaphone-outline' as const, title: L.privacyAdsTitle, desc: L.privacyAdsDesc },
   ];
+
+  // アプリロック(Face ID/パスコード)。ONにする前に、この端末で本人確認が使えるかを確かめる
+  const [appLockErr, setAppLockErr] = useState<string | null>(null);
+
+  async function handleToggleAppLock(next: boolean) {
+    setAppLockErr(null);
+    if (!next) {
+      setAppLock(false);
+      return;
+    }
+    if (Platform.OS === 'web') {
+      setAppLockErr(L.appLockWebNote);
+      return;
+    }
+    // 生体認証が未登録でも端末パスコードがあれば認証は成立するため、レベルで判定する
+    const level = await LocalAuthentication.getEnrolledLevelAsync();
+    if (level === LocalAuthentication.SecurityLevel.NONE) {
+      setAppLockErr(L.appLockUnavailable);
+      return;
+    }
+    setAppLock(true);
+  }
 
   async function handleToggleAiLearning(next: boolean) {
     if (next) {
@@ -521,6 +552,25 @@ export default function SettingsScreen() {
                 {settings.aiLearningConsent ? L.consentOn : L.consentOff}
               </Text>
               {consentDate && <Text style={styles.consentHistory}>{L.consentLastChanged(consentDate)}</Text>}
+            </View>
+          </View>
+
+          <View style={styles.consentDivider} />
+
+          <View style={styles.privacyRow}>
+            <Ionicons name="lock-closed-outline" size={18} color={AppColors.accent} style={styles.privacyIcon} />
+            <View style={{ flex: 1 }}>
+              <View style={styles.consentTitleRow}>
+                <Text style={styles.privacyTitle}>{L.appLockTitle}</Text>
+                <Switch
+                  value={!!settings.appLock}
+                  onValueChange={handleToggleAppLock}
+                  trackColor={{ false: AppColors.line, true: AppColors.primary }}
+                  thumbColor="#ffffff"
+                />
+              </View>
+              <Text style={styles.privacyDesc}>{L.appLockDesc}</Text>
+              {appLockErr && <Text style={styles.errorText}>{appLockErr}</Text>}
             </View>
           </View>
         </View>

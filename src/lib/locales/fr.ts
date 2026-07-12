@@ -472,6 +472,16 @@ export const fr: Dict = {
   cloudBackupRateLimited:
     'Vous avez atteint la limite de sauvegardes du jour. Réessayez demain.',
 
+  appLockTitle: 'Verrouillage de l’app',
+  appLockDesc:
+    'Exige Face ID / Touch ID (ou le code de l’appareil) à l’ouverture et au retour de l’arrière-plan. Pour garder vos notes à l’abri des regards.',
+  appLockWebNote: 'Le verrouillage n’est disponible que dans l’app iPhone.',
+  appLockUnavailable:
+    'Verrouillage indisponible : aucun code ni biométrie n’est configuré sur cet appareil. Ajoutez un code dans les réglages.',
+  appLockPrompt: 'Déverrouiller Memory Twin',
+  appLockLockedMessage: 'Verrouillé pour protéger vos notes. Confirmez votre identité pour continuer.',
+  appLockUnlockButton: 'Déverrouiller',
+
   // プラン
   plansTitle: 'Tarifs',
   plansSubtitle: 'Votre mémoire grandit et devient un autre vous.',

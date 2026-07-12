@@ -6,7 +6,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AiSendNote } from '@/components/ai-send-note';
 import { GlowBackground, GradientButton, TitleAccent } from '@/components/futuristic';
-import { VoiceInputButton } from '@/components/voice-input-button';
 import { AppPalette, glow } from '@/constants/app-colors';
 import { AiConfigError, MemorySearchResult, searchMemory } from '@/lib/ai';
 import { getAiProfile } from '@/lib/ai-profile';
@@ -159,18 +158,12 @@ export default function MemoryScreen() {
           placeholderTextColor={AppColors.muted}
           style={styles.input}
         />
-        <VoiceInputButton
-          compact
-          onText={(t) => setQuery((prev) => (prev.trim() ? `${prev.trim()} ${t}` : t))}
-          onError={setAiError}
-        />
         {query.length > 0 && (
           <Pressable onPress={() => setQuery('')} hitSlop={10}>
             <Ionicons name="close-circle" size={18} color={AppColors.muted} />
           </Pressable>
         )}
       </View>
-      {aiError && !query.trim() && <Text style={styles.searchVoiceError}>{aiError}</Text>}
 
       {!isLoaded ? (
         <ActivityIndicator style={styles.loading} color={AppColors.primary} />
@@ -280,13 +273,6 @@ const makeStyles = (AppColors: AppPalette) =>
       marginBottom: 12,
     },
     input: { flex: 1, fontSize: 15, color: AppColors.text },
-    searchVoiceError: {
-      fontSize: 12,
-      color: AppColors.danger,
-      lineHeight: 17,
-      marginHorizontal: 16,
-      marginBottom: 10,
-    },
     list: { paddingHorizontal: 16, paddingBottom: 100, gap: 12 },
     loading: { marginTop: 40 },
     empty: { textAlign: 'center', color: AppColors.muted, fontSize: 15, marginTop: 40, lineHeight: 22 },
