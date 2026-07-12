@@ -1,5 +1,11 @@
 import { learnUserProfile } from '@/lib/ai';
-import { getAiProfile, saveAiProfile } from '@/lib/ai-profile';
+import {
+  buildLearningExcerpts,
+  buildLearningStats,
+  countLearnableRecords,
+  getAiProfile,
+  saveAiProfile,
+} from '@/lib/ai-profile';
 import { JournalEntry } from '@/lib/journal-data';
 import { Person } from '@/lib/mock-data';
 import { Language } from '@/store/settings-context';
@@ -18,7 +24,8 @@ export async function maybeAutoLearn(
   language: Language,
 ): Promise<void> {
   if (isRunning) return;
-  const recordCount = entries.length + people.reduce((n, p) => n + p.memos.length, 0);
+  // 手動学習（設定タブ）と完全に同じ材料を使う（サンプルデータ除外・最大40件×200字＋統計）
+  const recordCount = countLearnableRecords(people, entries);
   if (recordCount === 0) return;
 
   const profile = await getAiProfile();
@@ -26,15 +33,12 @@ export async function maybeAutoLearn(
 
   isRunning = true;
   try {
-    // 手動学習（設定タブ）と同じ抜粋ルール: 新しい順に最大15件・各100字
-    const excerpts = [
-      ...entries.map((e) => ({ date: e.date, text: e.text })),
-      ...people.flatMap((p) => p.memos.map((m) => ({ date: m.date, text: `${p.name}: ${m.text}` }))),
-    ]
-      .sort((a, b) => (a.date < b.date ? 1 : -1))
-      .slice(0, 15)
-      .map((r) => r.text.slice(0, 100));
-    const summary = await learnUserProfile(excerpts, profile?.summary ?? null, language);
+    const summary = await learnUserProfile(
+      buildLearningExcerpts(people, entries),
+      buildLearningStats(people, entries),
+      profile?.summary ?? null,
+      language,
+    );
     if (summary.trim()) await saveAiProfile(summary, recordCount);
   } catch {
     // 月間上限・圏外などは静かに諦める

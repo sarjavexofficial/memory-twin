@@ -250,6 +250,7 @@ export async function organizeJournalEntry(rawText: string): Promise<{ tags: str
 
 export async function learnUserProfile(
   excerpts: string[],
+  statsLine: string,
   previousSummary: string | null,
   language: TranscribeLanguage,
 ): Promise<string> {
@@ -258,16 +259,22 @@ export async function learnUserProfile(
       IDENTITY_GUARD,
       languageInstruction(),
       'あなたはユーザー専属のAIとして、本人の記録から「本人の理解」を育てています。',
-      previousSummary ? `これまでの理解: ${previousSummary}` : '（まだ理解はありません。今回が最初の学習です）',
-      '次の記録の抜粋を読み、これまでの理解を更新した最新版を書いてください。',
-      '含める内容: 大切にしていること・繰り返し現れるテーマ・よく登場する人と関係・目標や挑戦・文体や気分の傾向。',
-      'ルール: 250文字以内。断定しすぎず「〜のようです」程度の柔らかさで書く。記録にない事実は書かない。',
+      previousSummary ? `これまでの理解:\n${previousSummary}` : '（まだ理解はありません。今回が最初の学習です）',
+      '次の統計と記録の抜粋を読み、これまでの理解を更新した最新版を書いてください。',
+      '出力形式: 次の5項目の見出しを付けて、それぞれ1〜3行で書く。',
+      '【大切にしていること】【よく登場する人と関係】【いまの目標・挑戦・悩み】【行動と気分のパターン】【文体・話し方の特徴】',
+      'ルール:',
+      '- 全体で600文字以内。',
+      '- 以前の理解のうち今も正しいものは残し、変化したものは更新し、記録と矛盾するものは削る（理解は上書きではなく成長させる）。',
+      '- 人名・活動名などの固有名詞は保つ（後で本人の話題を思い出す手がかりになる）。',
+      '- 断定しすぎず「〜のようです」程度の柔らかさで書く。記録にない事実は書かない。',
       `出力言語: ${NARRATIVE_LANGUAGE_NAMES[language] ?? '日本語'}。理解の本文のみを出力し、前置きは付けない。`,
       '',
-      '記録の抜粋:',
+      `記録全体の統計: ${statsLine}`,
+      '記録の抜粋（新しい順・[日付] 種別: 内容）:',
       ...excerpts.map((e) => `- ${e}`),
     ].join('\n'),
-    500,
+    900,
   );
   return text.trim();
 }

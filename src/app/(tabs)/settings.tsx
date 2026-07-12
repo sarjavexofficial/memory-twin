@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   Linking,
   Platform,
@@ -21,7 +21,16 @@ import { AiSendNote } from '@/components/ai-send-note';
 import { GlowBackground, GradientButton, TitleAccent } from '@/components/futuristic';
 import { AppPalette } from '@/constants/app-colors';
 import { AiConfigError, learnUserProfile } from '@/lib/ai';
-import { AiProfile, clearAiProfile, getAiProfile, isProfileStale, saveAiProfile } from '@/lib/ai-profile';
+import {
+  AiProfile,
+  buildLearningExcerpts,
+  buildLearningStats,
+  clearAiProfile,
+  countLearnableRecords,
+  getAiProfile,
+  isProfileStale,
+  saveAiProfile,
+} from '@/lib/ai-profile';
 import { getAiUsage, PLAN_AI_LIMITS } from '@/lib/ai-usage';
 import { materializePhotos } from '@/lib/backup';
 import {
@@ -306,16 +315,8 @@ export default function SettingsScreen() {
     }
   }
 
-  // 直近の記録＋人物メモから学習用の抜粋を作る（新しい順に最大15件・各100字）
-  function buildLearningExcerpts(): string[] {
-    return [
-      ...entries.map((e) => ({ date: e.date, text: e.text })),
-      ...people.flatMap((p) => p.memos.map((m) => ({ date: m.date, text: `${p.name}: ${m.text}` }))),
-    ]
-      .sort((a, b) => (a.date < b.date ? 1 : -1))
-      .slice(0, 15)
-      .map((r) => r.text.slice(0, 100));
-  }
+  // 学習の材料はai-profile.tsの共通ロジックで作る（自動学習と同じ・サンプルデータ除外）
+  const learnableCount = useMemo(() => countLearnableRecords(people, entries), [people, entries]);
 
   async function handleLearnProfile() {
     setLearnError(null);
@@ -323,11 +324,12 @@ export default function SettingsScreen() {
     try {
       // 前回の理解を渡して「上書き」ではなく「育てる」。学習のたびに理解が積み上がる
       const summary = await learnUserProfile(
-        buildLearningExcerpts(),
+        buildLearningExcerpts(people, entries),
+        buildLearningStats(people, entries),
         aiProfile?.summary ?? null,
         settings.language,
       );
-      setAiProfile(await saveAiProfile(summary, recordCount));
+      setAiProfile(await saveAiProfile(summary, learnableCount));
       getAiUsage().then((usage) => setAiUsedCount(usage.count));
     } catch (e) {
       setLearnError(e instanceof AiConfigError ? e.message : (e as Error).message);
@@ -522,7 +524,7 @@ export default function SettingsScreen() {
           ) : (
             <Text style={styles.dataSummary}>{L.aiProfileEmpty}</Text>
           )}
-          {aiProfile && isProfileStale(aiProfile, recordCount) && (
+          {aiProfile && isProfileStale(aiProfile, learnableCount) && (
             <Text style={styles.profileHint}>{L.aiProfileStaleHint}</Text>
           )}
           <AiSendNote text={L.aiProfileSendNote} />
@@ -531,7 +533,7 @@ export default function SettingsScreen() {
             iconName="school-outline"
             onPress={handleLearnProfile}
             loading={isLearning}
-            disabled={recordCount === 0}
+            disabled={learnableCount === 0}
           />
           {/* 自動学習はPro限定・オプトイン。ONの間は記録が増えるたびに裏で理解を更新する */}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>

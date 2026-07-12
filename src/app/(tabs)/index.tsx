@@ -10,6 +10,7 @@ import { GlowBackground, GradientButton, TitleAccent } from '@/components/futuri
 import { AppPalette, glow } from '@/constants/app-colors';
 import { organizeJournalEntry } from '@/lib/ai';
 import { maybeAutoLearn } from '@/lib/auto-learn';
+import { daysUntilBirthday } from '@/lib/birthday';
 import { computeStreak } from '@/lib/streak';
 import {
   candidateMessage,
@@ -147,7 +148,7 @@ export default function TodayScreen() {
   }
   // Today Recall: Free=1日1件、Standard=最大3件、Pro=最大10件
   const recallLimit =
-    settings.currentPlan === 'pro' ? 10 : settings.currentPlan === 'standard' ? 3 : 1;
+    settings.currentPlan === 'pro' ? 10 : settings.currentPlan === 'standard' ? 5 : 3;
   const [text, setText] = useState('');
   const [mood, setMood] = useState(3);
   const [sleepHours, setSleepHours] = useState('');
@@ -208,6 +209,25 @@ export default function TodayScreen() {
       action: item.memo.promise!.action,
     });
   }
+
+  // 誕生日リコール: 7日以内に誕生日が来る人（当日=0日を含む）。約束と並ぶ「今日の記憶」
+  const upcomingBirthdays = useMemo(() => {
+    const list: { person: Person; month: number; day: number; daysUntil: number }[] = [];
+    for (const person of people) {
+      const b = daysUntilBirthday(person.birthday, todayStr);
+      if (b && b.daysUntil <= 7) list.push({ person, ...b });
+    }
+    return list.sort((a, b) => a.daysUntil - b.daysUntil);
+  }, [people, todayStr]);
+
+  // Recall欄の配分: 約束を優先し、残り枠に誕生日を入れる。あふれた分は「他N件」に集計
+  const recallRows = useMemo(() => {
+    const promiseRows = pendingPromises.slice(0, recallLimit);
+    const birthdayRows = upcomingBirthdays.slice(0, Math.max(0, recallLimit - promiseRows.length));
+    const hidden =
+      pendingPromises.length + upcomingBirthdays.length - promiseRows.length - birthdayRows.length;
+    return { promiseRows, birthdayRows, hidden };
+  }, [pendingPromises, upcomingBirthdays, recallLimit]);
 
   const stalePeople = useMemo(
     () => people.filter((p) => daysSince(p.lastContact) >= STALE_THRESHOLD_DAYS),
@@ -471,7 +491,7 @@ export default function TodayScreen() {
               </View>
             )}
 
-            {(pendingPromises.length > 0 || justDone) && (
+            {(pendingPromises.length > 0 || upcomingBirthdays.length > 0 || justDone) && (
               <View style={styles.card}>
                 <View style={styles.digestHeaderRow}>
                   <Ionicons name="checkmark-done-outline" size={16} color={AppColors.accent} />
@@ -501,7 +521,7 @@ export default function TodayScreen() {
                     </View>
                   </View>
                 )}
-                {pendingPromises.slice(0, recallLimit).map((item) => {
+                {recallRows.promiseRows.map((item) => {
                   // 期限が近い/過ぎた約束だけバッジで目立たせる（3日超先はバッジなしで静かに）
                   const daysLeft = dueDaysLeft(item.memo.promise!.dueDate, todayStr);
                   return (
@@ -543,11 +563,27 @@ export default function TodayScreen() {
                     </Pressable>
                   );
                 })}
-                {pendingPromises.length > recallLimit && (
-                  <Text style={styles.digestMore}>{L.todoMore(pendingPromises.length - recallLimit)}</Text>
+                {recallRows.birthdayRows.map(({ person, month, day, daysUntil }) => (
+                  <Pressable
+                    key={`bday-${person.id}`}
+                    style={styles.promiseRow}
+                    onPress={() => router.push(`/person/${person.id}`)}>
+                    <Ionicons name="gift-outline" size={20} color={AppColors.accent} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.promiseAction} numberOfLines={1}>
+                        {daysUntil === 0 ? L.recallBirthdayToday : L.recallBirthdayIn(daysUntil)}
+                      </Text>
+                      <Text style={styles.promiseSub}>
+                        {person.name} ・ {month}/{day}
+                      </Text>
+                    </View>
+                  </Pressable>
+                ))}
+                {recallRows.hidden > 0 && (
+                  <Text style={styles.digestMore}>{L.todoMore(recallRows.hidden)}</Text>
                 )}
                 {/* 上限に隠れた記憶がある瞬間が、いちばんProの価値が伝わる場所 */}
-                {settings.currentPlan !== 'pro' && pendingPromises.length > recallLimit && (
+                {settings.currentPlan !== 'pro' && recallRows.hidden > 0 && (
                   <Pressable style={styles.proUpsellRow} onPress={() => router.push('/plans')}>
                     <Ionicons name="flash-outline" size={13} color={AppColors.primary} />
                     <Text style={styles.proUpsellText}>{L.recallProUpsell}</Text>

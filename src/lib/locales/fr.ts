@@ -88,6 +88,8 @@ export const fr: Dict = {
   streakBadge: (n: number) => `🔥 ${n} j d’affilée`,
   streakStart: '🔥 Série lancée ! Écrivez demain pour 2 jours d’affilée',
   streakKeepHint: (n: number) => `Écrivez aujourd’hui pour atteindre 🔥${n} jours !`,
+  recallBirthdayToday: 'Anniversaire aujourd’hui 🎂',
+  recallBirthdayIn: (n: number) => `Anniversaire dans ${n} j 🎂`,
 
   // Memory
   aiSearchButton: 'Demander à l’IA (avec sources)',
@@ -460,7 +462,8 @@ export const fr: Dict = {
   aiProfileLearnedAt: (date: string, n: number) => `Appris le ${date} à partir de ${n} enregistrements`,
   aiProfileStaleHint:
     'Vos enregistrements ont augmenté depuis le dernier apprentissage. Mettez-le à jour pour garder une compréhension à jour.',
-  aiProfileSendNote: 'L’apprentissage envoie à l’IA jusqu’à 15 extraits récents (consomme 1 utilisation d’IA).',
+  aiProfileSendNote:
+    'L’apprentissage envoie à l’IA jusqu’à 40 extraits récents et des statistiques globales (consomme 1 utilisation d’IA).',
   aiProfileLearnButton: 'Apprendre des enregistrements',
   aiProfileClear: 'Supprimer ce qui a été appris',
   aiProfileClearTitle: 'Supprimer ce que l’IA a appris ?',
@@ -530,14 +533,14 @@ export const fr: Dict = {
     'Importer jusqu’à 3 fois l’historique d’une autre appli d’IA',
     'Découvrir jusqu’à 30 décisions, promesses et tâches oubliées',
     'Demander à l’IA « c’était quoi déjà ? » jusqu’à 20 fois par mois',
-    'Recevoir chaque jour 1 chose à se rappeler',
+    'Recevoir jusqu’à 3 rappels par jour',
     'Tout reste stocké uniquement sur cet appareil',
     'Sauvegarde cloud chiffrée pour changer d’appareil sereinement',
   ],
   planStandardFeatures: [
     'Import d’historique illimité — extraction sans limite',
     'Jusqu’à 500 questions IA par mois (env. 16/jour)',
-    'Jusqu’à 3 rappels par jour',
+    'Jusqu’à 5 rappels par jour',
     'Bilans hebdo et mensuels rédigés par l’IA, avec un prochain pas',
     'Récit de l’IA ajouté à votre rapport mensuel',
     'Export et suppression des données à tout moment',
@@ -562,7 +565,7 @@ export const fr: Dict = {
     { label: 'Import d’historique d’autres applis d’IA', free: '3 fois max', standard: 'Illimité', pro: 'Illimité' },
     { label: 'Extraction décisions / promesses / en cours', free: '30 max', standard: '○', pro: '○' },
     { label: 'Recherche IA avec sources', free: '20/mois', standard: '500/mois', pro: '1 500/mois' },
-    { label: 'Today Recall', free: '1/jour', standard: '3 max', pro: '10 max' },
+    { label: 'Today Recall', free: '3 max', standard: '5 max', pro: '10 max' },
     { label: 'Partages vers Échos', free: '1/jour', standard: '3/jour', pro: '10/jour' },
     { label: 'Bilans IA hebdo & mensuels', free: '—', standard: '○', pro: '○' },
     { label: 'Votre année (stats sur l’appareil)', free: '○', standard: '○', pro: '○' },
