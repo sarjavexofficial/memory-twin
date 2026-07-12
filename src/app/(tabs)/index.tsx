@@ -93,6 +93,19 @@ export default function TodayScreen() {
     setDailyMessage(updated);
   }
 
+  // 話題にした約束が完了・削除されたら、そのひとことは役目を終えたので隠す
+  // （完了したのに「連絡しませんか？」と言い続けるのを防ぐ。1日1件の原則は維持）
+  const dailyCandidateValid = useMemo(() => {
+    const c = dailyMessage?.candidate;
+    if (!c) return false;
+    if (c.category === 'overdue-promise' || c.category === 'upcoming-promise' || c.category === 'undated-promise') {
+      const person = people.find((p) => p.id === c.personId);
+      const memo = person?.memos.find((m) => m.date === c.sourceDate);
+      if (!memo?.promise || memo.promise.done) return false;
+    }
+    return true;
+  }, [dailyMessage, people]);
+
   // 通知ONのとき、最新の候補で「次の話しかけ」を予約し直す（候補がなければ通知しない）
   useEffect(() => {
     if (!isLoaded || !settingsLoaded || Platform.OS === 'web') return;
@@ -260,7 +273,7 @@ export default function TodayScreen() {
         <TitleAccent />
         <Text style={styles.subtitle}>{todayStr}</Text>
 
-        {dailyMessage?.candidate && (
+        {dailyMessage?.candidate && dailyCandidateValid && (
           <View style={styles.dailyCard}>
             <View style={styles.dailyHeaderRow}>
               <Ionicons name="chatbubble-ellipses-outline" size={15} color={AppColors.primary} />
