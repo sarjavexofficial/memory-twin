@@ -270,7 +270,7 @@ export const ko: Dict = {
   pastCompareChanges: '달라진 점·성장한 점',
   pastCompareWorries: '그때의 고민은, 지금',
   pastCompareMessage: '지금의 나에게',
-  pastCompareUpsell: '「과거의 나와 비교하기」는 Standard / Pro 플랜의 기능입니다.',
+  pastCompareUpsell: '「과거의 나와 비교하기」는 Pro 플랜 전용 기능입니다.',
   reunionTitle: '그날의 나',
   reunionCompareLink: '지금의 나와 비교해 보기',
   reviewShare: '메아리에 공유하기',
@@ -442,6 +442,15 @@ export const ko: Dict = {
   cloudBackupNeedSignIn:
     '클라우드 백업은 위의 “계정”에서 로그인하면 사용할 수 있습니다(보관 위치를 본인 전용으로 하기 위해서입니다).',
   importLimitReached: '무료 플랜에서는 3회까지 가져올 수 있습니다. Standard / Pro는 무제한입니다.',
+  planRecommended: '추천',
+  planPerDay: (yen: string) => `하루 약 ¥${yen}`,
+  recallProUpsell: 'Pro는 최대 10건 표시',
+  aiUsageUpsell: 'Pro는 월 1,500회까지 사용할 수 있습니다.',
+  autoLearnLabel: '자동 학습',
+  autoLearnProOnly: 'Pro 전용',
+  autoLearnNote:
+    '켜면 기록이 5건 늘어날 때마다 최근 발췌(최대 15건)가 자동으로 AI에 전송되어 이해 노트가 갱신됩니다(AI 사용 1회 소비).',
+  trialBadge: (d: number) => `Pro 무료 체험 중(${d}일 남음)`,
   reportFreeUsed:
     '무료 플랜에서 볼 수 있는 월간 리포트는 1회뿐입니다. Standard / Pro로 업그레이드하면 리포트와 AI 요약을 언제든지 볼 수 있습니다.',
   cloudBackupPassPlaceholder: '암호(8자 이상)',
@@ -498,6 +507,8 @@ export const ko: Dict = {
   ],
   planProFeatures: [
     'Standard의 모든 것에 더해…',
+    '「과거의 나와 비교하기」— 반년 전·1년 전의 나와 비교',
+    'AI 이해 노트 자동 학습(그냥 둬도 자라남)',
     'AI 질문 월 1,500회까지(하루 약 50회)',
     '오늘 떠올릴 것을 최대 10건 전달',
     '긴 글·대량 히스토리도 한 번에 분석',
@@ -520,6 +531,8 @@ export const ko: Dict = {
     { label: '올해의 당신(기기 내 집계)', free: '○', standard: '○', pro: '○' },
     { label: '암호화 클라우드 동기화', free: '○', standard: '○', pro: '○' },
     { label: '월간 리포트(통계+AI 요약)', free: '1회만', standard: '○', pro: '○' },
+    { label: '과거의 나와 비교하기', free: '—', standard: '—', pro: '○' },
+    { label: 'AI 자동 학습', free: '—', standard: '—', pro: '○' },
   ] as { label: string; free: string; standard: string; pro: string; planned?: boolean }[],
   paymentSection: '결제·해지 안내',
   paymentIap:

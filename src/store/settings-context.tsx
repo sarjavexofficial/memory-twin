@@ -57,6 +57,9 @@ type Settings = {
   proactiveNotify?: boolean; // AIからの能動メッセージを通知でも受け取る（初期OFF）
   notifyHour?: number; // 通知を受け取る時刻（その国の時刻・時のみ）
   appLock?: boolean; // 起動・復帰時にFace ID/パスコードを要求（初期OFF。iPhoneのみ有効）
+  autoLearn?: boolean; // AIの理解ノートを自動更新する（Pro限定・初期OFF＝オプトイン）
+  trialEndsAt?: string; // Pro無料体験の終了日時（購入すると消える。IAP導入時はストア側トライアルに置換）
+  trialUsed?: boolean; // 無料体験は1回だけ
 };
 
 const DEFAULT_SETTINGS: Settings = {
@@ -79,6 +82,7 @@ type SettingsContextValue = {
   setProactiveNotify: (value: boolean) => void;
   setNotifyHour: (hour: number) => void;
   setAppLock: (value: boolean) => void;
+  setAutoLearn: (value: boolean) => void;
 };
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -93,7 +97,13 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         const raw = await AsyncStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw) as Settings;
-          setSettings({ ...DEFAULT_SETTINGS, ...parsed, currentPlan: normalizePlan(parsed.currentPlan) });
+          const merged = { ...DEFAULT_SETTINGS, ...parsed, currentPlan: normalizePlan(parsed.currentPlan) };
+          // Pro無料体験の期限切れ判定（購入するとtrialEndsAtは消えるので、残っている=未購入）
+          if (merged.trialEndsAt && new Date(merged.trialEndsAt).getTime() < Date.now()) {
+            merged.currentPlan = 'free';
+            merged.trialEndsAt = undefined;
+          }
+          setSettings(merged);
           setAppTimeZone(parsed.timezone); // 日付計算を「住んでいる国」の時刻に合わせる
         }
       } catch {
@@ -138,12 +148,37 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   }
 
   function setCurrentPlan(plan: PlanKey, cycle: BillingCycle = 'monthly') {
-    // 無料プランに支払いサイクルは無いので月払い扱いに戻す
-    setSettings((prev) => ({ ...prev, currentPlan: plan, billingCycle: plan === 'free' ? 'monthly' : cycle }));
+    // 無料プランに支払いサイクルは無いので月払い扱いに戻す。
+    // プランを自分で選んだ時点で無料体験は終了扱い（購入または明示的なダウングレード）
+    setSettings((prev) => ({
+      ...prev,
+      currentPlan: plan,
+      billingCycle: plan === 'free' ? 'monthly' : cycle,
+      trialEndsAt: undefined,
+    }));
   }
 
   function markOnboardingSeen() {
-    setSettings((prev) => ({ ...prev, hasSeenOnboarding: true }));
+    setSettings((prev) => {
+      // 初回だけ7日間のPro無料体験を開始する（8日目に自動で無料プランへ）。
+      // 良さを先に体験してもらい、機能が減る「損失感」でアップグレード動機を作る
+      const startTrial = !prev.trialUsed && prev.currentPlan === 'free';
+      return {
+        ...prev,
+        hasSeenOnboarding: true,
+        ...(startTrial
+          ? {
+              currentPlan: 'pro' as PlanKey,
+              trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+              trialUsed: true,
+            }
+          : {}),
+      };
+    });
+  }
+
+  function setAutoLearn(value: boolean) {
+    setSettings((prev) => ({ ...prev, autoLearn: value }));
   }
 
   function setTimezone(tz: string) {
@@ -180,6 +215,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         setProactiveNotify,
         setNotifyHour,
         setAppLock,
+        setAutoLearn,
       }}>
       {children}
     </SettingsContext.Provider>

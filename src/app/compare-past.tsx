@@ -36,8 +36,8 @@ export default function ComparePastScreen() {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
-  // 振り返りと同じくStandard/Pro限定。Freeにはアップグレード導線を出す
-  const isPaid = settings.currentPlan !== 'free';
+  // Proだけの目玉機能。Standard以下にはアップグレード導線を出す
+  const isPaid = settings.currentPlan === 'pro';
 
   const spanLabel = span === 'half' ? L.pastCompareHalfLabel : L.pastCompareYearLabel;
 

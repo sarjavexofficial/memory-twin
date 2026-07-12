@@ -279,7 +279,7 @@ export const pt: Dict = {
   pastCompareChanges: 'O que mudou e como você cresceu',
   pastCompareWorries: 'As preocupações de então, agora',
   pastCompareMessage: 'Para você, hoje',
-  pastCompareUpsell: '“Comparar com o seu passado” é um recurso dos planos Standard / Pro.',
+  pastCompareUpsell: '“Comparar com o seu passado” é um recurso exclusivo do plano Pro.',
   reunionTitle: 'Você, naquele dia',
   reunionCompareLink: 'Comparar com quem você é agora',
   reviewShare: 'Compartilhar nos Ecos',
@@ -459,6 +459,15 @@ export const pt: Dict = {
   cloudBackupNeedSignIn:
     'Entre em “Conta” acima para usar o backup na nuvem (isso mantém seu espaço de armazenamento exclusivo).',
   importLimitReached: 'O plano gratuito permite até 3 importações. Standard / Pro: importações ilimitadas.',
+  planRecommended: 'Recomendado',
+  planPerDay: (yen: string) => `≈ ¥${yen}/dia`,
+  recallProUpsell: 'Pro mostra até 10',
+  aiUsageUpsell: 'Pro inclui 1.500 usos por mês.',
+  autoLearnLabel: 'Aprendizado automático',
+  autoLearnProOnly: 'Só no Pro',
+  autoLearnNote:
+    'Quando ativado, a cada 5 novos registros os trechos recentes (até 15) são enviados automaticamente à IA para atualizar a compreensão (consome 1 uso de IA).',
+  trialBadge: (d: number) => `Teste Pro — falta${d > 1 ? 'm' : ''} ${d} dia${d > 1 ? 's' : ''}`,
   reportFreeUsed:
     'O plano gratuito inclui apenas um relatório mensal. Assine Standard / Pro para ver relatórios e resumos da IA quando quiser.',
   cloudBackupPassPlaceholder: 'Frase secreta (mín. 8 caracteres)',
@@ -515,6 +524,8 @@ export const pt: Dict = {
   ],
   planProFeatures: [
     'Tudo do Standard, e mais…',
+    '"Comparar com o seu passado" — 6 meses ou 1 ano atrás',
+    'A compreensão da IA aprende automaticamente',
     'Até 1.500 perguntas à IA por mês (cerca de 50 por dia)',
     'Até 10 lembranças por dia',
     'Analise históricos longos e volumosos de uma vez',
@@ -538,6 +549,8 @@ export const pt: Dict = {
     { label: 'Seu ano até agora (estatísticas no aparelho)', free: '○', standard: '○', pro: '○' },
     { label: 'Sincronização criptografada na nuvem', free: '○', standard: '○', pro: '○' },
     { label: 'Relatório mensal (estatísticas + resumo da IA)', free: 'Uma vez', standard: '○', pro: '○' },
+    { label: 'Comparar com o seu passado', free: '—', standard: '—', pro: '○' },
+    { label: 'Aprendizado automático da IA', free: '—', standard: '—', pro: '○' },
   ] as { label: string; free: string; standard: string; pro: string; planned?: boolean }[],
   paymentSection: 'Pagamento e cancelamento',
   paymentIap:

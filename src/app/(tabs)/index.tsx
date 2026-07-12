@@ -9,6 +9,7 @@ import { DatePickerField } from '@/components/date-picker-field';
 import { GlowBackground, GradientButton, TitleAccent } from '@/components/futuristic';
 import { AppPalette, glow } from '@/constants/app-colors';
 import { organizeJournalEntry } from '@/lib/ai';
+import { maybeAutoLearn } from '@/lib/auto-learn';
 import {
   candidateMessage,
   DailyCandidate,
@@ -104,6 +105,13 @@ export default function TodayScreen() {
       }
     })();
   }, [isLoaded, settingsLoaded, settings.proactiveNotify, settings.notifyHour, people, entries, todayStr, L]);
+
+  // Pro限定の自動学習（設定タブでON=オプトイン）: 記録が増えるたびに条件を確認し、裏で理解ノートを更新
+  useEffect(() => {
+    if (!isLoaded || !settingsLoaded) return;
+    if (settings.currentPlan !== 'pro' || !settings.autoLearn) return;
+    maybeAutoLearn(people, entries, settings.language);
+  }, [isLoaded, settingsLoaded, settings.currentPlan, settings.autoLearn, settings.language, people, entries]);
 
   function messageText(c: DailyCandidate): string {
     return candidateMessage(c, L, people);
@@ -504,6 +512,13 @@ export default function TodayScreen() {
                 {pendingPromises.length > recallLimit && (
                   <Text style={styles.digestMore}>{L.todoMore(pendingPromises.length - recallLimit)}</Text>
                 )}
+                {/* 上限に隠れた記憶がある瞬間が、いちばんProの価値が伝わる場所 */}
+                {settings.currentPlan !== 'pro' && pendingPromises.length > recallLimit && (
+                  <Pressable style={styles.proUpsellRow} onPress={() => router.push('/plans')}>
+                    <Ionicons name="flash-outline" size={13} color={AppColors.primary} />
+                    <Text style={styles.proUpsellText}>{L.recallProUpsell}</Text>
+                  </Pressable>
+                )}
               </View>
             )}
 
@@ -695,6 +710,8 @@ const makeStyles = (AppColors: AppPalette) =>
   },
   doneBannerLink: { fontSize: 13, color: AppColors.primary, fontWeight: '700', flexShrink: 1 },
   doneBannerUndo: { fontSize: 13, color: AppColors.muted, fontWeight: '700' },
+  proUpsellRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  proUpsellText: { fontSize: 12, color: AppColors.primary, fontWeight: '700' },
   staleChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   staleChip: {
     flexDirection: 'row',

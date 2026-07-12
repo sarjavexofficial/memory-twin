@@ -289,7 +289,7 @@ const ja = {
   pastCompareChanges: '変わったこと・成長したこと',
   pastCompareWorries: 'あの頃の悩みは、今',
   pastCompareMessage: '今のあなたへ',
-  pastCompareUpsell: '「過去のあなたと比べる」は Standard / Pro プランの機能です。',
+  pastCompareUpsell: '「過去のあなたと比べる」は Pro プランだけの機能です。',
   reunionTitle: 'あの日のあなた',
   reunionCompareLink: '今の自分と比べてみる',
   reviewShare: 'こだまに共有する',
@@ -467,6 +467,15 @@ const ja = {
     'クラウドバックアップは、上の「アカウント」でサインインすると使えます（保管場所をあなた専用にするため）。',
   importLimitReached:
     '無料プランで取り込めるのは3回までです。Standard / Proなら何度でも取り込めます。',
+  planRecommended: 'おすすめ',
+  planPerDay: (yen: string) => `1日あたり約¥${yen}`,
+  recallProUpsell: 'Proなら最大10件表示',
+  aiUsageUpsell: 'Proなら月1,500回まで使えます。',
+  autoLearnLabel: '自動学習',
+  autoLearnProOnly: 'Pro限定',
+  autoLearnNote:
+    'ONにすると、記録が5件増えるたびに直近の抜粋（最大15件）が自動でAIに送られ、理解ノートが更新されます（AI利用回数を1回消費）。',
+  trialBadge: (d: number) => `Pro無料体験中（あと${d}日）`,
   reportFreeUsed:
     '無料プランで見られる月次レポートは1回だけです。Standard / Proにすると、毎月いつでもレポートとAIのまとめを見られます。',
   cloudBackupPassPlaceholder: '合言葉（8文字以上）',
@@ -524,6 +533,8 @@ const ja = {
   ],
   planProFeatures: [
     'Standardのすべてに加えて…',
+    '「過去のあなたと比べる」で半年前・1年前の自分と比較',
+    'AIの理解ノートを自動で学習（放っておいても育つ）',
     'AIへの質問が月1,500回まで（1日あたり約50回）',
     '今日思い出すべきことを最大10件お届け',
     '長文・大量の履歴もまとめて解析',
@@ -546,6 +557,8 @@ const ja = {
     { label: '今年のあなた（端末内集計）', free: '○', standard: '○', pro: '○' },
     { label: '暗号化クラウド同期', free: '○', standard: '○', pro: '○' },
     { label: '月次レポート（統計＋AIまとめ）', free: '1回のみ', standard: '○', pro: '○' },
+    { label: '過去のあなたと比べる', free: '—', standard: '—', pro: '○' },
+    { label: 'AIの自動学習', free: '—', standard: '—', pro: '○' },
   ] as { label: string; free: string; standard: string; pro: string; planned?: boolean }[],
   paymentSection: 'お支払い・解約について',
   paymentIap:
@@ -836,7 +849,7 @@ const en: typeof ja = {
   pastCompareChanges: 'What changed & how you grew',
   pastCompareWorries: 'Your worries back then, now',
   pastCompareMessage: 'To you, today',
-  pastCompareUpsell: '"Compare with your past self" is a Standard / Pro feature.',
+  pastCompareUpsell: '"Compare with your past self" is a Pro-only feature.',
   reunionTitle: 'You, on this day',
   reunionCompareLink: 'Compare with who you are now',
   reviewShare: 'Share to Echoes',
@@ -1011,6 +1024,15 @@ const en: typeof ja = {
   cloudBackupNeedSignIn:
     'Sign in under “Account” above to use cloud backup (this keeps your storage slot private to you).',
   importLimitReached: 'The free plan includes up to 3 imports. Standard / Pro allows unlimited imports.',
+  planRecommended: 'Recommended',
+  planPerDay: (yen: string) => `≈ ¥${yen}/day`,
+  recallProUpsell: 'Pro shows up to 10',
+  aiUsageUpsell: 'Pro includes 1,500 uses per month.',
+  autoLearnLabel: 'Automatic learning',
+  autoLearnProOnly: 'Pro only',
+  autoLearnNote:
+    'When on, every 5 new records automatically send recent excerpts (up to 15) to the AI to refresh its understanding (uses 1 AI credit).',
+  trialBadge: (d: number) => `Pro trial — ${d} day${d > 1 ? 's' : ''} left`,
   reportFreeUsed:
     'The free plan includes one monthly report. Upgrade to Standard / Pro to view reports and AI summaries anytime.',
   cloudBackupPassPlaceholder: 'Passphrase (8+ characters)',
@@ -1066,6 +1088,8 @@ const en: typeof ja = {
   ],
   planProFeatures: [
     'Everything in Standard, plus…',
+    '“Compare with your past self” — 6 months or 1 year ago',
+    'AI understanding learns automatically as you record',
     'Ask the AI up to 1,500 times a month (about 50 a day)',
     'Get up to 10 things to remember each day',
     'Analyze long and large histories in one go',
@@ -1088,6 +1112,8 @@ const en: typeof ja = {
     { label: 'Your year so far (on-device stats)', free: '○', standard: '○', pro: '○' },
     { label: 'Encrypted cloud sync', free: '○', standard: '○', pro: '○' },
     { label: 'Monthly report (stats + AI narrative)', free: 'Once only', standard: '○', pro: '○' },
+    { label: 'Compare with your past self', free: '—', standard: '—', pro: '○' },
+    { label: 'Automatic AI learning', free: '—', standard: '—', pro: '○' },
   ] as { label: string; free: string; standard: string; pro: string; planned?: boolean }[],
   paymentSection: 'Payment & cancellation',
   paymentIap:

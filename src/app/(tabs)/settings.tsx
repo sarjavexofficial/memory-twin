@@ -72,6 +72,7 @@ export default function SettingsScreen() {
     setProactiveNotify,
     setNotifyHour,
     setAppLock,
+    setAutoLearn,
   } = useSettings();
 
   const THEMES: { key: ThemeName; label: string }[] = [
@@ -482,6 +483,25 @@ export default function SettingsScreen() {
               {L.aiUsage(aiUsedCount, PLAN_AI_LIMITS[settings.currentPlan] ?? PLAN_AI_LIMITS.free)}
             </Text>
           )}
+          {/* Pro無料体験中は残り日数を出す（期限が意識されるほど転換率が上がる） */}
+          {settings.trialEndsAt && (
+            <Text style={[styles.dataSummary, { color: AppColors.primary, fontWeight: '700' }]}>
+              {L.trialBadge(
+                Math.max(
+                  1,
+                  Math.ceil((new Date(settings.trialEndsAt).getTime() - Date.now()) / 86400000),
+                ),
+              )}
+            </Text>
+          )}
+          {/* Standardで上限の8割に達したら、その場でProを案内する */}
+          {settings.currentPlan === 'standard' &&
+            aiUsedCount !== null &&
+            aiUsedCount >= PLAN_AI_LIMITS.standard * 0.8 && (
+              <Text style={[styles.dataSummary, { color: AppColors.accent, fontWeight: '700' }]}>
+                {L.aiUsageUpsell}
+              </Text>
+            )}
           <Pressable style={styles.actionButton} onPress={() => router.push('/plans')}>
             <Ionicons name="pricetags-outline" size={16} color={AppColors.primary} />
             <Text style={styles.actionButtonText}>{L.planLink}</Text>
@@ -513,6 +533,24 @@ export default function SettingsScreen() {
             loading={isLearning}
             disabled={recordCount === 0}
           />
+          {/* 自動学習はPro限定・オプトイン。ONの間は記録が増えるたびに裏で理解を更新する */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 13, fontWeight: '700', color: AppColors.text }}>
+                {L.autoLearnLabel}
+              </Text>
+              <Text style={styles.exportHintText}>{L.autoLearnNote}</Text>
+            </View>
+            {settings.currentPlan === 'pro' ? (
+              <Switch value={!!settings.autoLearn} onValueChange={setAutoLearn} />
+            ) : (
+              <Pressable onPress={() => router.push('/plans')} hitSlop={8}>
+                <Text style={{ color: AppColors.primary, fontWeight: '700', fontSize: 12 }}>
+                  {L.autoLearnProOnly}
+                </Text>
+              </Pressable>
+            )}
+          </View>
           {learnError && <Text style={styles.errorText}>{learnError}</Text>}
           {aiProfile && (
             <Pressable onPress={handleClearProfile} hitSlop={8}>

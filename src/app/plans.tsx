@@ -23,6 +23,12 @@ const PLAN_PRICES: Record<'standard' | 'pro', { monthly: string; yearly: string 
 // 解約時フィードバックは端末内に蓄積（サーバー送信は運用開始後に実装）
 const CANCEL_FEEDBACK_KEY = 'memory-twin:cancel-feedback';
 
+// 1日あたりの金額（月払い=30日、年払い=365日換算）。「1日66円」の実感で価格の心理的ハードルを下げる
+function perDayYen(prices: { monthly: string; yearly: string }, cycle: BillingCycle): string {
+  const total = Number((cycle === 'monthly' ? prices.monthly : prices.yearly).replace(/,/g, ''));
+  return String(Math.round(total / (cycle === 'monthly' ? 30 : 365)));
+}
+
 export default function PlansScreen() {
   const { styles, AppColors } = useTheme(themed);
   const L = useStrings();
@@ -33,6 +39,10 @@ export default function PlansScreen() {
 
   const currentPlan = settings.currentPlan;
   const currentCycle: BillingCycle = settings.billingCycle ?? 'monthly';
+  // Pro無料体験の残り日数（体験中でなければnull）
+  const trialDaysLeft = settings.trialEndsAt
+    ? Math.max(1, Math.ceil((new Date(settings.trialEndsAt).getTime() - Date.now()) / 86400000))
+    : null;
   const offerAvailable = !settings.retentionOfferUsed?.[currentPlan];
   // 画面上で選択中の支払いサイクル（購入するまでは保存しない）
   const [cycle, setCycle] = useState<BillingCycle>(currentCycle);
@@ -140,6 +150,7 @@ export default function PlansScreen() {
       name: 'Free',
       price: L.planFree,
       yearly: null,
+      perDay: null as string | null,
       tag: L.planFreeTag,
       features: L.planFreeFeatures,
       accent: AppColors.success,
@@ -154,6 +165,7 @@ export default function PlansScreen() {
           ? L.planPerMonth(PLAN_PRICES.standard.monthly)
           : L.planPerYear(PLAN_PRICES.standard.yearly),
       yearly: cycle === 'monthly' ? L.planYearly(PLAN_PRICES.standard.yearly) : L.billingYearlySave,
+      perDay: perDayYen(PLAN_PRICES.standard, cycle),
       tag: L.planStandardTag,
       features: L.planStandardFeatures,
       accent: AppColors.accent,
@@ -168,6 +180,7 @@ export default function PlansScreen() {
           ? L.planPerMonth(PLAN_PRICES.pro.monthly)
           : L.planPerYear(PLAN_PRICES.pro.yearly),
       yearly: cycle === 'monthly' ? L.planYearly(PLAN_PRICES.pro.yearly) : L.billingYearlySave,
+      perDay: perDayYen(PLAN_PRICES.pro, cycle),
       tag: L.planProTag,
       features: L.planProFeatures,
       accent: AppColors.primary,
@@ -190,6 +203,14 @@ export default function PlansScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.title}>{L.plansTitle}</Text>
         <Text style={styles.subtitle}>{L.plansSubtitle}</Text>
+
+        {/* Pro無料体験中: 残り日数を見せて「続けるならPro」を意識してもらう */}
+        {trialDaysLeft !== null && (
+          <View style={styles.trialBanner}>
+            <Ionicons name="flash" size={14} color={AppColors.primary} />
+            <Text style={styles.trialBannerText}>{L.trialBadge(trialDaysLeft)}</Text>
+          </View>
+        )}
 
         {/* 月払い/年払いの切り替え。年払いは月額×10（2か月分お得） */}
         <View style={styles.cycleToggle}>
@@ -219,6 +240,12 @@ export default function PlansScreen() {
               <View style={{ flex: 1 }}>
                 <View style={styles.planNameRow}>
                   <Text style={styles.planName}>{plan.name}</Text>
+                  {/* Proを視覚的な主役にする（推奨の明示は選択率を大きく変える） */}
+                  {plan.key === 'pro' && (
+                    <View style={styles.recommendBadge}>
+                      <Text style={styles.recommendBadgeText}>{L.planRecommended}</Text>
+                    </View>
+                  )}
                   {plan.current && (
                     <View style={[styles.currentBadge, { backgroundColor: plan.accentSoft }]}>
                       <Text style={[styles.currentBadgeText, { color: plan.accent }]}>
@@ -236,6 +263,7 @@ export default function PlansScreen() {
               <Text style={[styles.planPrice, { color: plan.accent }]}>{plan.price}</Text>
               {plan.yearly && <Text style={styles.planYearly}>{plan.yearly}</Text>}
             </View>
+            {plan.perDay && <Text style={styles.perDayText}>{L.planPerDay(plan.perDay)}</Text>}
             <View style={styles.featureList}>
               {plan.features.map((f) => (
                 <View key={f} style={styles.featureRow}>
@@ -610,6 +638,24 @@ const makeStyles = (AppColors: AppPalette) =>
     paddingVertical: 2,
   },
   plannedBadgeText: { fontSize: 10, fontWeight: '800', color: AppColors.accent },
+  recommendBadge: {
+    backgroundColor: AppColors.primary,
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  recommendBadgeText: { fontSize: 10, fontWeight: '800', color: AppColors.background },
+  perDayText: { fontSize: 12, color: AppColors.muted, marginTop: -6 },
+  trialBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: AppColors.primarySoft,
+    borderRadius: 12,
+    paddingVertical: 9,
+  },
+  trialBannerText: { fontSize: 13, fontWeight: '800', color: AppColors.primary },
   compareNote: { fontSize: 11, color: AppColors.muted, lineHeight: 16, marginTop: 12 },
   modalBackdrop: {
     flex: 1,
