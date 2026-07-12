@@ -7,7 +7,7 @@ import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, Vi
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppPalette } from '@/constants/app-colors';
-import { purchasePlan } from '@/lib/billing';
+import { purchasePlan, restorePurchases } from '@/lib/billing';
 import { useStrings } from '@/lib/i18n';
 import { makeThemed, useTheme } from '@/lib/theme';
 import { BillingCycle, PlanKey, useSettings } from '@/store/settings-context';
@@ -92,6 +92,28 @@ export default function PlansScreen() {
       setPendingPlan(null);
     } finally {
       setIsAuthenticating(false);
+    }
+  }
+
+  // 購入の復元(機種変更・再インストール時)。billing.ts 経由なのでRevenueCat導入後もこのまま動く
+  const [restoring, setRestoring] = useState(false);
+  const [restoreMsg, setRestoreMsg] = useState<string | null>(null);
+
+  async function handleRestore() {
+    setRestoring(true);
+    setRestoreMsg(null);
+    try {
+      const restored = await restorePurchases();
+      if (restored) {
+        setCurrentPlan(restored.plan, restored.cycle);
+        setRestoreMsg(L.restoreDone(PLAN_NAMES[restored.plan]));
+      } else {
+        setRestoreMsg(L.restoreNone);
+      }
+    } catch {
+      setRestoreMsg(L.restoreFailed);
+    } finally {
+      setRestoring(false);
     }
   }
 
@@ -334,6 +356,12 @@ export default function PlansScreen() {
             <Ionicons name="exit-outline" size={16} color={AppColors.text} style={styles.paymentIcon} />
             <Text style={styles.paymentText}>{L.paymentCancel}</Text>
           </View>
+          {/* 機種変更・再インストール時の復元窓口(App Store審査で必須のUI) */}
+          <Pressable style={styles.cancelDemoLink} onPress={handleRestore} disabled={restoring}>
+            <Ionicons name="refresh-outline" size={14} color={AppColors.muted} />
+            <Text style={styles.cancelDemoText}>{restoring ? '…' : L.restoreButton}</Text>
+          </Pressable>
+          {restoreMsg && <Text style={styles.cancelResult}>{restoreMsg}</Text>}
           {currentPlan !== 'free' && (
             <Pressable style={styles.cancelDemoLink} onPress={() => setCancelModalOpen(true)}>
               <Ionicons name="exit-outline" size={14} color={AppColors.muted} />

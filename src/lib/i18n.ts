@@ -565,6 +565,10 @@ const ja = {
     'iPhoneでのご購入は、Apple IDによるApp内課金（自動更新サブスクリプション）を利用します。クレジットカード情報がこのアプリや運営者に渡ることはありません。',
   paymentCancel:
     '解約はいつでも可能です（iPhoneの設定 > Apple ID > サブスクリプション）。解約後も、支払い済みの期間が終わるまでは利用できます。',
+  restoreButton: '購入を復元',
+  restoreDone: (plan: string) => `${plan}プランを復元しました。`,
+  restoreNone: '復元できる購入は見つかりませんでした。',
+  restoreFailed: '復元に失敗しました。通信環境を確認して、もう一度お試しください。',
   cancelDemoLink: '解約手続き（デモ）',
   cancelModalTitle: '本当に解約しますか？',
   cancelOfferBadge: 'いまなら一度だけ',
@@ -1120,6 +1124,10 @@ const en: typeof ja = {
     'On iPhone, purchases use Apple In-App Purchase (auto-renewable subscription) via your Apple ID. Your card details never reach this app or its operator.',
   paymentCancel:
     'Cancel anytime (iPhone Settings > Apple ID > Subscriptions). You keep access until the end of the paid period.',
+  restoreButton: 'Restore purchases',
+  restoreDone: (plan: string) => `Restored your ${plan} plan.`,
+  restoreNone: 'No purchases available to restore.',
+  restoreFailed: 'Restore failed. Please check your connection and try again.',
   cancelDemoLink: 'Cancellation flow (demo)',
   cancelModalTitle: 'Really cancel?',
   cancelOfferBadge: 'One-time offer',

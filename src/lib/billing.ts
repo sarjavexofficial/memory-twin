@@ -3,8 +3,9 @@ import { BillingCycle, PlanKey } from '@/store/settings-context';
 // App内課金（IAP）の窓口。アプリ内で課金に触る場所はこのファイルだけにする。
 //
 // 現在: デモ実装（常に成功を返す）。実際のお金は動かない。
-// 将来: RevenueCat（react-native-purchases）導入時に、この中身だけを
-//       Purchases.purchase() 等へ差し替える。呼び出し側（plans.tsx）は変更不要。
+// 本物のRevenueCat実装は billing-revenuecat.ts に作成済み（未接続）。
+// 有効化するときは、下の purchasePlan / restorePurchases の中身を
+// billing-revenuecat.ts からの再エクスポートに差し替えるだけ。呼び出し側は変更不要。
 // 手順: docs/iap-setup-guide.md 参照。
 //
 // 注意: react-native-purchases はネイティブモジュールのため Expo Go では動かない。

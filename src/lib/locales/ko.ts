@@ -539,6 +539,10 @@ export const ko: Dict = {
     'iPhone에서의 구매는 Apple ID의 앱 내 결제(자동 갱신 구독)를 이용합니다. 신용카드 정보가 이 앱이나 운영자에게 전달되지 않습니다.',
   paymentCancel:
     '해지는 언제든 가능합니다(iPhone 설정 > Apple ID > 구독). 해지 후에도 결제한 기간이 끝날 때까지 이용할 수 있습니다.',
+  restoreButton: '구매 복원',
+  restoreDone: (plan: string) => `${plan} 플랜을 복원했습니다.`,
+  restoreNone: '복원할 수 있는 구매를 찾지 못했습니다.',
+  restoreFailed: '복원에 실패했습니다. 네트워크를 확인하고 다시 시도해 주세요.',
   cancelDemoLink: '해지 절차(데모)',
   cancelModalTitle: '정말 해지할까요?',
   cancelOfferBadge: '지금 단 한 번',

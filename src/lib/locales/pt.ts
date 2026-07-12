@@ -557,6 +557,10 @@ export const pt: Dict = {
     'No iPhone, as compras usam a compra no app da Apple (assinatura com renovação automática) pelo seu ID Apple. Os dados do seu cartão nunca chegam a este app nem à sua operadora.',
   paymentCancel:
     'Cancele quando quiser (Ajustes do iPhone > ID Apple > Assinaturas). Você mantém o acesso até o fim do período pago.',
+  restoreButton: 'Restaurar compras',
+  restoreDone: (plan: string) => `Plano ${plan} restaurado.`,
+  restoreNone: 'Nenhuma compra para restaurar.',
+  restoreFailed: 'Falha ao restaurar. Verifique a conexão e tente de novo.',
   cancelDemoLink: 'Fluxo de cancelamento (demo)',
   cancelModalTitle: 'Cancelar mesmo?',
   cancelOfferBadge: 'Oferta única',

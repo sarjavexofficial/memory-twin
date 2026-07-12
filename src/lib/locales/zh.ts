@@ -525,6 +525,10 @@ export const zh: Dict = {
     '在 iPhone 上的购买通过 Apple ID 的App内购买（自动续订订阅）完成。信用卡信息不会传给本应用或运营方。',
   paymentCancel:
     '随时可以退订（iPhone 设置 > Apple ID > 订阅）。退订后，已支付的期间结束前仍可使用。',
+  restoreButton: '恢复购买',
+  restoreDone: (plan: string) => `已恢复${plan}方案。`,
+  restoreNone: '没有找到可恢复的购买。',
+  restoreFailed: '恢复失败。请检查网络后重试。',
   cancelDemoLink: '退订流程（演示）',
   cancelModalTitle: '真的要退订吗？',
   cancelOfferBadge: '仅此一次',

@@ -71,16 +71,17 @@ npx expo install react-native-purchases
   npm install -g eas-cli
   eas build --profile development --platform ios
   ```
-- `src/lib/billing.ts` の3関数を差し替える:
-  - 初期化: `Purchases.configure({ apiKey: EXPO_PUBLIC_REVENUECAT_IOS_KEY })`
-  - `purchasePlan()`: `Purchases.getOfferings()` → 該当パッケージを `purchasePackage()`
-  - `restorePurchases()`: `Purchases.restorePurchases()` → Entitlement から plan/cycle を返す
-- 起動時に `Purchases.getCustomerInfo()` で現在のプランを取得し `setCurrentPlan()` に反映
+- **実装コードは作成済み**（2026-07-12）: `src/lib/billing-revenuecat.ts`
+  - purchasePlan / restorePurchases / getCurrentPlanFromStore / initBilling を実装済み
+  - 残り作業はつなぎ込みだけ:
+    1. `src/types/react-native-purchases.d.ts`（仮の型定義）を**削除**
+    2. `billing.ts` の purchasePlan / restorePurchases の中身を billing-revenuecat.ts からの再エクスポートに差し替え
+    3. `_layout.tsx` 起動時に `initBilling()` + `getCurrentPlanFromStore()` → `setCurrentPlan()` で同期
 - 呼び出し側（plans.tsx）は変更不要（すでに billing.ts 経由）
 
 ## Step 4. 審査前チェックリスト
 
-- [ ] 「購入を復元」ボタンを設定画面に追加（審査必須。billing.ts の restorePurchases を呼ぶだけ）
+- [x] 「購入を復元」ボタン（審査必須）— 2026-07-12実装済み。プラン画面の「お支払い・解約」カード内（6言語対応）
 - [ ] プラン画面の「（デモ）」表記をすべて削除
 - [ ] plansNotice（決済機能は準備中…）の文言を削除
 - [ ] 利用規約(EULA)とプライバシーポリシーのURLをアプリ内とApp Store Connectに掲載

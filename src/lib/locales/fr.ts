@@ -565,6 +565,10 @@ export const fr: Dict = {
     'Sur iPhone, les achats passent par l’achat intégré Apple (abonnement à renouvellement automatique) via votre identifiant Apple. Vos données bancaires ne parviennent jamais à cette app ni à son exploitant.',
   paymentCancel:
     'Résiliez à tout moment (Réglages iPhone > identifiant Apple > Abonnements). L’accès reste actif jusqu’à la fin de la période payée.',
+  restoreButton: 'Restaurer les achats',
+  restoreDone: (plan: string) => `Formule ${plan} restaurée.`,
+  restoreNone: 'Aucun achat à restaurer.',
+  restoreFailed: 'Échec de la restauration. Vérifiez votre connexion et réessayez.',
   cancelDemoLink: 'Parcours de résiliation (démo)',
   cancelModalTitle: 'Vraiment résilier ?',
   cancelOfferBadge: 'Offre unique',
