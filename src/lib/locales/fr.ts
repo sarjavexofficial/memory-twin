@@ -429,6 +429,8 @@ export const fr: Dict = {
   aboutVersion: 'Version',
   aboutVersionValue: '0.1.5 (dev)',
   contactButton: 'Nous contacter',
+  privacyPolicyLink: 'Politique de confidentialité',
+  termsLink: 'Conditions d’utilisation (CLUF standard Apple)',
   contactMailFailed:
     'Si aucune messagerie ne s’ouvre, appuyez longuement sur l’adresse ci-dessus pour la copier, puis écrivez-nous depuis votre messagerie.',
 

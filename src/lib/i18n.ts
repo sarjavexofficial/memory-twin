@@ -430,6 +430,8 @@ const ja = {
   aboutVersion: 'バージョン',
   aboutVersionValue: '0.1.5（開発版）',
   contactButton: 'お問い合わせ',
+  privacyPolicyLink: 'プライバシーポリシー',
+  termsLink: '利用規約（Apple標準EULA）',
   contactMailFailed:
     'メールが開かない場合は、上のアドレスを長押しでコピーして、お使いのメールアプリから送ってください。',
 
@@ -1010,6 +1012,8 @@ const en: typeof ja = {
   aboutVersion: 'Version',
   aboutVersionValue: '0.1.5 (dev)',
   contactButton: 'Contact us',
+  privacyPolicyLink: 'Privacy Policy',
+  termsLink: 'Terms of Use (Apple standard EULA)',
   contactMailFailed:
     'If a mail app didn’t open, long-press the address above to copy it, then email us from any mail app.',
 

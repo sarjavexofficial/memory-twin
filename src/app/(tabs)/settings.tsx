@@ -717,6 +717,22 @@ export default function SettingsScreen() {
             {SUPPORT_EMAIL}
           </Text>
           {contactErr && <Text style={styles.errorText}>{contactErr}</Text>}
+
+          {/* ストア審査(3.1.2)対応: ポリシーと利用規約へのリンクをアプリ内に明記する */}
+          <Pressable
+            style={styles.actionButton}
+            onPress={() => Linking.openURL('https://sarjavexofficial.github.io/privacy.html')}>
+            <Ionicons name="shield-checkmark-outline" size={16} color={AppColors.primary} />
+            <Text style={styles.actionButtonText}>{L.privacyPolicyLink}</Text>
+          </Pressable>
+          <Pressable
+            style={styles.actionButton}
+            onPress={() =>
+              Linking.openURL('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/')
+            }>
+            <Ionicons name="document-text-outline" size={16} color={AppColors.primary} />
+            <Text style={styles.actionButtonText}>{L.termsLink}</Text>
+          </Pressable>
         </View>
       </ScrollView>
     </SafeAreaView>

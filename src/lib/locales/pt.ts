@@ -423,6 +423,8 @@ export const pt: Dict = {
   aboutVersion: 'Versão',
   aboutVersionValue: '0.1.5 (dev)',
   contactButton: 'Fale conosco',
+  privacyPolicyLink: 'Política de Privacidade',
+  termsLink: 'Termos de Uso (EULA padrão da Apple)',
   contactMailFailed:
     'Se nenhum app de e-mail abrir, toque e segure o endereço acima para copiá-lo e nos escreva pelo seu app de e-mail.',
 

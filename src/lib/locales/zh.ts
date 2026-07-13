@@ -402,6 +402,8 @@ export const zh: Dict = {
   aboutVersion: '版本',
   aboutVersionValue: '0.1.5（开发版）',
   contactButton: '联系我们',
+  privacyPolicyLink: '隐私政策',
+  termsLink: '使用条款（Apple标准EULA）',
   contactMailFailed: '如果邮件应用没有打开，请长按上方地址复制，然后用任意邮件应用发送。',
 
   reportLink: '查看月度报告',

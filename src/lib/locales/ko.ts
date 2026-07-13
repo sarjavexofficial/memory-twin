@@ -409,6 +409,8 @@ export const ko: Dict = {
   aboutVersion: '버전',
   aboutVersionValue: '0.1.5(개발판)',
   contactButton: '문의하기',
+  privacyPolicyLink: '개인정보 처리방침',
+  termsLink: '이용약관(Apple 표준 EULA)',
   contactMailFailed:
     '메일 앱이 열리지 않으면 위 주소를 길게 눌러 복사한 뒤, 사용 중인 메일 앱에서 보내 주세요.',
 
