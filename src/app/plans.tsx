@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppPalette } from '@/constants/app-colors';
 import { purchasePlan, restorePurchases } from '@/lib/billing';
+import { FEATURES } from '@/lib/feature-flags';
 import { useStrings } from '@/lib/i18n';
 import { makeThemed, useTheme } from '@/lib/theme';
 import { BillingCycle, PlanKey, useSettings } from '@/store/settings-context';
@@ -322,27 +323,30 @@ export default function PlansScreen() {
               ⚡ Pro
             </Text>
           </View>
-          {L.compareRows.map((row) => (
-            <View key={row.label} style={styles.compareRow}>
-              <View style={styles.compareLabel}>
-                <Text style={styles.compareLabelText}>{row.label}</Text>
-                {row.planned && (
-                  <View style={styles.plannedBadge}>
-                    <Text style={styles.plannedBadgeText}>{L.comparePlanned}</Text>
-                  </View>
-                )}
+          {/* 非公開中の機能（feature-flags.ts参照）の行は比較表から隠す */}
+          {L.compareRows
+            .filter((row) => !row.feature || FEATURES[row.feature])
+            .map((row) => (
+              <View key={row.label} style={styles.compareRow}>
+                <View style={styles.compareLabel}>
+                  <Text style={styles.compareLabelText}>{row.label}</Text>
+                  {row.planned && (
+                    <View style={styles.plannedBadge}>
+                      <Text style={styles.plannedBadgeText}>{L.comparePlanned}</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={[styles.compareCell, row.free === '—' && styles.compareCellOff]}>
+                  {row.free}
+                </Text>
+                <Text style={[styles.compareCell, row.standard === '—' && styles.compareCellOff]}>
+                  {row.standard}
+                </Text>
+                <Text style={[styles.compareCell, row.pro === '—' && styles.compareCellOff]}>
+                  {row.pro}
+                </Text>
               </View>
-              <Text style={[styles.compareCell, row.free === '—' && styles.compareCellOff]}>
-                {row.free}
-              </Text>
-              <Text style={[styles.compareCell, row.standard === '—' && styles.compareCellOff]}>
-                {row.standard}
-              </Text>
-              <Text style={[styles.compareCell, row.pro === '—' && styles.compareCellOff]}>
-                {row.pro}
-              </Text>
-            </View>
-          ))}
+            ))}
           <Text style={styles.compareNote}>{L.compareNote}</Text>
         </View>
 

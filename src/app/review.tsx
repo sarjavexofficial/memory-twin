@@ -17,6 +17,7 @@ import {
 } from '@/lib/community';
 import { confirmAsync } from '@/lib/confirm';
 import { daysAgoLocal, todayLocal } from '@/lib/date';
+import { FEATURES } from '@/lib/feature-flags';
 import { useStrings } from '@/lib/i18n';
 import { makeThemed, useTheme } from '@/lib/theme';
 import { buildMemoryRecords } from '@/lib/retrieval';
@@ -300,21 +301,22 @@ export default function ReviewScreen() {
                     </Pressable>
                   )}
 
-                  {shared ? (
-                    <View style={styles.savedRow}>
-                      <Ionicons name="checkmark-circle" size={15} color={AppColors.success} />
-                      <Text style={styles.savedText}>{L.reviewShared}</Text>
-                    </View>
-                  ) : (
-                    <Pressable style={styles.saveButton} onPress={handleShareReview} disabled={isSharing}>
-                      {isSharing ? (
-                        <ActivityIndicator size="small" color={AppColors.primary} />
-                      ) : (
-                        <Ionicons name="ear-outline" size={14} color={AppColors.primary} />
-                      )}
-                      <Text style={styles.saveButtonText}>{L.reviewShare}</Text>
-                    </Pressable>
-                  )}
+                  {FEATURES.kodama &&
+                    (shared ? (
+                      <View style={styles.savedRow}>
+                        <Ionicons name="checkmark-circle" size={15} color={AppColors.success} />
+                        <Text style={styles.savedText}>{L.reviewShared}</Text>
+                      </View>
+                    ) : (
+                      <Pressable style={styles.saveButton} onPress={handleShareReview} disabled={isSharing}>
+                        {isSharing ? (
+                          <ActivityIndicator size="small" color={AppColors.primary} />
+                        ) : (
+                          <Ionicons name="ear-outline" size={14} color={AppColors.primary} />
+                        )}
+                        <Text style={styles.saveButtonText}>{L.reviewShare}</Text>
+                      </Pressable>
+                    ))}
                 </View>
                 {shareError && <Text style={styles.errorText}>{shareError}</Text>}
               </View>

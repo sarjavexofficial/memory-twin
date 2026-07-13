@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlowBackground, TitleAccent } from '@/components/futuristic';
 import { AppPalette } from '@/constants/app-colors';
 import { confirmAsync } from '@/lib/confirm';
+import { FEATURES } from '@/lib/feature-flags';
 import { displayTag, useStrings } from '@/lib/i18n';
 import { makeThemed, useTheme } from '@/lib/theme';
 import { MOOD_EMOJIS } from '@/lib/journal-data';
@@ -135,14 +136,16 @@ export default function TimelineScreen() {
           <Ionicons name="chevron-forward" size={16} color={AppColors.muted} />
         </Pressable>
 
-        <Pressable style={styles.analysisLink} onPress={() => router.push('/echoes')}>
-          <Ionicons name="ear-outline" size={20} color={AppColors.accent} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.analysisTitle}>{L.echoesTitle}</Text>
-            <Text style={styles.analysisDesc}>{L.echoesLinkDesc}</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={16} color={AppColors.muted} />
-        </Pressable>
+        {FEATURES.kodama && (
+          <Pressable style={styles.analysisLink} onPress={() => router.push('/echoes')}>
+            <Ionicons name="ear-outline" size={20} color={AppColors.accent} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.analysisTitle}>{L.echoesTitle}</Text>
+              <Text style={styles.analysisDesc}>{L.echoesLinkDesc}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color={AppColors.muted} />
+          </Pressable>
+        )}
 
         {availableMonths.length > 0 && (
           <ScrollView

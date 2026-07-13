@@ -37,6 +37,7 @@ import {
   unreactToEcho,
 } from '@/lib/community';
 import { useTodayLocal } from '@/lib/date';
+import { FEATURES } from '@/lib/feature-flags';
 import { useStrings } from '@/lib/i18n';
 import { makeThemed, useTheme } from '@/lib/theme';
 import { useSettings } from '@/store/settings-context';
@@ -45,6 +46,11 @@ export default function EchoesScreen() {
   const { styles, AppColors } = useTheme(themed);
   const L = useStrings();
   const { settings } = useSettings();
+
+  // 機能を非公開にしている間は、直リンクで開かれてもホームへ戻す
+  useEffect(() => {
+    if (!FEATURES.kodama) router.replace('/');
+  }, []);
   const [echoes, setEchoes] = useState<Echo[]>([]);
   const [reactedIds, setReactedIds] = useState<Set<string>>(new Set());
   const [myIds, setMyIds] = useState<Set<string>>(new Set());
