@@ -78,15 +78,19 @@ export default function InsightsScreen() {
 
   const stats = useMemo(() => {
     const yearPrefix = String(year);
-    const yearEntries = entries.filter((e) => e.date.startsWith(yearPrefix));
-    const yearMemos = people.flatMap((p) => p.memos.filter((m) => m.date.startsWith(yearPrefix)));
+    // サンプル（デモ）データは「あなたの1年」に混ぜない。
+    // 本人の記録が1件もない初期状態でだけ、画面のデモとしてサンプルを集計する
+    const hasReal = entries.some((e) => !e.sample) || people.some((p) => !p.sample);
+    const ownEntries = hasReal ? entries.filter((e) => !e.sample) : entries;
+    const ownPeople = hasReal ? people.filter((p) => !p.sample) : people;
+
+    const yearEntries = ownEntries.filter((e) => e.date.startsWith(yearPrefix));
+    const yearMemos = ownPeople.flatMap((p) => p.memos.filter((m) => m.date.startsWith(yearPrefix)));
 
     const recordCount = yearEntries.length + yearMemos.length;
     const recordedDays = new Set([...yearEntries.map((e) => e.date), ...yearMemos.map((m) => m.date)]).size;
-    const promisesDone = people.reduce(
-      (sum, p) => sum + p.memos.filter((m) => m.promise?.done).length,
-      0,
-    );
+    // 「今年の」画面なので、果たした約束も今年のメモに付いたものだけを数える
+    const promisesDone = yearMemos.filter((m) => m.promise?.done).length;
 
     // よく登場するテーマ: タグ＋本文の頻出語の上位5件。
     // タグ付きの記録が少なくても、書いた内容そのものからテーマが浮かび上がるようにする
@@ -97,8 +101,8 @@ export default function InsightsScreen() {
     const d90 = daysAgoLocal(90);
     const d180 = daysAgoLocal(180);
     const all = [
-      ...entries.map((e) => ({ date: e.date, text: e.text, tags: e.tags })),
-      ...people.flatMap((p) => p.memos.map((m) => ({ date: m.date, text: m.text, tags: m.tags }))),
+      ...ownEntries.map((e) => ({ date: e.date, text: e.text, tags: e.tags })),
+      ...ownPeople.flatMap((p) => p.memos.map((m) => ({ date: m.date, text: m.text, tags: m.tags }))),
     ];
     const recent = collectTopics(all.filter((r) => r.date >= d90));
     const prior = collectTopics(all.filter((r) => r.date >= d180 && r.date < d90));
@@ -108,13 +112,13 @@ export default function InsightsScreen() {
       .slice(0, 3)
       .map(([tag]) => tag);
 
-    return { recordCount, recordedDays, promisesDone, topTags, trending };
+    return { recordCount, recordedDays, promisesDone, topTags, trending, peopleCount: ownPeople.length };
   }, [entries, people, year]);
 
   const statCards = [
     { icon: 'document-text-outline' as const, label: L.statRecords, value: stats.recordCount },
     { icon: 'calendar-number-outline' as const, label: L.statDays, value: stats.recordedDays },
-    { icon: 'people-outline' as const, label: L.statPeople, value: people.length },
+    { icon: 'people-outline' as const, label: L.statPeople, value: stats.peopleCount },
     { icon: 'checkmark-done-outline' as const, label: L.statPromisesDone, value: stats.promisesDone },
   ];
 

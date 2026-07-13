@@ -3,6 +3,7 @@ import { createContext, ReactNode, useContext, useEffect, useState } from 'react
 
 import { JournalEntry } from '@/lib/journal-data';
 import { markLegacySampleJournal, refreshSampleJournal, sampleJournalFor } from '@/lib/sample-data';
+import { stashCorruptData } from '@/lib/storage-guard';
 import { useSettings } from '@/store/settings-context';
 
 const STORAGE_KEY = 'memory-twin:journal';
@@ -44,6 +45,8 @@ export function JournalProvider({ children }: { children: ReactNode }) {
         // 初回は日本語で種まきし、直後の言語同期エフェクトが選択言語へ差し替える
         setEntries(raw ? markLegacySampleJournal(JSON.parse(raw) as JournalEntry[]) : sampleJournalFor('ja'));
       } catch {
+        // 読めなかった原本を退避してから初期化する（保存エフェクトの上書きでデータが消えるのを防ぐ）
+        await stashCorruptData(STORAGE_KEY);
         setEntries(sampleJournalFor('ja'));
       } finally {
         setIsLoaded(true);

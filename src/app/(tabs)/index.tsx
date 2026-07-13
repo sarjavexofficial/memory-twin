@@ -154,6 +154,8 @@ export default function TodayScreen() {
   const [sleepHours, setSleepHours] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [useAiTagging, setUseAiTagging] = useState(true);
+  // 手動タグ入力（カンマ・読点・空白区切り）。AIタグと併用できる
+  const [tagsInput, setTagsInput] = useState('');
   const [savedMessage, setSavedMessage] = useState(false);
   // プロジェクト分類: 既存の記録から候補を集め、その場で新規作成もできる
   const [selectedProject, setSelectedProject] = useState<string | undefined>(undefined);
@@ -283,6 +285,12 @@ export default function TodayScreen() {
         // AI未設定・失敗時はタグなしで保存
       }
     }
+    // 手動タグを先頭に置き、AIタグと重複したら手動側を優先する
+    const manualTags = tagsInput
+      .split(/[,、\s]+/)
+      .map((t) => t.trim().replace(/^#/, ''))
+      .filter(Boolean);
+    tags = [...new Set([...manualTags, ...tags])];
     addEntry({
       date: date.trim() || todayStr,
       text: text.trim(),
@@ -293,6 +301,7 @@ export default function TodayScreen() {
     });
     setText('');
     setSleepHours('');
+    setTagsInput('');
     setMood(3);
     setIsSaving(false);
     setSavedMessage(true);
@@ -458,6 +467,14 @@ export default function TodayScreen() {
               </View>
             )}
           </View>
+          <TextInput
+            value={tagsInput}
+            onChangeText={setTagsInput}
+            placeholder={L.tagsPlaceholder}
+            placeholderTextColor={AppColors.muted}
+            style={styles.input}
+            autoCapitalize="none"
+          />
           <Pressable style={styles.aiToggleRow} onPress={() => setUseAiTagging((v) => !v)}>
             <Ionicons
               name={useAiTagging ? 'checkbox' : 'square-outline'}

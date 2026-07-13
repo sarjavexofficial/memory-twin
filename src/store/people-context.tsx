@@ -4,6 +4,7 @@ import { createContext, ReactNode, useContext, useEffect, useState } from 'react
 import { todayLocal } from '@/lib/date';
 import { Memo, Person } from '@/lib/mock-data';
 import { markLegacySamplePeople, refreshSamplePeople, samplePeopleFor } from '@/lib/sample-data';
+import { recordSchemaVersion, stashCorruptData } from '@/lib/storage-guard';
 import { useSettings } from '@/store/settings-context';
 
 const STORAGE_KEY = 'memory-twin:people';
@@ -59,7 +60,10 @@ export function PeopleProvider({ children }: { children: ReactNode }) {
         }
         // 初回は日本語で種まきし、直後の言語同期エフェクトが選択言語へ差し替える
         setPeople(raw ? markLegacySamplePeople(JSON.parse(raw) as Person[]) : samplePeopleFor('ja'));
+        recordSchemaVersion();
       } catch {
+        // 読めなかった原本を退避してから初期化する（保存エフェクトの上書きでデータが消えるのを防ぐ）
+        await stashCorruptData(STORAGE_KEY);
         setPeople(samplePeopleFor('ja'));
       } finally {
         setIsLoaded(true);

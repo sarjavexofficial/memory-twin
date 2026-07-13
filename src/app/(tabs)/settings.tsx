@@ -216,6 +216,8 @@ export default function SettingsScreen() {
   // 保管場所をアカウントごとに分けるため、サインイン中のみ利用できる
   const { account } = useAuth();
   const [cloudPass, setCloudPass] = useState('');
+  // 合言葉は打ち間違えると復元できないため、入力内容を目視確認できる表示切替を付ける
+  const [showCloudPass, setShowCloudPass] = useState(false);
   const [cloudBusy, setCloudBusy] = useState<'save' | 'restore' | null>(null);
   const [cloudMsg, setCloudMsg] = useState<string | null>(null);
   const [cloudErr, setCloudErr] = useState<string | null>(null);
@@ -646,20 +648,29 @@ export default function SettingsScreen() {
             <Text style={styles.exportHintText}>{L.cloudBackupNeedSignIn}</Text>
           ) : (
             <>
-              <TextInput
-                style={styles.passInput}
-                value={cloudPass}
-                onChangeText={(t) => {
-                  setCloudPass(t);
-                  setCloudMsg(null);
-                  setCloudErr(null);
-                }}
-                placeholder={L.cloudBackupPassPlaceholder}
-                placeholderTextColor={AppColors.muted}
-                secureTextEntry
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
+              <View style={styles.passInputRow}>
+                <TextInput
+                  style={styles.passInputField}
+                  value={cloudPass}
+                  onChangeText={(t) => {
+                    setCloudPass(t);
+                    setCloudMsg(null);
+                    setCloudErr(null);
+                  }}
+                  placeholder={L.cloudBackupPassPlaceholder}
+                  placeholderTextColor={AppColors.muted}
+                  secureTextEntry={!showCloudPass}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                <Pressable hitSlop={10} onPress={() => setShowCloudPass((v) => !v)}>
+                  <Ionicons
+                    name={showCloudPass ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color={AppColors.muted}
+                  />
+                </Pressable>
+              </View>
               <GradientButton
                 label={L.cloudBackupSave}
                 iconName="cloud-upload-outline"
@@ -726,9 +737,11 @@ const makeStyles = (AppColors: AppPalette) =>
     gap: 14,
   },
   cardTitle: { fontSize: 16, fontWeight: '800', color: AppColors.text },
-  langRow: { flexDirection: 'row', gap: 10 },
+  // 6言語が1行に押し込まれて文字が隣の枠に被らないよう、3列×2行に折り返す
+  langRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   langChip: {
-    flex: 1,
+    flexBasis: '30%',
+    flexGrow: 1,
     flexDirection: 'row',
     gap: 6,
     alignItems: 'center',
@@ -805,17 +818,18 @@ const makeStyles = (AppColors: AppPalette) =>
   profileMeta: { fontSize: 11, color: AppColors.muted },
   profileHint: { fontSize: 12, color: AppColors.primary, lineHeight: 17 },
   profileClearText: { fontSize: 13, color: AppColors.muted, textAlign: 'center', textDecorationLine: 'underline' },
-  passInput: {
+  passInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     borderWidth: 1,
     borderColor: AppColors.line,
     borderRadius: 12,
     paddingHorizontal: 12,
-    paddingVertical: 11,
     minHeight: 44,
-    color: AppColors.text,
-    fontSize: 14,
     backgroundColor: AppColors.background,
   },
+  passInputField: { flex: 1, paddingVertical: 11, color: AppColors.text, fontSize: 14 },
   aboutLabel: { fontSize: 14, color: AppColors.muted, fontWeight: '600' },
   aboutValue: { fontSize: 14, color: AppColors.text },
 });

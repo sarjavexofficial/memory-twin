@@ -22,6 +22,33 @@ function daysSince(dateStr: string) {
   return Math.floor(diff / (1000 * 60 * 60 * 24));
 }
 
+// 表記ゆれ対策の正規化: 空白を除き、カタカナ→ひらがな、全角英数→半角、小文字化。
+// 「高橋さくら」で「高橋 さくら」（登録名に空白）もヒットさせるための下ごしらえ
+function normalizeForMatch(s: string): string {
+  return s
+    .normalize('NFKC')
+    .toLowerCase()
+    .replace(/\s+/g, '')
+    .replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
+}
+
+// 2文字ずつの並び（バイグラム）の重なり率（Dice係数）。
+// 完全一致しない入力でも「もしかしてこれ？」の近さを数値化する。1文字入力は包含で代用
+function nameSimilarity(a: string, b: string): number {
+  if (!a || !b) return 0;
+  if (a.length < 2 || b.length < 2) return a.includes(b) || b.includes(a) ? 1 : 0;
+  const grams = (s: string) => {
+    const set = new Set<string>();
+    for (let i = 0; i < s.length - 1; i++) set.add(s.slice(i, i + 2));
+    return set;
+  };
+  const ga = grams(a);
+  const gb = grams(b);
+  let hit = 0;
+  for (const g of ga) if (gb.has(g)) hit++;
+  return (2 * hit) / (ga.size + gb.size);
+}
+
 function PersonCard({ person }: { person: Person }) {
   const { styles, AppColors } = useTheme(themed);
   const L = useStrings();
@@ -120,14 +147,41 @@ export default function MemoryScreen() {
 
   const filteredPeople = useMemo(() => {
     if (!query.trim()) return people;
-    const q = query.trim().toLowerCase();
+    const q = normalizeForMatch(query.trim());
     return people.filter((p) => {
-      const haystack = [p.name, p.relation, ...p.likes, ...p.memos.map((m) => m.text)]
-        .join(' ')
-        .toLowerCase();
+      // 名前・関係・場所・好き嫌い・メモ本文・タグまで検索対象にする
+      const haystack = normalizeForMatch(
+        [
+          p.name,
+          p.relation,
+          p.place ?? '',
+          ...p.likes,
+          ...p.dislikes,
+          ...p.memos.flatMap((m) => [m.text, ...(m.tags ?? [])]),
+        ].join(' '),
+      );
       return haystack.includes(q);
     });
   }, [query, people]);
+
+  // ヒット0件のとき、名前・関係・場所が「近い」人を最大3人まで提案する
+  const suggestions = useMemo(() => {
+    const raw = query.trim();
+    if (!raw || filteredPeople.length > 0) return [];
+    const q = normalizeForMatch(raw);
+    return people
+      .map((person) => ({
+        person,
+        score: Math.max(
+          nameSimilarity(q, normalizeForMatch(person.name)),
+          nameSimilarity(q, normalizeForMatch(person.relation ?? '')),
+          nameSimilarity(q, normalizeForMatch(person.place ?? '')),
+        ),
+      }))
+      .filter((s) => s.score >= 0.25)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3);
+  }, [query, people, filteredPeople]);
 
   const matchedEntries = useMemo(() => {
     if (!query.trim()) return [];
@@ -215,7 +269,26 @@ export default function MemoryScreen() {
             ) : null
           }
           ListEmptyComponent={
-            <Text style={styles.empty}>{query.trim() ? L.emptySearch(query) : L.emptyPeople}</Text>
+            <View>
+              <Text style={styles.empty}>{query.trim() ? L.emptySearch(query) : L.emptyPeople}</Text>
+              {suggestions.length > 0 && (
+                <View style={styles.suggestBlock}>
+                  <Text style={styles.suggestLabel}>{L.searchDidYouMean}</Text>
+                  <View style={styles.suggestRow}>
+                    {suggestions.map(({ person }) => (
+                      <Pressable
+                        key={person.id}
+                        style={styles.suggestChip}
+                        onPress={() => router.push(`/person/${person.id}`)}>
+                        <Text style={styles.suggestChipText}>
+                          {person.avatarEmoji} {person.name}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              )}
+            </View>
           }
           ListFooterComponent={
             matchedEntries.length > 0 ? (
@@ -276,6 +349,19 @@ const makeStyles = (AppColors: AppPalette) =>
     list: { paddingHorizontal: 16, paddingBottom: 100, gap: 12 },
     loading: { marginTop: 40 },
     empty: { textAlign: 'center', color: AppColors.muted, fontSize: 15, marginTop: 40, lineHeight: 22 },
+    suggestBlock: { marginTop: 18, alignItems: 'center', gap: 10 },
+    suggestLabel: { fontSize: 13, color: AppColors.text, fontWeight: '700' },
+    suggestRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8 },
+    suggestChip: {
+      paddingHorizontal: 14,
+      paddingVertical: 9,
+      minHeight: 38,
+      borderRadius: 999,
+      borderWidth: 1.5,
+      borderColor: AppColors.primary,
+      backgroundColor: AppColors.primarySoft,
+    },
+    suggestChipText: { fontSize: 14, color: AppColors.primary, fontWeight: '700' },
     entrySection: { gap: 10, marginTop: 16 },
     sectionLabel: { fontSize: 13, fontWeight: '800', color: AppColors.accent },
     entryCard: {
