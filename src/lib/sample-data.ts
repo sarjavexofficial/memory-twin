@@ -1,3 +1,4 @@
+import { daysAgoLocal } from '@/lib/date';
 import { JournalEntry } from '@/lib/journal-data';
 import { Person } from '@/lib/mock-data';
 import { Language } from '@/store/settings-context';
@@ -26,7 +27,9 @@ const PERSON_SKELETON = [
   { id: '3', avatarEmoji: '💼', lastContact: '2026-05-20', memoDates: ['2026-05-20', '2026-02-14'] },
   { id: '4', avatarEmoji: '📷', lastContact: '2026-04-10', memoDates: ['2026-04-10'] },
 ];
-const PROMISE_DUE = '2026-06-20';
+// サンプルの約束の期限は常に「3日後」。固定日付だと時間の経過で永久に期限切れのまま
+// デモが古びてしまう（refreshSamplePeopleが起動ごとにテンプレートから作り直すので毎回追従する）
+const promiseDue = () => daysAgoLocal(-3);
 
 const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
   ja: [
@@ -347,7 +350,7 @@ export function samplePeopleFor(language: Language): Person[] {
         text: t.memos[j],
         // 3人目（職場の先輩）の最新メモに期限付きの約束を付け、能動メッセージのデモを成立させる
         ...(s.id === '3' && j === 0
-          ? { promise: { action: t.promiseAction, dueDate: PROMISE_DUE, done: false } }
+          ? { promise: { action: t.promiseAction, dueDate: promiseDue(), done: false } }
           : {}),
       })),
     };

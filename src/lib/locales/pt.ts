@@ -79,6 +79,7 @@ export const pt: Dict = {
   recallOverdue: 'Atrasado',
   recallDueToday: 'Vence hoje',
   recallDueSoon: (n: number) => `Faltam ${n} dia${n === 1 ? '' : 's'}`,
+  recallSampleBadge: 'Exemplo',
   recallDoneMsg: (action: string) => `"${action}" concluído.`,
   recallDoneMemoLink: (name: string) => `Deixar uma nota sobre ${name}`,
   recallUndo: 'Desfazer',
@@ -418,7 +419,7 @@ export const pt: Dict = {
   aboutCompany: 'Desenvolvedora',
   aboutName: 'Nome do app',
   aboutVersion: 'Versão',
-  aboutVersionValue: '0.1.2 (dev)',
+  aboutVersionValue: '0.1.3 (dev)',
   contactButton: 'Fale conosco',
   contactMailFailed:
     'Se nenhum app de e-mail abrir, toque e segure o endereço acima para copiá-lo e nos escreva pelo seu app de e-mail.',

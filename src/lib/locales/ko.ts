@@ -77,6 +77,7 @@ export const ko: Dict = {
   recallOverdue: '기한 지남',
   recallDueToday: '오늘까지',
   recallDueSoon: (n: number) => `${n}일 남음`,
+  recallSampleBadge: '샘플',
   recallDoneMsg: (action: string) => `"${action}"을(를) 완료로 표시했습니다.`,
   recallDoneMemoLink: (name: string) => `${name}님에 대한 한마디 메모 남기기`,
   recallUndo: '되돌리기',
@@ -404,7 +405,7 @@ export const ko: Dict = {
   aboutCompany: '개발사',
   aboutName: '앱 이름',
   aboutVersion: '버전',
-  aboutVersionValue: '0.1.2(개발판)',
+  aboutVersionValue: '0.1.3(개발판)',
   contactButton: '문의하기',
   contactMailFailed:
     '메일 앱이 열리지 않으면 위 주소를 길게 눌러 복사한 뒤, 사용 중인 메일 앱에서 보내 주세요.',

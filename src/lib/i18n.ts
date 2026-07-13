@@ -93,6 +93,7 @@ const ja = {
   recallOverdue: '期限切れ',
   recallDueToday: '今日まで',
   recallDueSoon: (n: number) => `あと${n}日`,
+  recallSampleBadge: 'サンプル',
   recallDoneMsg: (action: string) => `「${action}」を完了にしました。`,
   recallDoneMemoLink: (name: string) => `${name}さんに一言メモを残す`,
   recallUndo: '元に戻す',
@@ -425,7 +426,7 @@ const ja = {
   aboutCompany: '開発元',
   aboutName: 'アプリ名',
   aboutVersion: 'バージョン',
-  aboutVersionValue: '0.1.2（開発版）',
+  aboutVersionValue: '0.1.3（開発版）',
   contactButton: 'お問い合わせ',
   contactMailFailed:
     'メールが開かない場合は、上のアドレスを長押しでコピーして、お使いのメールアプリから送ってください。',
@@ -691,6 +692,7 @@ const en: typeof ja = {
   recallOverdue: 'Overdue',
   recallDueToday: 'Due today',
   recallDueSoon: (n: number) => `In ${n} day${n > 1 ? 's' : ''}`,
+  recallSampleBadge: 'Sample',
   recallDoneMsg: (action: string) => `Marked “${action}” as done.`,
   recallDoneMemoLink: (name: string) => `Add a quick note about ${name}`,
   recallUndo: 'Undo',
@@ -1002,7 +1004,7 @@ const en: typeof ja = {
   aboutCompany: 'Developer',
   aboutName: 'App name',
   aboutVersion: 'Version',
-  aboutVersionValue: '0.1.2 (dev)',
+  aboutVersionValue: '0.1.3 (dev)',
   contactButton: 'Contact us',
   contactMailFailed:
     'If a mail app didn’t open, long-press the address above to copy it, then email us from any mail app.',

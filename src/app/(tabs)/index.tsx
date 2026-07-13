@@ -181,16 +181,25 @@ export default function TodayScreen() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const streak = useMemo(() => computeStreak(entries), [entries, todayStr]);
 
+  // サンプル（デモ）の人物・記録は、本人のデータが1件でもできたら
+  // Recall・疎遠リストの対象から外す（架空の約束が永久に居座るのを防ぐ）。
+  // まだ何も記録がない初期状態でだけ、使い方のデモとしてサンプルを表示する
+  const hasRealData = useMemo(
+    () => people.some((p) => !p.sample) || entries.some((e) => !e.sample),
+    [people, entries],
+  );
+
   const pendingPromises = useMemo<PromiseItem[]>(() => {
     const items: PromiseItem[] = [];
     for (const person of people) {
+      if (hasRealData && person.sample) continue;
       for (const memo of person.memos) {
         if (memo.promise && !memo.promise.done) items.push({ person, memo });
       }
     }
     items.sort((a, b) => (a.memo.promise!.dueDate ?? '9999').localeCompare(b.memo.promise!.dueDate ?? '9999'));
     return items;
-  }, [people]);
+  }, [people, hasRealData]);
 
   // 完了直後のフォローアップ: 「どうだったか」をその場でメモに残す導線＋押し間違いの取り消し
   const [justDone, setJustDone] = useState<{
@@ -214,11 +223,12 @@ export default function TodayScreen() {
   const upcomingBirthdays = useMemo(() => {
     const list: { person: Person; month: number; day: number; daysUntil: number }[] = [];
     for (const person of people) {
+      if (hasRealData && person.sample) continue;
       const b = daysUntilBirthday(person.birthday, todayStr);
       if (b && b.daysUntil <= 7) list.push({ person, ...b });
     }
     return list.sort((a, b) => a.daysUntil - b.daysUntil);
-  }, [people, todayStr]);
+  }, [people, todayStr, hasRealData]);
 
   // Recall欄の配分: 約束を優先し、残り枠に誕生日を入れる。あふれた分は「他N件」に集計
   const recallRows = useMemo(() => {
@@ -230,8 +240,11 @@ export default function TodayScreen() {
   }, [pendingPromises, upcomingBirthdays, recallLimit]);
 
   const stalePeople = useMemo(
-    () => people.filter((p) => daysSince(p.lastContact) >= STALE_THRESHOLD_DAYS),
-    [people],
+    () =>
+      people.filter(
+        (p) => !(hasRealData && p.sample) && daysSince(p.lastContact) >= STALE_THRESHOLD_DAYS,
+      ),
+    [people, hasRealData],
   );
 
   // あの日のあなた: 1年前（なければ半年前）の「今日」に近い日記を探して再会させる（端末内だけ・無料）
@@ -541,6 +554,14 @@ export default function TodayScreen() {
                           {item.memo.promise!.dueDate ? L.promiseDue(item.memo.promise!.dueDate) : ''}
                         </Text>
                       </View>
+                      {/* サンプル行は初期デモ状態でしか出ないが、架空の約束だと分かる目印を付ける */}
+                      {item.person.sample && (
+                        <View style={[styles.dueBadge, styles.sampleBadge]}>
+                          <Text style={[styles.dueBadgeText, styles.sampleBadgeText]}>
+                            {L.recallSampleBadge}
+                          </Text>
+                        </View>
+                      )}
                       {daysLeft != null && daysLeft <= 3 && (
                         <View
                           style={[
@@ -774,6 +795,8 @@ const makeStyles = (AppColors: AppPalette) =>
   promiseAction: { fontSize: 14, color: AppColors.text, fontWeight: '600' },
   promiseSub: { fontSize: 12, color: AppColors.muted, marginTop: 1 },
   dueBadge: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 },
+  sampleBadge: { backgroundColor: AppColors.primarySoft },
+  sampleBadgeText: { color: AppColors.muted },
   dueBadgeDanger: { backgroundColor: AppColors.dangerSoft },
   dueBadgeSoon: { backgroundColor: AppColors.accentSoft },
   dueBadgeText: { fontSize: 11, fontWeight: '800' },

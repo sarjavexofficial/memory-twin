@@ -77,6 +77,7 @@ export const zh: Dict = {
   recallOverdue: '已过期',
   recallDueToday: '今天到期',
   recallDueSoon: (n: number) => `还剩${n}天`,
+  recallSampleBadge: '示例',
   recallDoneMsg: (action: string) => `已将“${action}”标记为完成。`,
   recallDoneMemoLink: (name: string) => `给${name}留一句备忘`,
   recallUndo: '撤销',
@@ -397,7 +398,7 @@ export const zh: Dict = {
   aboutCompany: '开发方',
   aboutName: '应用名称',
   aboutVersion: '版本',
-  aboutVersionValue: '0.1.2（开发版）',
+  aboutVersionValue: '0.1.3（开发版）',
   contactButton: '联系我们',
   contactMailFailed: '如果邮件应用没有打开，请长按上方地址复制，然后用任意邮件应用发送。',
 

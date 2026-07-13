@@ -82,6 +82,7 @@ export const fr: Dict = {
   recallOverdue: 'En retard',
   recallDueToday: 'Pour aujourd’hui',
   recallDueSoon: (n: number) => `Dans ${n} jour${n > 1 ? 's' : ''}`,
+  recallSampleBadge: 'Exemple',
   recallDoneMsg: (action: string) => `« ${action} » marqué comme fait.`,
   recallDoneMemoLink: (name: string) => `Ajouter une note sur ${name}`,
   recallUndo: 'Annuler',
@@ -424,7 +425,7 @@ export const fr: Dict = {
   aboutCompany: 'Développeur',
   aboutName: 'Nom de l’app',
   aboutVersion: 'Version',
-  aboutVersionValue: '0.1.2 (dev)',
+  aboutVersionValue: '0.1.3 (dev)',
   contactButton: 'Nous contacter',
   contactMailFailed:
     'Si aucune messagerie ne s’ouvre, appuyez longuement sur l’adresse ci-dessus pour la copier, puis écrivez-nous depuis votre messagerie.',

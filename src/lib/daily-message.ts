@@ -65,7 +65,13 @@ export async function getFeedbackStats(): Promise<FeedbackStats> {
 }
 
 // 候補を集めてスコアリングする。スコア = 基礎点（重要度・緊急度）+ 学習調整
-function buildCandidates(people: Person[], entries: JournalEntry[]): DailyCandidate[] {
+function buildCandidates(rawPeople: Person[], rawEntries: JournalEntry[]): DailyCandidate[] {
+  // サンプル（デモ）データは、本人の記録が1件でもあれば話題にしない。
+  // 何も記録がない初期状態でだけ、機能紹介としてサンプルを話題にする
+  const hasReal = rawPeople.some((p) => !p.sample) || rawEntries.some((e) => !e.sample);
+  const people = hasReal ? rawPeople.filter((p) => !p.sample) : rawPeople;
+  const entries = hasReal ? rawEntries.filter((e) => !e.sample) : rawEntries;
+
   const list: DailyCandidate[] = [];
   const todayIso = today();
 
