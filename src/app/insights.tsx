@@ -10,6 +10,7 @@ import { useStrings } from '@/lib/i18n';
 import { makeThemed, useTheme } from '@/lib/theme';
 import { useJournal } from '@/store/journal-context';
 import { usePeople } from '@/store/people-context';
+import { useTasks } from '@/store/tasks-context';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -73,6 +74,7 @@ export default function InsightsScreen() {
   const L = useStrings();
   const { entries } = useJournal();
   const { people } = usePeople();
+  const { tasks } = useTasks();
 
   const year = new Date().getFullYear();
 
@@ -80,7 +82,8 @@ export default function InsightsScreen() {
     const yearPrefix = String(year);
     // サンプル（デモ）データは「あなたの1年」に混ぜない。
     // 本人の記録が1件もない初期状態でだけ、画面のデモとしてサンプルを集計する
-    const hasReal = entries.some((e) => !e.sample) || people.some((p) => !p.sample);
+    const hasReal =
+      entries.some((e) => !e.sample) || people.some((p) => !p.sample) || tasks.length > 0;
     const ownEntries = hasReal ? entries.filter((e) => !e.sample) : entries;
     const ownPeople = hasReal ? people.filter((p) => !p.sample) : people;
 
@@ -89,8 +92,10 @@ export default function InsightsScreen() {
 
     const recordCount = yearEntries.length + yearMemos.length;
     const recordedDays = new Set([...yearEntries.map((e) => e.date), ...yearMemos.map((m) => m.date)]).size;
-    // 「今年の」画面なので、果たした約束も今年のメモに付いたものだけを数える
-    const promisesDone = yearMemos.filter((m) => m.promise?.done).length;
+    // 「今年の」画面なので、果たした約束も今年のメモに付いたものだけを数える。
+    // 自分で期限を決めたタスクは「自分との約束」として、今年完了した分を同じ数字に合算する
+    const tasksDone = tasks.filter((t) => t.done && (t.doneAt ?? '').startsWith(yearPrefix)).length;
+    const promisesDone = yearMemos.filter((m) => m.promise?.done).length + tasksDone;
 
     // よく登場するテーマ: タグ＋本文の頻出語の上位5件。
     // タグ付きの記録が少なくても、書いた内容そのものからテーマが浮かび上がるようにする
@@ -113,7 +118,7 @@ export default function InsightsScreen() {
       .map(([tag]) => tag);
 
     return { recordCount, recordedDays, promisesDone, topTags, trending, peopleCount: ownPeople.length };
-  }, [entries, people, year]);
+  }, [entries, people, tasks, year]);
 
   const statCards = [
     { icon: 'document-text-outline' as const, label: L.statRecords, value: stats.recordCount },

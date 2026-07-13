@@ -104,6 +104,18 @@ const ja = {
   recallBirthdayToday: '今日が誕生日🎂',
   recallBirthdayIn: (n: number) => `あと${n}日で誕生日🎂`,
 
+  // 自分のタスク（ユーザーが期限を決めて登録する。Recall欄で約束より優先表示）
+  taskAddButton: '＋ 期限つきタスクを追加',
+  taskTitlePlaceholder: 'やること（例：企画書を提出する）',
+  taskDueLabel: 'いつまでに',
+  taskPersonLabel: '関係する人（任意）',
+  taskPersonNone: 'なし',
+  taskCreate: '追加する',
+  taskSelf: '自分',
+  taskDeletedMsg: (title: string) => `「${title}」を削除しました。`,
+  taskDeleteHint: '追加したタスクは、行を長押しすると削除できます。',
+  recallEmpty: '今日は思い出すことはありません。タスクを追加すると、期限が近づいたらここでお知らせします。',
+
   // Memory
   aiSearchButton: 'AIに聞く（根拠付き）',
   aiSearchSendNote: '質問に関連する記録だけを選別してAIに送信します（全件は送りません）。',
@@ -180,7 +192,8 @@ const ja = {
   backupFoundDesc: (j: number, p: number) =>
     `記録 ${j}件・人物 ${p}人が入っています。復元すると今のデータに追加されます（同じものは重複しません）。`,
   backupRestore: 'このバックアップを復元する',
-  backupRestored: (j: number, p: number) => `復元しました（記録 ${j}件・人物 ${p}人を追加）。`,
+  backupRestored: (j: number, p: number, t = 0) =>
+    `復元しました（記録 ${j}件・人物 ${p}人${t > 0 ? `・タスク ${t}件` : ''}を追加）。`,
   importFileTooLarge: 'ファイルが大きすぎます（20MBまで対応）。',
   importParse: '解析する',
   importFound: (n: number, from: string, to: string) => `${n}件の会話が見つかりました（${from} 〜 ${to}）`,
@@ -428,7 +441,7 @@ const ja = {
   aboutCompany: '開発元',
   aboutName: 'アプリ名',
   aboutVersion: 'バージョン',
-  aboutVersionValue: '0.1.5（開発版）',
+  aboutVersionValue: '0.1.6（開発版）',
   contactButton: 'お問い合わせ',
   privacyPolicyLink: 'プライバシーポリシー',
   termsLink: '利用規約（Apple標準EULA）',
@@ -707,6 +720,17 @@ const en: typeof ja = {
   recallBirthdayToday: 'Birthday today 🎂',
   recallBirthdayIn: (n: number) => `Birthday in ${n} day${n > 1 ? 's' : ''} 🎂`,
 
+  taskAddButton: '＋ Add a task with a deadline',
+  taskTitlePlaceholder: 'What to do (e.g. submit the proposal)',
+  taskDueLabel: 'Due date',
+  taskPersonLabel: 'Related person (optional)',
+  taskPersonNone: 'None',
+  taskCreate: 'Add',
+  taskSelf: 'Me',
+  taskDeletedMsg: (title: string) => `Deleted “${title}”.`,
+  taskDeleteHint: 'Long-press a task row to delete it.',
+  recallEmpty: 'Nothing to recall today. Add a task and it will appear here as its deadline approaches.',
+
   aiSearchButton: 'Ask AI (with sources)',
   aiSearchSendNote: 'Only records relevant to your question are selected and sent to the AI.',
   aiSearchSources: 'Sources',
@@ -778,7 +802,8 @@ const en: typeof ja = {
   backupFoundDesc: (j: number, p: number) =>
     `Contains ${j} records and ${p} people. Restoring adds them to your current data (no duplicates).`,
   backupRestore: 'Restore this backup',
-  backupRestored: (j: number, p: number) => `Restored — added ${j} records and ${p} people.`,
+  backupRestored: (j: number, p: number, t = 0) =>
+    `Restored — added ${j} records, ${p} people${t > 0 ? `, ${t} tasks` : ''}.`,
   importFileTooLarge: 'File is too large (up to 20 MB).',
   importParse: 'Parse',
   importFound: (n: number, from: string, to: string) =>
@@ -1010,7 +1035,7 @@ const en: typeof ja = {
   aboutCompany: 'Developer',
   aboutName: 'App name',
   aboutVersion: 'Version',
-  aboutVersionValue: '0.1.5 (dev)',
+  aboutVersionValue: '0.1.6 (dev)',
   contactButton: 'Contact us',
   privacyPolicyLink: 'Privacy Policy',
   termsLink: 'Terms of Use (Apple standard EULA)',

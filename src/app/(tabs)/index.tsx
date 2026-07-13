@@ -26,9 +26,11 @@ import { makeThemed, useTheme } from '@/lib/theme';
 import { MOOD_EMOJIS } from '@/lib/journal-data';
 import { Memo, Person, STALE_THRESHOLD_DAYS } from '@/lib/mock-data';
 import { daysAgoLocal, todayLocal, useTodayLocal } from '@/lib/date';
+import { UserTask } from '@/lib/task-data';
 import { useJournal } from '@/store/journal-context';
 import { usePeople } from '@/store/people-context';
 import { useSettings } from '@/store/settings-context';
+import { useTasks } from '@/store/tasks-context';
 
 function daysSince(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -44,11 +46,19 @@ function dueDaysLeft(dueDate: string | undefined, today: string): number | null 
 
 type PromiseItem = { person: Person; memo: Memo };
 
+// 完了・削除直後のフォローアップバナーの状態。約束の完了 / タスクの完了 / タスクの削除で
+// 文言と「元に戻す」の挙動が変わるため、種類ごとに必要な情報を持つ
+type JustAction =
+  | { kind: 'promise'; personId: string; memoId: string; personName: string; action: string }
+  | { kind: 'task-done'; taskId: string; title: string }
+  | { kind: 'task-deleted'; task: UserTask };
+
 export default function TodayScreen() {
   const { styles, AppColors } = useTheme(themed);
   const L = useStrings();
   const { people, isLoaded, togglePromiseDone } = usePeople();
   const { entries, addEntry } = useJournal();
+  const { tasks, isLoaded: tasksLoaded, addTask, toggleTaskDone, deleteTask, restoreTask } = useTasks();
   const { settings, isLoaded: settingsLoaded } = useSettings();
 
   // 日付をまたいだら自動で当日に切り替わる
@@ -72,21 +82,30 @@ export default function TodayScreen() {
     }
   }, [settingsLoaded, settings.hasSeenOnboarding]);
 
+  // サンプル（デモ）の人物・記録は、本人のデータが1件でもできたら
+  // Recall・疎遠リスト・ひとことの対象から外す（架空の約束が永久に居座るのを防ぐ）。
+  // 自分のタスクも「本人のデータ」として数える
+  const hasRealData = useMemo(
+    () => people.some((p) => !p.sample) || entries.some((e) => !e.sample) || tasks.length > 0,
+    [people, entries, tasks],
+  );
+
   // 能動メッセージ: 1日最大1件。候補がしきい値未満なら何も表示しない（話さない判断）
   const [dailyMessage, setDailyMessage] = useState<DailyMessageRecord | null>(null);
   const [showReason, setShowReason] = useState(false);
 
   useEffect(() => {
-    if (!isLoaded) return;
+    if (!isLoaded || !tasksLoaded) return;
     let active = true;
-    getTodayMessage(people, entries).then((record) => {
+    // タスクの有無はdaily-messageからは見えないため、ヒントとして渡す
+    getTodayMessage(people, entries, tasks.length > 0).then((record) => {
       if (active) setDailyMessage(record);
     });
     return () => {
       active = false;
     };
     // todayStr: 日付が変わったら翌日分を再判断する
-  }, [isLoaded, people, entries, todayStr]);
+  }, [isLoaded, tasksLoaded, people, entries, tasks, todayStr]);
 
   async function handleMessageFeedback(feedback: 'helpful' | 'unnecessary') {
     if (!dailyMessage) return;
@@ -103,23 +122,29 @@ export default function TodayScreen() {
       const person = people.find((p) => p.id === c.personId);
       const memo = person?.memos.find((m) => m.date === c.sourceDate);
       if (!memo?.promise || memo.promise.done) return false;
+      // 当日中に本人のデータができたら、サンプル人物を話題にした固定済みメッセージも隠す
+      if (person?.sample && hasRealData) return false;
+    }
+    if (c.category === 'stale-person') {
+      const person = people.find((p) => p.id === c.personId);
+      if (person?.sample && hasRealData) return false;
     }
     return true;
-  }, [dailyMessage, people]);
+  }, [dailyMessage, people, hasRealData]);
 
   // 通知ONのとき、最新の候補で「次の話しかけ」を予約し直す（候補がなければ通知しない）
   useEffect(() => {
     if (!isLoaded || !settingsLoaded || Platform.OS === 'web') return;
     if (!settings.proactiveNotify) return;
     (async () => {
-      const candidate = await previewBestCandidate(people, entries);
+      const candidate = await previewBestCandidate(people, entries, tasks.length > 0);
       if (candidate) {
         await scheduleProactiveMessage(candidateMessage(candidate, L, people), settings.notifyHour ?? 8);
       } else {
         await cancelProactiveNotifications();
       }
     })();
-  }, [isLoaded, settingsLoaded, settings.proactiveNotify, settings.notifyHour, people, entries, todayStr, L]);
+  }, [isLoaded, settingsLoaded, settings.proactiveNotify, settings.notifyHour, people, entries, tasks, todayStr, L]);
 
   // Pro限定の自動学習（設定タブでON=オプトイン）: 記録が増えるたびに条件を確認し、裏で理解ノートを更新
   useEffect(() => {
@@ -183,14 +208,6 @@ export default function TodayScreen() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const streak = useMemo(() => computeStreak(entries), [entries, todayStr]);
 
-  // サンプル（デモ）の人物・記録は、本人のデータが1件でもできたら
-  // Recall・疎遠リストの対象から外す（架空の約束が永久に居座るのを防ぐ）。
-  // まだ何も記録がない初期状態でだけ、使い方のデモとしてサンプルを表示する
-  const hasRealData = useMemo(
-    () => people.some((p) => !p.sample) || entries.some((e) => !e.sample),
-    [people, entries],
-  );
-
   const pendingPromises = useMemo<PromiseItem[]>(() => {
     const items: PromiseItem[] = [];
     for (const person of people) {
@@ -203,22 +220,64 @@ export default function TodayScreen() {
     return items;
   }, [people, hasRealData]);
 
+  // 自分のタスク: ユーザーが「◯月◯日までにこれをやる」と期限を決めて登録したもの。
+  // AIが拾う約束と違い自分で決めた期限なので、Recall欄では最優先で表示する
+  const pendingTasks = useMemo(() => tasks.filter((t) => !t.done), [tasks]);
+
+  // タスク追加フォーム（Recall欄の中で開閉するインライン形式）
+  const [addingTask, setAddingTask] = useState(false);
+  const [taskTitle, setTaskTitle] = useState('');
+  const [taskDue, setTaskDue] = useState(todayLocal());
+  const [taskPersonId, setTaskPersonId] = useState<string | undefined>(undefined);
+
+  // タスクに紐づけられる人物はユーザー自身が登録した人だけ（デモ用のサンプル人物は出さない）
+  const taskPeopleOptions = useMemo(() => people.filter((p) => !p.sample), [people]);
+
+  function openTaskForm() {
+    setTaskTitle('');
+    setTaskDue(todayLocal());
+    setTaskPersonId(undefined);
+    setAddingTask(true);
+  }
+
+  function handleAddTask() {
+    const title = taskTitle.trim();
+    if (!title) return;
+    addTask({ title, dueDate: taskDue, personId: taskPersonId });
+    setAddingTask(false);
+  }
+
   // 完了直後のフォローアップ: 「どうだったか」をその場でメモに残す導線＋押し間違いの取り消し
-  const [justDone, setJustDone] = useState<{
-    personId: string;
-    memoId: string;
-    personName: string;
-    action: string;
-  } | null>(null);
+  const [justDone, setJustDone] = useState<JustAction | null>(null);
 
   function handlePromiseDone(item: PromiseItem) {
     togglePromiseDone(item.person.id, item.memo.id);
     setJustDone({
+      kind: 'promise',
       personId: item.person.id,
       memoId: item.memo.id,
       personName: item.person.name,
       action: item.memo.promise!.action,
     });
+  }
+
+  function handleTaskDone(task: UserTask) {
+    toggleTaskDone(task.id);
+    setJustDone({ kind: 'task-done', taskId: task.id, title: task.title });
+  }
+
+  // 削除は長押し。確認ダイアログの代わりに「元に戻す」で取り消せるようにする
+  function handleTaskDelete(task: UserTask) {
+    deleteTask(task.id);
+    setJustDone({ kind: 'task-deleted', task });
+  }
+
+  function handleUndo() {
+    if (!justDone) return;
+    if (justDone.kind === 'promise') togglePromiseDone(justDone.personId, justDone.memoId);
+    else if (justDone.kind === 'task-done') toggleTaskDone(justDone.taskId);
+    else restoreTask(justDone.task);
+    setJustDone(null);
   }
 
   // 誕生日リコール: 7日以内に誕生日が来る人（当日=0日を含む）。約束と並ぶ「今日の記憶」
@@ -232,14 +291,24 @@ export default function TodayScreen() {
     return list.sort((a, b) => a.daysUntil - b.daysUntil);
   }, [people, todayStr, hasRealData]);
 
-  // Recall欄の配分: 約束を優先し、残り枠に誕生日を入れる。あふれた分は「他N件」に集計
+  // Recall欄の配分: 自分で期限を決めたタスク → AIが拾った約束 → 誕生日 の優先順で枠を埋める。
+  // あふれた分は「他N件」に集計
   const recallRows = useMemo(() => {
-    const promiseRows = pendingPromises.slice(0, recallLimit);
-    const birthdayRows = upcomingBirthdays.slice(0, Math.max(0, recallLimit - promiseRows.length));
+    const taskRows = pendingTasks.slice(0, recallLimit);
+    const promiseRows = pendingPromises.slice(0, Math.max(0, recallLimit - taskRows.length));
+    const birthdayRows = upcomingBirthdays.slice(
+      0,
+      Math.max(0, recallLimit - taskRows.length - promiseRows.length),
+    );
     const hidden =
-      pendingPromises.length + upcomingBirthdays.length - promiseRows.length - birthdayRows.length;
-    return { promiseRows, birthdayRows, hidden };
-  }, [pendingPromises, upcomingBirthdays, recallLimit]);
+      pendingTasks.length +
+      pendingPromises.length +
+      upcomingBirthdays.length -
+      taskRows.length -
+      promiseRows.length -
+      birthdayRows.length;
+    return { taskRows, promiseRows, birthdayRows, hidden };
+  }, [pendingTasks, pendingPromises, upcomingBirthdays, recallLimit]);
 
   const stalePeople = useMemo(
     () =>
@@ -499,7 +568,7 @@ export default function TodayScreen() {
           )}
         </View>
 
-        {!isLoaded ? (
+        {!isLoaded || !tasksLoaded ? (
           <ActivityIndicator color={AppColors.primary} />
         ) : (
           <>
@@ -521,36 +590,89 @@ export default function TodayScreen() {
               </View>
             )}
 
-            {(pendingPromises.length > 0 || upcomingBirthdays.length > 0 || justDone) && (
-              <View style={styles.card}>
+            {/* Today Recall: タスク追加の入口を兼ねるため、中身が空でも常に表示する */}
+            <View style={styles.card}>
                 <View style={styles.digestHeaderRow}>
                   <Ionicons name="checkmark-done-outline" size={16} color={AppColors.accent} />
                   <Text style={styles.digestTitle}>{L.todoList}</Text>
                 </View>
                 {justDone && (
                   <View style={styles.doneBanner}>
-                    <Text style={styles.doneBannerText}>{L.recallDoneMsg(justDone.action)}</Text>
+                    <Text style={styles.doneBannerText}>
+                      {justDone.kind === 'task-deleted'
+                        ? L.taskDeletedMsg(justDone.task.title)
+                        : L.recallDoneMsg(
+                            justDone.kind === 'promise' ? justDone.action : justDone.title,
+                          )}
+                    </Text>
                     <View style={styles.doneBannerActions}>
-                      <Pressable
-                        onPress={() => {
-                          const target = justDone;
-                          setJustDone(null);
-                          router.push(`/person/${target.personId}`);
-                        }}>
-                        <Text style={styles.doneBannerLink}>
-                          {L.recallDoneMemoLink(justDone.personName)}
-                        </Text>
-                      </Pressable>
-                      <Pressable
-                        onPress={() => {
-                          togglePromiseDone(justDone.personId, justDone.memoId);
-                          setJustDone(null);
-                        }}>
+                      {justDone.kind === 'promise' ? (
+                        <Pressable
+                          onPress={() => {
+                            const target = justDone;
+                            setJustDone(null);
+                            router.push(`/person/${target.personId}`);
+                          }}>
+                          <Text style={styles.doneBannerLink}>
+                            {L.recallDoneMemoLink(justDone.personName)}
+                          </Text>
+                        </Pressable>
+                      ) : (
+                        <View />
+                      )}
+                      <Pressable onPress={handleUndo}>
                         <Text style={styles.doneBannerUndo}>{L.recallUndo}</Text>
                       </Pressable>
                     </View>
                   </View>
                 )}
+                {recallRows.taskRows.map((task) => {
+                  // 期限バッジは約束と同じ基準（3日以内・当日・期限切れ）で表示する
+                  const daysLeft = dueDaysLeft(task.dueDate, todayStr);
+                  const person = task.personId
+                    ? people.find((p) => p.id === task.personId)
+                    : undefined;
+                  return (
+                    <Pressable
+                      key={`task-${task.id}`}
+                      style={styles.promiseRow}
+                      onPress={() => person && router.push(`/person/${person.id}`)}
+                      onLongPress={() => handleTaskDelete(task)}
+                      delayLongPress={500}>
+                      <Pressable hitSlop={10} onPress={() => handleTaskDone(task)}>
+                        <Ionicons name="ellipse-outline" size={20} color={AppColors.accent} />
+                      </Pressable>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.promiseAction} numberOfLines={1}>
+                          {task.title}
+                        </Text>
+                        <Text style={styles.promiseSub}>
+                          {person ? person.name : L.taskSelf}
+                          {L.promiseDue(task.dueDate)}
+                        </Text>
+                      </View>
+                      {daysLeft != null && daysLeft <= 3 && (
+                        <View
+                          style={[
+                            styles.dueBadge,
+                            daysLeft > 0 ? styles.dueBadgeSoon : styles.dueBadgeDanger,
+                          ]}>
+                          <Text
+                            style={[
+                              styles.dueBadgeText,
+                              daysLeft > 0 ? styles.dueBadgeTextSoon : styles.dueBadgeTextDanger,
+                            ]}>
+                            {daysLeft < 0
+                              ? L.recallOverdue
+                              : daysLeft === 0
+                                ? L.recallDueToday
+                                : L.recallDueSoon(daysLeft)}
+                          </Text>
+                        </View>
+                      )}
+                    </Pressable>
+                  );
+                })}
                 {recallRows.promiseRows.map((item) => {
                   // 期限が近い/過ぎた約束だけバッジで目立たせる（3日超先はバッジなしで静かに）
                   const daysLeft = dueDaysLeft(item.memo.promise!.dueDate, todayStr);
@@ -627,8 +749,80 @@ export default function TodayScreen() {
                     <Text style={styles.proUpsellText}>{L.recallProUpsell}</Text>
                   </Pressable>
                 )}
+                {recallRows.taskRows.length === 0 &&
+                  recallRows.promiseRows.length === 0 &&
+                  recallRows.birthdayRows.length === 0 &&
+                  !justDone && <Text style={styles.recallEmptyText}>{L.recallEmpty}</Text>}
+                {!addingTask ? (
+                  <Pressable style={styles.taskAddRow} onPress={openTaskForm}>
+                    <Ionicons name="add-circle-outline" size={16} color={AppColors.primary} />
+                    <Text style={styles.taskAddText}>{L.taskAddButton}</Text>
+                  </Pressable>
+                ) : (
+                  <View style={styles.taskForm}>
+                    <TextInput
+                      value={taskTitle}
+                      onChangeText={setTaskTitle}
+                      placeholder={L.taskTitlePlaceholder}
+                      placeholderTextColor={AppColors.muted}
+                      style={styles.input}
+                      onSubmitEditing={handleAddTask}
+                    />
+                    <Text style={styles.taskFormLabel}>{L.taskDueLabel}</Text>
+                    <DatePickerField value={taskDue} onChange={setTaskDue} />
+                    {taskPeopleOptions.length > 0 && (
+                      <>
+                        <Text style={styles.taskFormLabel}>{L.taskPersonLabel}</Text>
+                        <View style={styles.projectRow}>
+                          <Pressable
+                            style={[
+                              styles.projectChip,
+                              taskPersonId === undefined && styles.projectChipSelected,
+                            ]}
+                            onPress={() => setTaskPersonId(undefined)}>
+                            <Text
+                              style={[
+                                styles.projectChipText,
+                                taskPersonId === undefined && styles.projectChipTextSelected,
+                              ]}>
+                              {L.taskPersonNone}
+                            </Text>
+                          </Pressable>
+                          {taskPeopleOptions.map((p) => (
+                            <Pressable
+                              key={p.id}
+                              style={[
+                                styles.projectChip,
+                                taskPersonId === p.id && styles.projectChipSelected,
+                              ]}
+                              onPress={() => setTaskPersonId(p.id)}>
+                              <Text
+                                style={[
+                                  styles.projectChipText,
+                                  taskPersonId === p.id && styles.projectChipTextSelected,
+                                ]}>
+                                {p.avatarEmoji} {p.name}
+                              </Text>
+                            </Pressable>
+                          ))}
+                        </View>
+                      </>
+                    )}
+                    <View style={styles.taskFormButtons}>
+                      <Pressable style={styles.taskCancelButton} onPress={() => setAddingTask(false)}>
+                        <Text style={styles.taskCancelText}>{L.personCancel}</Text>
+                      </Pressable>
+                      <Pressable
+                        style={[styles.taskCreateButton, !taskTitle.trim() && styles.saveButtonDisabled]}
+                        disabled={!taskTitle.trim()}
+                        onPress={handleAddTask}>
+                        <Text style={styles.taskCreateButtonText}>{L.taskCreate}</Text>
+                      </Pressable>
+                    </View>
+                    <Text style={styles.taskHint}>{L.taskDeleteHint}</Text>
+                  </View>
+                )}
               </View>
-            )}
 
             {stalePeople.length > 0 && (
               <View style={styles.card}>
@@ -831,6 +1025,39 @@ const makeStyles = (AppColors: AppPalette) =>
   doneBannerUndo: { fontSize: 13, color: AppColors.muted, fontWeight: '700' },
   proUpsellRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   proUpsellText: { fontSize: 12, color: AppColors.primary, fontWeight: '700' },
+  recallEmptyText: { fontSize: 13, color: AppColors.muted, lineHeight: 19 },
+  taskAddRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4, minHeight: 32 },
+  taskAddText: { fontSize: 13, color: AppColors.primary, fontWeight: '700' },
+  taskForm: {
+    gap: 10,
+    borderTopWidth: 1,
+    borderTopColor: AppColors.line,
+    paddingTop: 12,
+  },
+  taskFormLabel: { fontSize: 12, fontWeight: '800', color: AppColors.muted },
+  taskFormButtons: { flexDirection: 'row', gap: 10 },
+  taskCancelButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: AppColors.line,
+    borderRadius: 10,
+    paddingVertical: 11,
+    minHeight: 42,
+  },
+  taskCancelText: { color: AppColors.muted, fontWeight: '700', fontSize: 13 },
+  taskCreateButton: {
+    flex: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: AppColors.primary,
+    borderRadius: 10,
+    paddingVertical: 11,
+    minHeight: 42,
+  },
+  taskCreateButtonText: { color: AppColors.background, fontWeight: '700', fontSize: 13 },
+  taskHint: { fontSize: 11, color: AppColors.muted, lineHeight: 15 },
   staleChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   staleChip: {
     flexDirection: 'row',

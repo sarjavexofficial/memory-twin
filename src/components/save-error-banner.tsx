@@ -6,15 +6,21 @@ import { AppPalette } from '@/constants/app-colors';
 import { makeThemed, useTheme } from '@/lib/theme';
 import { useJournal } from '@/store/journal-context';
 import { usePeople } from '@/store/people-context';
+import { useTasks } from '@/store/tasks-context';
 
 export function SaveErrorBanner() {
   const { styles } = useTheme(themed);
   const people = usePeople();
   const journal = useJournal();
+  const tasksCtx = useTasks();
   const insets = useSafeAreaInsets();
 
-  const saveError = people.saveError ?? journal.saveError;
-  const dismissSaveError = people.saveError ? people.dismissSaveError : journal.dismissSaveError;
+  const saveError = people.saveError ?? journal.saveError ?? tasksCtx.saveError;
+  const dismissSaveError = people.saveError
+    ? people.dismissSaveError
+    : journal.saveError
+      ? journal.dismissSaveError
+      : tasksCtx.dismissSaveError;
 
   if (!saveError) return null;
 

@@ -88,6 +88,17 @@ export const zh: Dict = {
   recallBirthdayToday: '今天生日🎂',
   recallBirthdayIn: (n: number) => `还有${n}天生日🎂`,
 
+  taskAddButton: '＋ 添加带截止日的任务',
+  taskTitlePlaceholder: '要做的事（例：提交企划书）',
+  taskDueLabel: '截止日期',
+  taskPersonLabel: '相关人物（可选）',
+  taskPersonNone: '无',
+  taskCreate: '添加',
+  taskSelf: '自己',
+  taskDeletedMsg: (title: string) => `已删除「${title}」。`,
+  taskDeleteHint: '长按任务行即可删除。',
+  recallEmpty: '今天没有需要想起的事。添加任务后，临近截止日时会在这里提醒你。',
+
   // Memory
   aiSearchButton: '问AI（附依据）',
   aiSearchSendNote: '只挑选与问题相关的记录发送给AI（不会发送全部）。',
@@ -163,7 +174,8 @@ export const zh: Dict = {
   backupFoundDesc: (j: number, p: number) =>
     `包含 ${j} 条记录和 ${p} 位人物。恢复后会添加到当前数据（不会重复）。`,
   backupRestore: '恢复这个备份',
-  backupRestored: (j: number, p: number) => `已恢复（新增 ${j} 条记录・${p} 位人物）。`,
+  backupRestored: (j: number, p: number, t = 0) =>
+    `已恢复（新增 ${j} 条记录・${p} 位人物${t > 0 ? `・${t} 个任务` : ''}）。`,
   importFileTooLarge: '文件太大（最大支持20MB）。',
   importParse: '解析',
   importFound: (n: number, from: string, to: string) => `找到 ${n} 条对话（${from} 〜 ${to}）`,
@@ -400,7 +412,7 @@ export const zh: Dict = {
   aboutCompany: '开发方',
   aboutName: '应用名称',
   aboutVersion: '版本',
-  aboutVersionValue: '0.1.5（开发版）',
+  aboutVersionValue: '0.1.6（开发版）',
   contactButton: '联系我们',
   privacyPolicyLink: '隐私政策',
   termsLink: '使用条款（Apple标准EULA）',

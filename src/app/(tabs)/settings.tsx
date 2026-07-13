@@ -56,6 +56,7 @@ import { useAuth } from '@/store/auth-context';
 import { useJournal } from '@/store/journal-context';
 import { usePeople } from '@/store/people-context';
 import { ThemeName, useSettings } from '@/store/settings-context';
+import { useTasks } from '@/store/tasks-context';
 
 // 運営への問い合わせ先（メールが開けない端末でも読めるよう、画面上にも表示する）
 const SUPPORT_EMAIL = 'sarjavex.official@gmail.com';
@@ -72,6 +73,7 @@ export default function SettingsScreen() {
   const L = useStrings();
   const { people, clearAllPeople, restorePeople } = usePeople();
   const { entries, clearAllEntries, restoreEntries } = useJournal();
+  const { tasks, clearAllTasks, restoreTasks } = useTasks();
   const {
     settings,
     setAiLearningConsent,
@@ -123,7 +125,7 @@ export default function SettingsScreen() {
   const [notifyInfo, setNotifyInfo] = useState<string | null>(null);
 
   async function rescheduleNotification(hour: number) {
-    const candidate = await previewBestCandidate(people, entries);
+    const candidate = await previewBestCandidate(people, entries, tasks.length > 0);
     if (candidate) {
       await scheduleProactiveMessage(candidateMessage(candidate, L), hour);
       setNotifyInfo(L.notifyScheduled(hour));
@@ -205,7 +207,7 @@ export default function SettingsScreen() {
     setExportDone(false);
     setExportError(null);
     try {
-      await exportAllData(people, entries);
+      await exportAllData(people, entries, tasks);
       setExportDone(true);
     } catch {
       setExportError(L.exportFailed);
@@ -245,6 +247,7 @@ export default function SettingsScreen() {
       await uploadCloudBackup(account, pass, {
         people: await embedPhotos(people),
         journal: entries,
+        tasks,
       });
       setCloudMsg(L.cloudBackupSaved);
     } catch (e) {
@@ -273,7 +276,8 @@ export default function SettingsScreen() {
       // ZIPからの復元と同じ経路: 既存データに追加され、同じIDは重複しない
       const j = restoreEntries(backup.journal);
       const p = restorePeople(await materializePhotos(backup.people));
-      setCloudMsg(L.backupRestored(j, p));
+      const t = restoreTasks(backup.tasks ?? []);
+      setCloudMsg(L.backupRestored(j, p, t));
     } catch (e) {
       if (e instanceof CloudBackupNotFoundError) setCloudErr(L.cloudBackupNotFound);
       else if (e instanceof CloudBackupDecryptError) setCloudErr(L.cloudBackupWrongPass);
@@ -352,6 +356,7 @@ export default function SettingsScreen() {
     if (!proceed) return;
     clearAllPeople();
     clearAllEntries();
+    clearAllTasks();
   }
 
   return (

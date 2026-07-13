@@ -153,5 +153,5 @@ export async function downloadCloudBackup(
   const packedHex = (await response.json().catch(() => null)) as string | null;
   if (!packedHex) throw new CloudBackupNotFoundError('この合言葉のバックアップは見つかりません。');
   const parsed = JSON.parse(decrypt(passphrase, packedHex)) as BackupPayload;
-  return { people: parsed.people ?? [], journal: parsed.journal ?? [] };
+  return { people: parsed.people ?? [], journal: parsed.journal ?? [], tasks: parsed.tasks ?? [] };
 }

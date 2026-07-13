@@ -16,6 +16,7 @@ import { FREE_IMPORT_LIMIT, getImportCount, incrementImportCount } from '@/lib/u
 import { useJournal } from '@/store/journal-context';
 import { usePeople } from '@/store/people-context';
 import { useSettings } from '@/store/settings-context';
+import { useTasks } from '@/store/tasks-context';
 
 const PREVIEW_LIMIT = 30;
 
@@ -23,6 +24,7 @@ export default function ImportHistoryScreen() {
   const L = useStrings();
   const { addEntries, restoreEntries } = useJournal();
   const { restorePeople } = usePeople();
+  const { restoreTasks } = useTasks();
   const { settings } = useSettings();
 
   // 無料プランのインポート回数制限（3回まで）。バックアップ復元は自分のデータなので数えない
@@ -35,7 +37,7 @@ export default function ImportHistoryScreen() {
   const [rawText, setRawText] = useState('');
   const [records, setRecords] = useState<ImportedRecord[] | null>(null);
   const [backup, setBackup] = useState<BackupPayload | null>(null);
-  const [restored, setRestored] = useState<{ j: number; p: number } | null>(null);
+  const [restored, setRestored] = useState<{ j: number; p: number; t: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [importedCount, setImportedCount] = useState<number | null>(null);
   const [lastImported, setLastImported] = useState<ImportedRecord[] | null>(null);
@@ -162,13 +164,14 @@ export default function ImportHistoryScreen() {
     }
   }
 
-  // 完全バックアップの復元。同じIDの記録・人物は飛ばすため、何度押しても重複しない
+  // 完全バックアップの復元。同じIDの記録・人物・タスクは飛ばすため、何度押しても重複しない
   async function handleRestore() {
     if (!backup) return;
     const j = restoreEntries(backup.journal);
     // 埋め込まれた写真を端末のファイルに書き戻してから人物を復元する
     const p = restorePeople(await materializePhotos(backup.people));
-    setRestored({ j, p });
+    const t = restoreTasks(backup.tasks ?? []);
+    setRestored({ j, p, t });
     setBackup(null);
     setRawText('');
   }
@@ -232,7 +235,7 @@ export default function ImportHistoryScreen() {
         {restored && (
           <View style={styles.doneBox}>
             <Ionicons name="checkmark-circle" size={16} color={AppColors.success} />
-            <Text style={styles.doneText}>{L.backupRestored(restored.j, restored.p)}</Text>
+            <Text style={styles.doneText}>{L.backupRestored(restored.j, restored.p, restored.t)}</Text>
           </View>
         )}
 

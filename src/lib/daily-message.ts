@@ -65,10 +65,17 @@ export async function getFeedbackStats(): Promise<FeedbackStats> {
 }
 
 // 候補を集めてスコアリングする。スコア = 基礎点（重要度・緊急度）+ 学習調整
-function buildCandidates(rawPeople: Person[], rawEntries: JournalEntry[]): DailyCandidate[] {
+// hasRealHint: 人物・日記以外の本人データ（自分のタスク等）がある場合にtrueを渡す。
+// この関数からはタスクの存在が見えないため、呼び出し側からヒントとして受け取る
+function buildCandidates(
+  rawPeople: Person[],
+  rawEntries: JournalEntry[],
+  hasRealHint = false,
+): DailyCandidate[] {
   // サンプル（デモ）データは、本人の記録が1件でもあれば話題にしない。
   // 何も記録がない初期状態でだけ、機能紹介としてサンプルを話題にする
-  const hasReal = rawPeople.some((p) => !p.sample) || rawEntries.some((e) => !e.sample);
+  const hasReal =
+    hasRealHint || rawPeople.some((p) => !p.sample) || rawEntries.some((e) => !e.sample);
   const people = hasReal ? rawPeople.filter((p) => !p.sample) : rawPeople;
   const entries = hasReal ? rawEntries.filter((e) => !e.sample) : rawEntries;
 
@@ -181,9 +188,10 @@ export function candidateMessage(c: DailyCandidate, L: Dict, people: Person[] = 
 export async function previewBestCandidate(
   people: Person[],
   entries: JournalEntry[],
+  hasRealHint = false,
 ): Promise<DailyCandidate | null> {
   const stats = await getFeedbackStats();
-  const candidates = buildCandidates(people, entries)
+  const candidates = buildCandidates(people, entries, hasRealHint)
     .map((c) => {
       const s = stats[c.category] ?? { up: 0, down: 0 };
       return { ...c, score: c.score + (s.up - s.down) * 2 };
@@ -197,6 +205,7 @@ export async function previewBestCandidate(
 export async function getTodayMessage(
   people: Person[],
   entries: JournalEntry[],
+  hasRealHint = false,
 ): Promise<DailyMessageRecord> {
   const todayIso = today();
   try {
@@ -214,7 +223,7 @@ export async function getTodayMessage(
 
   // 「不要だった」が続いたカテゴリはスコアを下げる（反応の学習）
   const stats = await getFeedbackStats();
-  const candidates = buildCandidates(people, entries)
+  const candidates = buildCandidates(people, entries, hasRealHint)
     .map((c) => {
       const s = stats[c.category] ?? { up: 0, down: 0 };
       return { ...c, score: c.score + (s.up - s.down) * 2 };

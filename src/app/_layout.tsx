@@ -12,6 +12,7 @@ import { AuthProvider } from '@/store/auth-context';
 import { JournalProvider } from '@/store/journal-context';
 import { PeopleProvider } from '@/store/people-context';
 import { SettingsProvider } from '@/store/settings-context';
+import { TasksProvider } from '@/store/tasks-context';
 
 SplashScreen.preventAutoHideAsync();
 SplashScreen.hideAsync();
@@ -28,6 +29,7 @@ export default function RootLayout() {
         <AuthProvider>
         <PeopleProvider>
           <JournalProvider>
+          <TasksProvider>
             <StatusBar style="light" />
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="(tabs)" />
@@ -44,6 +46,7 @@ export default function RootLayout() {
             <SaveErrorBanner />
             <AiWakingBanner />
             <AppLockGate />
+          </TasksProvider>
           </JournalProvider>
         </PeopleProvider>
         </AuthProvider>

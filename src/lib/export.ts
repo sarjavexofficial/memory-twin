@@ -4,6 +4,7 @@ import { Platform, Share } from 'react-native';
 import { todayLocal } from '@/lib/date';
 import { JournalEntry, MOOD_EMOJIS } from '@/lib/journal-data';
 import { Person } from '@/lib/mock-data';
+import { UserTask } from '@/lib/task-data';
 
 // データエクスポート。ChatGPTやClaudeの正規エクスポートと同じ考え方で、
 // 1つのZIPに「機械可読JSON」と「人がそのまま読めるHTML」を同梱して共有する。
@@ -57,7 +58,7 @@ function buildConversationsJson(people: Person[], entries: JournalEntry[]): stri
 }
 
 // 人がそのまま読めるHTML（ChatGPTエクスポートのchat.html相当）
-function buildHtml(people: Person[], entries: JournalEntry[]): string {
+function buildHtml(people: Person[], entries: JournalEntry[], tasks: UserTask[]): string {
   const items: { date: string; html: string }[] = [];
 
   for (const e of entries) {
@@ -119,6 +120,16 @@ function buildHtml(people: Person[], entries: JournalEntry[]): string {
 <p class="note">書き出し日: ${todayLocal()} ・ 記録 ${entries.length}件 ・ 人物 ${people.length}人（メモ ${people.reduce((n, p) => n + p.memos.length, 0)}件）</p>
 <h2>人物</h2>
 <ul>${peopleRows || '<li>（登録なし）</li>'}</ul>
+${
+  tasks.length > 0
+    ? `<h2>自分のタスク</h2>\n<ul>${tasks
+        .map(
+          (t) =>
+            `<li>${t.done ? '✅ ' : ''}${escapeHtml(t.title)}（${escapeHtml(t.dueDate)}まで）</li>`,
+        )
+        .join('\n')}</ul>`
+    : ''
+}
 <h2>記録（新しい順）</h2>
 ${items.map((i) => i.html).join('\n')}
 <p class="note">このファイルはMemory Twinから書き出されたものです。同梱の conversations.json はMemory Twinのインポート機能で再取り込みできます。</p>
@@ -145,17 +156,27 @@ export async function embedPhotos(people: Person[]): Promise<Person[]> {
   );
 }
 
-export async function exportAllData(people: Person[], entries: JournalEntry[]): Promise<void> {
+export async function exportAllData(
+  people: Person[],
+  entries: JournalEntry[],
+  tasks: UserTask[] = [],
+): Promise<void> {
   const peopleForExport = await embedPhotos(people);
   const fullBackup = JSON.stringify(
-    { app: 'Memory Twin', exportedAt: new Date().toISOString(), people: peopleForExport, journal: entries },
+    {
+      app: 'Memory Twin',
+      exportedAt: new Date().toISOString(),
+      people: peopleForExport,
+      journal: entries,
+      tasks,
+    },
     null,
     2,
   );
 
   const zip = new JSZip();
   zip.file('conversations.json', buildConversationsJson(people, entries));
-  zip.file('memories.html', buildHtml(people, entries));
+  zip.file('memories.html', buildHtml(people, entries, tasks));
   zip.file('data.json', fullBackup);
   const fileName = `memory-twin-export-${todayLocal()}.zip`;
 

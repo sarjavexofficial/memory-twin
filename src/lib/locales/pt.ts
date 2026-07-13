@@ -90,6 +90,17 @@ export const pt: Dict = {
   recallBirthdayToday: 'Aniversário hoje 🎂',
   recallBirthdayIn: (n: number) => `Aniversário em ${n} dia${n > 1 ? 's' : ''} 🎂`,
 
+  taskAddButton: '＋ Adicionar tarefa com prazo',
+  taskTitlePlaceholder: 'O que fazer (ex.: entregar a proposta)',
+  taskDueLabel: 'Prazo',
+  taskPersonLabel: 'Pessoa relacionada (opcional)',
+  taskPersonNone: 'Nenhuma',
+  taskCreate: 'Adicionar',
+  taskSelf: 'Eu',
+  taskDeletedMsg: (title: string) => `“${title}” excluída.`,
+  taskDeleteHint: 'Pressione e segure uma tarefa para excluí-la.',
+  recallEmpty: 'Nada para lembrar hoje. Adicione uma tarefa e ela aparecerá aqui quando o prazo se aproximar.',
+
   // Memory
   aiSearchButton: 'Perguntar à IA (com fontes)',
   aiSearchSendNote: 'Só os registros relacionados à sua pergunta são selecionados e enviados à IA.',
@@ -166,7 +177,8 @@ export const pt: Dict = {
   backupFoundDesc: (j: number, p: number) =>
     `Contém ${j} registros e ${p} pessoas. Restaurar adiciona tudo aos seus dados atuais (sem duplicar).`,
   backupRestore: 'Restaurar este backup',
-  backupRestored: (j: number, p: number) => `Restaurado — ${j} registros e ${p} pessoas adicionados.`,
+  backupRestored: (j: number, p: number, t = 0) =>
+    `Restaurado — ${j} registros, ${p} pessoas${t > 0 ? `, ${t} tarefas` : ''} adicionados.`,
   importFileTooLarge: 'Arquivo grande demais (até 20 MB).',
   importParse: 'Analisar',
   importFound: (n: number, from: string, to: string) =>
@@ -421,7 +433,7 @@ export const pt: Dict = {
   aboutCompany: 'Desenvolvedora',
   aboutName: 'Nome do app',
   aboutVersion: 'Versão',
-  aboutVersionValue: '0.1.5 (dev)',
+  aboutVersionValue: '0.1.6 (dev)',
   contactButton: 'Fale conosco',
   privacyPolicyLink: 'Política de Privacidade',
   termsLink: 'Termos de Uso (EULA padrão da Apple)',

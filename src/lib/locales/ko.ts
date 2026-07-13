@@ -88,6 +88,17 @@ export const ko: Dict = {
   recallBirthdayToday: '오늘 생일🎂',
   recallBirthdayIn: (n: number) => `${n}일 뒤 생일🎂`,
 
+  taskAddButton: '＋ 기한이 있는 할 일 추가',
+  taskTitlePlaceholder: '할 일 (예: 기획서 제출하기)',
+  taskDueLabel: '기한',
+  taskPersonLabel: '관련 인물 (선택)',
+  taskPersonNone: '없음',
+  taskCreate: '추가',
+  taskSelf: '나',
+  taskDeletedMsg: (title: string) => `"${title}"을(를) 삭제했습니다.`,
+  taskDeleteHint: '할 일 행을 길게 누르면 삭제할 수 있습니다.',
+  recallEmpty: '오늘 떠올릴 것이 없습니다. 할 일을 추가하면 기한이 다가올 때 여기에서 알려드립니다.',
+
   // Memory
   aiSearchButton: 'AI에게 묻기(근거 포함)',
   aiSearchSendNote: '질문과 관련된 기록만 골라 AI로 전송합니다(전체를 보내지 않습니다).',
@@ -164,7 +175,8 @@ export const ko: Dict = {
   backupFoundDesc: (j: number, p: number) =>
     `기록 ${j}건·인물 ${p}명이 들어 있습니다. 복원하면 지금 데이터에 추가됩니다(중복되지 않습니다).`,
   backupRestore: '이 백업 복원하기',
-  backupRestored: (j: number, p: number) => `복원했습니다(기록 ${j}건·인물 ${p}명 추가).`,
+  backupRestored: (j: number, p: number, t = 0) =>
+    `복원했습니다(기록 ${j}건·인물 ${p}명${t > 0 ? `·할 일 ${t}건` : ''} 추가).`,
   importFileTooLarge: '파일이 너무 큽니다(최대 20MB).',
   importParse: '분석하기',
   importFound: (n: number, from: string, to: string) => `${n}건의 대화를 찾았습니다(${from} ~ ${to})`,
@@ -407,7 +419,7 @@ export const ko: Dict = {
   aboutCompany: '개발사',
   aboutName: '앱 이름',
   aboutVersion: '버전',
-  aboutVersionValue: '0.1.5(개발판)',
+  aboutVersionValue: '0.1.6(개발판)',
   contactButton: '문의하기',
   privacyPolicyLink: '개인정보 처리방침',
   termsLink: '이용약관(Apple 표준 EULA)',

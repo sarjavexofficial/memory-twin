@@ -3,21 +3,27 @@ import { Platform } from 'react-native';
 
 import { JournalEntry } from '@/lib/journal-data';
 import { Person } from '@/lib/mock-data';
+import { UserTask } from '@/lib/task-data';
 
 // エクスポートZIP・バックアップJSONの読み取り。
 // 機械に詳しくない人でも「エクスポートしたファイルをそのまま選ぶだけ」で復元できるよう、
 // ZIP（本アプリのエクスポート）/ data.json単体 / conversations.json のどれでも受け付けて自動判別する。
 
-export type BackupPayload = { people: Person[]; journal: JournalEntry[] };
+// tasksは0.1.6で追加。それ以前のバックアップには無いためオプショナルにして互換を保つ
+export type BackupPayload = { people: Person[]; journal: JournalEntry[]; tasks?: UserTask[] };
 
 export type PickedData =
   | { kind: 'backup'; backup: BackupPayload } // 本アプリの完全バックアップ → そのまま復元できる
   | { kind: 'text'; text: string }; // conversations.json 等のテキスト → 既存のインポート解析へ
 
 function asBackup(parsed: unknown): BackupPayload | null {
-  const p = parsed as { app?: string; people?: unknown; journal?: unknown };
+  const p = parsed as { app?: string; people?: unknown; journal?: unknown; tasks?: unknown };
   if (p?.app === 'Memory Twin' && Array.isArray(p.people) && Array.isArray(p.journal)) {
-    return { people: p.people as Person[], journal: p.journal as JournalEntry[] };
+    return {
+      people: p.people as Person[],
+      journal: p.journal as JournalEntry[],
+      tasks: Array.isArray(p.tasks) ? (p.tasks as UserTask[]) : [],
+    };
   }
   return null;
 }
