@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { GlowBackground, GradientButton } from '@/components/futuristic';
@@ -116,12 +116,27 @@ export default function OnboardingScreen() {
           <Text style={styles.privacyText}>{L.onboardingPrivacy}</Text>
         </View>
 
+        {/* AI必須のため、開始前に外部AI（Gemini）へのデータ送信を明示して同意を得る */}
+        <View style={styles.aiCard}>
+          <View style={styles.aiCardHeader}>
+            <Ionicons name="sparkles-outline" size={15} color={AppColors.primary} />
+            <Text style={styles.aiCardTitle}>{L.aiDisclosureTitle}</Text>
+          </View>
+          <Text style={styles.aiCardDesc}>{L.aiDisclosureDesc}</Text>
+          <Pressable
+            onPress={() => Linking.openURL('https://sarjavexofficial.github.io/privacy.html')}
+            hitSlop={8}>
+            <Text style={styles.aiCardLink}>{L.onboardingPolicyLink}</Text>
+          </Pressable>
+        </View>
+
         <GradientButton
           label={L.onboardingStart}
           iconRight="arrow-forward"
           onPress={handleStart}
           style={{ marginTop: 'auto' }}
         />
+        <Text style={styles.consentNote}>{L.onboardingAiConsentNote}</Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -209,6 +224,19 @@ const makeStyles = (AppColors: AppPalette) =>
       paddingHorizontal: 8,
     },
     privacyText: { flex: 1, fontSize: 12, color: AppColors.muted, lineHeight: 18 },
+    aiCard: {
+      backgroundColor: AppColors.card,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: AppColors.primary,
+      padding: 16,
+      gap: 8,
+    },
+    aiCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    aiCardTitle: { fontSize: 14, fontWeight: '800', color: AppColors.primary },
+    aiCardDesc: { fontSize: 12, color: AppColors.text, lineHeight: 19 },
+    aiCardLink: { fontSize: 13, color: AppColors.primary, fontWeight: '700' },
+    consentNote: { fontSize: 11, color: AppColors.muted, lineHeight: 16, textAlign: 'center', marginTop: 8 },
     startButton: {
       flexDirection: 'row',
       justifyContent: 'center',

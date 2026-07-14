@@ -9,6 +9,7 @@ import { AiSendNote } from '@/components/ai-send-note';
 import { GlowBackground, GradientButton, TitleAccent } from '@/components/futuristic';
 import { AppPalette } from '@/constants/app-colors';
 import { AiConfigError, generateMonthlyNarrative } from '@/lib/ai';
+import { buildAliasMap } from '@/lib/alias';
 import { getAiProfile } from '@/lib/ai-profile';
 import { useTodayLocal } from '@/lib/date';
 import { useStrings } from '@/lib/i18n';
@@ -87,6 +88,7 @@ export default function MonthlyReportScreen() {
         stats.excerpts,
         settings.language,
         profile?.summary,
+        buildAliasMap(people),
       );
       // 端末に保存して、次からは無料で読み返せるようにする
       setNarrative(await saveNarrative(month, text, stats.totalRecords));

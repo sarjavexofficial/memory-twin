@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AiSendNote } from '@/components/ai-send-note';
 import { AppColors } from '@/constants/app-colors';
 import { AiConfigError, ExtractedItem, extractCommitments } from '@/lib/ai';
+import { buildAliasMap } from '@/lib/alias';
 import { BackupPayload, classifyJsonText, materializePhotos, PickedData, readBackupZip } from '@/lib/backup';
 import { displayTag, useStrings } from '@/lib/i18n';
 import { ImportedRecord, parseAiHistory } from '@/lib/import';
@@ -23,7 +24,7 @@ const PREVIEW_LIMIT = 30;
 export default function ImportHistoryScreen() {
   const L = useStrings();
   const { addEntries, restoreEntries } = useJournal();
-  const { restorePeople } = usePeople();
+  const { people, restorePeople } = usePeople();
   const { restoreTasks } = useTasks();
   const { settings } = useSettings();
 
@@ -55,7 +56,7 @@ export default function ImportHistoryScreen() {
     setCandidates(null);
     setSavedCount(null);
     try {
-      const items = await extractCommitments(target);
+      const items = await extractCommitments(target, 30, buildAliasMap(people));
       setCandidates(items);
       setApproved(items.map(() => true));
     } catch (e) {

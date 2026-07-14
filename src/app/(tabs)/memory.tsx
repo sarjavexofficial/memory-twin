@@ -8,6 +8,7 @@ import { AiSendNote } from '@/components/ai-send-note';
 import { GlowBackground, GradientButton, TitleAccent } from '@/components/futuristic';
 import { AppPalette, glow } from '@/constants/app-colors';
 import { AiConfigError, MemorySearchResult, searchMemory } from '@/lib/ai';
+import { buildAliasMap } from '@/lib/alias';
 import { getAiProfile } from '@/lib/ai-profile';
 import { todayLocal } from '@/lib/date';
 import { useStrings } from '@/lib/i18n';
@@ -150,7 +151,9 @@ export default function MemoryScreen() {
       const relevant = retrieveRelevant(records, query.trim());
       // AIの理解ノート（あれば）を添えて、回答を本人向けに個人化する
       const profile = await getAiProfile();
-      const result = await searchMemory(query.trim(), relevant, profile?.summary);
+      // 実名を外部AIへ送らないため、人物名を別名化して送り、回答は実名へ戻す
+      const alias = buildAliasMap(people);
+      const result = await searchMemory(query.trim(), relevant, profile?.summary, alias);
       setAiResult(result);
     } catch (e) {
       setAiError(e instanceof AiConfigError ? e.message : (e as Error).message);

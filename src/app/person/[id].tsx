@@ -8,6 +8,7 @@ import { AiSendNote } from '@/components/ai-send-note';
 import { DatePickerField } from '@/components/date-picker-field';
 import { AppPalette } from '@/constants/app-colors';
 import { AiConfigError, organizeMemo, OrganizedMemo } from '@/lib/ai';
+import { buildAliasMap } from '@/lib/alias';
 import { confirmAsync } from '@/lib/confirm';
 import { todayLocal as today } from '@/lib/date';
 import { useStrings } from '@/lib/i18n';
@@ -18,7 +19,8 @@ export default function PersonDetailScreen() {
   const { styles, AppColors } = useTheme(themed);
   const L = useStrings();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { getPersonById, addMemoToPerson, deleteMemo, deletePerson, togglePromiseDone } = usePeople();
+  const { people, getPersonById, addMemoToPerson, deleteMemo, deletePerson, togglePromiseDone } =
+    usePeople();
   const person = getPersonById(id);
   const [draftMemo, setDraftMemo] = useState('');
   const [draftDate, setDraftDate] = useState(today());
@@ -42,7 +44,7 @@ export default function PersonDetailScreen() {
     setAiResult(null);
     setIncludeAction(true);
     try {
-      const result = await organizeMemo(draftMemo);
+      const result = await organizeMemo(draftMemo, buildAliasMap(people));
       setAiResult(result);
     } catch (e) {
       setAiError(e instanceof AiConfigError ? e.message : L.memoOrganizeFailed((e as Error).message));

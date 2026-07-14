@@ -9,6 +9,7 @@ import { DatePickerField } from '@/components/date-picker-field';
 import { GlowBackground, GradientButton, TitleAccent } from '@/components/futuristic';
 import { AppPalette, glow } from '@/constants/app-colors';
 import { organizeJournalEntry } from '@/lib/ai';
+import { buildAliasMap } from '@/lib/alias';
 import { maybeAutoLearn } from '@/lib/auto-learn';
 import { daysUntilBirthday } from '@/lib/birthday';
 import { computeStreak } from '@/lib/streak';
@@ -348,7 +349,7 @@ export default function TodayScreen() {
     let tags: string[] = [];
     if (useAiTagging) {
       try {
-        const result = await organizeJournalEntry(text.trim());
+        const result = await organizeJournalEntry(text.trim(), buildAliasMap(people));
         tags = result.tags;
       } catch {
         // AI未設定・失敗時はタグなしで保存

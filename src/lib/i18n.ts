@@ -28,8 +28,15 @@ const ja = {
   onboardingFeature2Desc: '自然な言葉で過去を検索。回答には必ず根拠の記録を表示します。',
   onboardingFeature3Title: '必要な日に受け取る',
   onboardingFeature3Desc: '今日必要な記憶だけを、Today Recallでお届けします。',
-  onboardingPrivacy: '記録はすべてこの端末内に保存されます。AI学習へのデータ提供は初期OFFです。',
+  onboardingPrivacy:
+    '記録は主にこの端末内に保存され、クラウドバックアップは端末上で暗号化してから保管します。AI学習へのデータ提供は初期設定でオフです。',
   onboardingStart: 'はじめる',
+  // AIの利用開示（AI必須のため、開始前に外部AI送信を明示して同意を得る）
+  aiDisclosureTitle: 'AIの利用とデータ送信について',
+  aiDisclosureDesc:
+    'Memory Twinは、回答の生成や記憶の整理・分析に Google Gemini（外部AI）を使用します。AI機能の利用時には、あなたが入力した文章と、回答に必要な関連メモ・会話・人物情報が Google へ送信されます。メールアドレス・ログイン認証情報・パスワードが送信されることはありません。',
+  onboardingAiConsentNote: '「はじめる」を押すと、上記のAIによるデータ処理に同意したものとみなされます。',
+  onboardingPolicyLink: 'プライバシーポリシーを読む',
 
   // 音声入力
   voiceButton: '音声入力',
@@ -444,7 +451,7 @@ const ja = {
   aboutCompany: '開発元',
   aboutName: 'アプリ名',
   aboutVersion: 'バージョン',
-  aboutVersionValue: '0.1.7（開発版）',
+  aboutVersionValue: '0.1.8（開発版）',
   contactButton: 'お問い合わせ',
   privacyPolicyLink: 'プライバシーポリシー',
   termsLink: '利用規約（Apple標準EULA）',
@@ -637,8 +644,14 @@ const en: typeof ja = {
   onboardingFeature2Desc: 'Ask in natural language. Every answer shows its sources.',
   onboardingFeature3Title: 'Get it back on the right day',
   onboardingFeature3Desc: 'Today Recall brings you only the memories you need today.',
-  onboardingPrivacy: 'Everything is stored on this device. Data contribution for AI training is OFF by default.',
+  onboardingPrivacy:
+    'Your records are stored primarily on this device, and cloud backups are encrypted on your device before being stored. Data contribution for AI training is OFF by default.',
   onboardingStart: 'Get started',
+  aiDisclosureTitle: 'AI use & data sent',
+  aiDisclosureDesc:
+    'Memory Twin uses Google Gemini (an external AI) to generate answers and to organize and analyze your memories. When you use an AI feature, the text you enter and the related memos, conversations, and people needed for the answer are sent to Google. Your email address, login credentials, and passwords are never sent.',
+  onboardingAiConsentNote: 'By tapping "Get started", you agree to the AI data processing described above.',
+  onboardingPolicyLink: 'Read the Privacy Policy',
 
   insightsTitle: 'Your year so far',
   insightsLinkDesc: 'Your activity and changes, computed from your records.',
@@ -1041,7 +1054,7 @@ const en: typeof ja = {
   aboutCompany: 'Developer',
   aboutName: 'App name',
   aboutVersion: 'Version',
-  aboutVersionValue: '0.1.7 (dev)',
+  aboutVersionValue: '0.1.8 (dev)',
   contactButton: 'Contact us',
   privacyPolicyLink: 'Privacy Policy',
   termsLink: 'Terms of Use (Apple standard EULA)',

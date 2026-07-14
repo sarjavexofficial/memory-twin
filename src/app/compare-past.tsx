@@ -8,6 +8,7 @@ import { AiSendNote } from '@/components/ai-send-note';
 import { GlowBackground, GradientButton } from '@/components/futuristic';
 import { AppPalette } from '@/constants/app-colors';
 import { AiConfigError, generatePastComparison, PastComparisonResult } from '@/lib/ai';
+import { buildAliasMap } from '@/lib/alias';
 import { daysAgoLocal, todayLocal } from '@/lib/date';
 import { useStrings } from '@/lib/i18n';
 import { makeThemed, useTheme } from '@/lib/theme';
@@ -70,7 +71,12 @@ export default function ComparePastScreen() {
     setResult(null);
     setSaved(false);
     try {
-      const comparison = await generatePastComparison(pastRecords, recentRecords, spanLabel);
+      const comparison = await generatePastComparison(
+        pastRecords,
+        recentRecords,
+        spanLabel,
+        buildAliasMap(people),
+      );
       setResult(comparison);
     } catch (e) {
       setError(e instanceof AiConfigError ? e.message : (e as Error).message);

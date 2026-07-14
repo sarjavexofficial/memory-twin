@@ -8,6 +8,7 @@ import { AiSendNote } from '@/components/ai-send-note';
 import { GlowBackground, GradientButton } from '@/components/futuristic';
 import { AppPalette, glow } from '@/constants/app-colors';
 import { AiConfigError, generateReview, ReviewResult } from '@/lib/ai';
+import { buildAliasMap } from '@/lib/alias';
 import {
   CommunityConfigError,
   hasAcceptedKodamaTerms,
@@ -102,7 +103,7 @@ export default function ReviewScreen() {
     setShared(false);
     setShareError(null);
     try {
-      const review = await generateReview(periodRecords, periodLabel);
+      const review = await generateReview(periodRecords, periodLabel, buildAliasMap(people));
       setResult(review);
     } catch (e) {
       setError(e instanceof AiConfigError ? e.message : (e as Error).message);

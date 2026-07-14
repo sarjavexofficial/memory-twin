@@ -12,8 +12,13 @@ export const zh: Dict = {
   onboardingFeature2Desc: '用自然语言搜索过去。回答一定附上依据的记录。',
   onboardingFeature3Title: '在需要的那天收到',
   onboardingFeature3Desc: 'Today Recall 只送上你今天需要的记忆。',
-  onboardingPrivacy: '所有记录只保存在这台设备上。向AI学习提供数据默认关闭。',
+  onboardingPrivacy: '记录主要保存在这台设备上，云备份会先在设备上加密再保存。向AI学习提供数据默认关闭。',
   onboardingStart: '开始使用',
+  aiDisclosureTitle: 'AI的使用与数据发送',
+  aiDisclosureDesc:
+    'Memory Twin 使用 Google Gemini（外部AI）来生成回答并整理、分析你的记忆。使用AI功能时，你输入的文字，以及回答所需的相关备忘、对话和人物信息会发送给 Google。邮箱、登录凭据和密码不会被发送。',
+  onboardingAiConsentNote: '点击“开始使用”即表示你同意上述由AI进行的数据处理。',
+  onboardingPolicyLink: '阅读隐私政策',
 
   // 音声入力
   voiceButton: '语音输入',
@@ -415,7 +420,7 @@ export const zh: Dict = {
   aboutCompany: '开发方',
   aboutName: '应用名称',
   aboutVersion: '版本',
-  aboutVersionValue: '0.1.7（开发版）',
+  aboutVersionValue: '0.1.8（开发版）',
   contactButton: '联系我们',
   privacyPolicyLink: '隐私政策',
   termsLink: '使用条款（Apple标准EULA）',

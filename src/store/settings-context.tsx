@@ -53,6 +53,7 @@ type Settings = {
   currentPlan: PlanKey; // 課金実装前のデモ用プラン状態
   billingCycle?: BillingCycle; // 有料プランの支払いサイクル（未設定=月払い）
   hasSeenOnboarding?: boolean; // 初回起動時のオンボーディング表示済みフラグ
+  aiConsentAt?: string; // 外部AI（Gemini）へのデータ送信に同意した日時。AI必須のためオンボーディング完了時に記録
   timezone?: string; // 住んでいる国のIANAタイムゾーン。'auto'=端末に従う
   proactiveNotify?: boolean; // AIからの能動メッセージを通知でも受け取る（初期OFF）
   notifyHour?: number; // 通知を受け取る時刻（その国の時刻・時のみ）
@@ -166,6 +167,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       return {
         ...prev,
         hasSeenOnboarding: true,
+        // AI必須のため、オンボーディング完了＝外部AI送信への情報提供済み同意として日時を記録
+        aiConsentAt: prev.aiConsentAt ?? new Date().toISOString(),
         ...(startTrial
           ? {
               currentPlan: 'pro' as PlanKey,

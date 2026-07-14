@@ -13,8 +13,13 @@ export const fr: Dict = {
   onboardingFeature3Title: 'Recevoir au bon moment',
   onboardingFeature3Desc: 'Today Recall ne vous apporte que les souvenirs utiles aujourd’hui.',
   onboardingPrivacy:
-    'Tout est stocké sur cet appareil. La contribution de données à l’entraînement de l’IA est désactivée par défaut.',
+    'Vos données sont stockées principalement sur cet appareil, et les sauvegardes cloud sont chiffrées sur l’appareil avant d’être stockées. La contribution de données à l’entraînement de l’IA est désactivée par défaut.',
   onboardingStart: 'Commencer',
+  aiDisclosureTitle: 'Utilisation de l’IA et données envoyées',
+  aiDisclosureDesc:
+    'Memory Twin utilise Google Gemini (une IA externe) pour générer des réponses et organiser/analyser vos souvenirs. Lorsque vous utilisez une fonction IA, le texte que vous saisissez ainsi que les mémos, conversations et personnes nécessaires à la réponse sont envoyés à Google. Votre adresse e-mail, vos identifiants de connexion et vos mots de passe ne sont jamais envoyés.',
+  onboardingAiConsentNote: 'En appuyant sur « Commencer », vous acceptez le traitement des données par l’IA décrit ci-dessus.',
+  onboardingPolicyLink: 'Lire la politique de confidentialité',
 
   // 音声入力
   voiceButton: 'Saisie vocale',
@@ -442,7 +447,7 @@ export const fr: Dict = {
   aboutCompany: 'Développeur',
   aboutName: 'Nom de l’app',
   aboutVersion: 'Version',
-  aboutVersionValue: '0.1.7 (dev)',
+  aboutVersionValue: '0.1.8 (dev)',
   contactButton: 'Nous contacter',
   privacyPolicyLink: 'Politique de confidentialité',
   termsLink: 'Conditions d’utilisation (CLUF standard Apple)',

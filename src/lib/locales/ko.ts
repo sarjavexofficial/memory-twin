@@ -12,8 +12,13 @@ export const ko: Dict = {
   onboardingFeature2Desc: '자연스러운 말로 과거를 검색. 답변에는 반드시 근거 기록을 표시합니다.',
   onboardingFeature3Title: '필요한 날에 받기',
   onboardingFeature3Desc: '오늘 필요한 기억만 Today Recall로 전해 드립니다.',
-  onboardingPrivacy: '기록은 모두 이 기기 안에만 저장됩니다. AI 학습 데이터 제공은 기본 OFF입니다.',
+  onboardingPrivacy: '기록은 주로 이 기기에 저장되며, 클라우드 백업은 기기에서 암호화한 뒤 보관됩니다. AI 학습 데이터 제공은 기본 OFF입니다.',
   onboardingStart: '시작하기',
+  aiDisclosureTitle: 'AI 이용 및 데이터 전송 안내',
+  aiDisclosureDesc:
+    'Memory Twin은 답변 생성과 기억 정리·분석에 Google Gemini(외부 AI)를 사용합니다. AI 기능을 사용할 때 입력한 문장과 답변에 필요한 관련 메모·대화·인물 정보가 Google로 전송됩니다. 이메일 주소·로그인 인증정보·비밀번호는 전송되지 않습니다.',
+  onboardingAiConsentNote: '“시작하기”를 누르면 위 AI 데이터 처리에 동의한 것으로 간주됩니다.',
+  onboardingPolicyLink: '개인정보 처리방침 보기',
 
   // 音声入力
   voiceButton: '음성 입력',
@@ -422,7 +427,7 @@ export const ko: Dict = {
   aboutCompany: '개발사',
   aboutName: '앱 이름',
   aboutVersion: '버전',
-  aboutVersionValue: '0.1.7(개발판)',
+  aboutVersionValue: '0.1.8(개발판)',
   contactButton: '문의하기',
   privacyPolicyLink: '개인정보 처리방침',
   termsLink: '이용약관(Apple 표준 EULA)',

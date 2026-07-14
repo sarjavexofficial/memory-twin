@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 
+import { AliasMap, identityAlias } from '@/lib/alias';
 import { languageInstruction } from '@/lib/ai-language';
 import { aiCallEnded, aiCallStarted } from '@/lib/ai-status';
 import { checkAiQuota, recordAiUse } from '@/lib/ai-usage';
@@ -170,7 +171,9 @@ export async function generateMonthlyNarrative(
   excerpts: string[],
   language: TranscribeLanguage,
   profileSummary?: string | null,
+  alias: AliasMap = identityAlias,
 ): Promise<string> {
+  const maskedExcerpts = excerpts.map((e) => alias.mask(e));
   const text = await callAi(
     [
       IDENTITY_GUARD,
@@ -182,11 +185,11 @@ export async function generateMonthlyNarrative(
       '',
       `統計: ${statsLine}`,
       '記録の抜粋:',
-      ...excerpts.map((e) => `- ${e}`),
+      ...maskedExcerpts.map((e) => `- ${e}`),
     ].join('\n'),
     500,
   );
-  return text.trim();
+  return alias.unmask(text.trim());
 }
 
 // ---- 人物メモの整理（決定・約束・次の行動の抽出）----
@@ -198,7 +201,10 @@ export type OrganizedMemo = {
   suggestedDueDate?: string;
 };
 
-export async function organizeMemo(rawText: string): Promise<OrganizedMemo> {
+export async function organizeMemo(
+  rawText: string,
+  alias: AliasMap = identityAlias,
+): Promise<OrganizedMemo> {
   const todayIso = todayLocal();
 
   const text = await callAi(
@@ -210,7 +216,7 @@ export async function organizeMemo(rawText: string): Promise<OrganizedMemo> {
       '出力は必ず次のJSON形式のみで返してください（説明文は不要）:',
       '{"cleanedText": "簡潔に整えたメモ文（1〜2文）", "tags": ["短いキーワード", "..."], "suggestedAction": "次に取るべき行動、なければnull", "suggestedDueDate": "YYYY-MM-DD、なければnull"}',
       '',
-      `メモ: ${rawText}`,
+      `メモ: ${alias.mask(rawText)}`,
     ].join('\n'),
   );
 
@@ -222,14 +228,17 @@ export async function organizeMemo(rawText: string): Promise<OrganizedMemo> {
   };
 
   return {
-    cleanedText: parsed.cleanedText ?? rawText,
-    tags: Array.isArray(parsed.tags) ? parsed.tags : [],
-    suggestedAction: parsed.suggestedAction || undefined,
+    cleanedText: alias.unmask(parsed.cleanedText ?? rawText),
+    tags: Array.isArray(parsed.tags) ? parsed.tags.map((t) => alias.unmask(t)) : [],
+    suggestedAction: parsed.suggestedAction ? alias.unmask(parsed.suggestedAction) : undefined,
     suggestedDueDate: parsed.suggestedDueDate || undefined,
   };
 }
 
-export async function organizeJournalEntry(rawText: string): Promise<{ tags: string[] }> {
+export async function organizeJournalEntry(
+  rawText: string,
+  alias: AliasMap = identityAlias,
+): Promise<{ tags: string[] }> {
   const text = await callAi(
     [
       languageInstruction(),
@@ -237,11 +246,11 @@ export async function organizeJournalEntry(rawText: string): Promise<{ tags: str
       '出力は必ず次のJSON形式のみで返してください（説明文は不要）:',
       '{"tags": ["タグ1", "タグ2"]}',
       '',
-      `日記: ${rawText}`,
+      `日記: ${alias.mask(rawText)}`,
     ].join('\n'),
   );
   const parsed = extractJson(text) as { tags?: string[] };
-  return { tags: Array.isArray(parsed.tags) ? parsed.tags : [] };
+  return { tags: Array.isArray(parsed.tags) ? parsed.tags.map((t) => alias.unmask(t)) : [] };
 }
 
 // ---- AIの理解ノート: 使うほどAIが本人を学ぶ ----
@@ -302,6 +311,7 @@ export async function searchMemory(
   question: string,
   relevantRecords: MemoryRecord[],
   profileSummary?: string | null,
+  alias: AliasMap = identityAlias,
 ): Promise<MemorySearchResult> {
   if (relevantRecords.length === 0) {
     return {
@@ -315,11 +325,11 @@ export async function searchMemory(
       // 誰の記録かをAIが取り違えないよう明示的にラベル付けする
       const who =
         r.kind === 'person' || r.kind === 'promise'
-          ? `${r.personName}さんについてのメモ`
+          ? `${alias.aliasFor(r.personName ?? '')}についてのメモ`
           : r.source
             ? `${r.source}から取り込んだ自分の記録`
             : '自分の日記';
-      return `[${who} ${r.date}] ${r.text}`;
+      return `[${who} ${r.date}] ${alias.mask(r.text)}`;
     })
     .join('\n');
 
@@ -342,15 +352,16 @@ export async function searchMemory(
       '関連する記録:',
       log,
       '',
-      `質問: ${question}`,
+      `質問: ${alias.mask(question)}`,
     ].join('\n'),
     600,
   );
 
   const parsed = extractJson(text) as { answer?: string; sources?: string[] };
+  // 回答・根拠に含まれる別名を実名へ戻してから表示する
   return {
-    answer: parsed.answer ?? '',
-    sources: Array.isArray(parsed.sources) ? parsed.sources : [],
+    answer: alias.unmask(parsed.answer ?? ''),
+    sources: Array.isArray(parsed.sources) ? parsed.sources.map((s) => alias.unmask(s)) : [],
   };
 }
 
@@ -365,16 +376,17 @@ export type ReviewResult = {
 export async function generateReview(
   records: MemoryRecord[],
   periodLabel: string,
+  alias: AliasMap = identityAlias,
 ): Promise<ReviewResult> {
   const log = records
     .slice(0, 80) // 送信量を抑える（検索エンジンの方針に合わせ全件は送らない）
     .map((r) => {
-      // 誰の出来事かをAIが取り違えないよう、記録の種類を明示的にラベル付けする
+      // 誰の出来事かをAIが取り違えないよう、記録の種類を明示的にラベル付けする。人物名は別名化
       const label =
         r.kind === 'person' || r.kind === 'promise'
-          ? `〔${r.personName}さんについてのメモ〕`
+          ? `〔${alias.aliasFor(r.personName ?? '')}についてのメモ〕`
           : '〔自分の日記〕';
-      return `${label}[${r.date}] ${r.text}`;
+      return `${label}[${r.date}] ${alias.mask(r.text)}`;
     })
     .join('\n');
 
@@ -400,9 +412,9 @@ export async function generateReview(
 
   const parsed = extractJson(text) as { summary?: string; highlights?: string[]; nextStep?: string };
   return {
-    summary: parsed.summary ?? '',
-    highlights: Array.isArray(parsed.highlights) ? parsed.highlights : [],
-    nextStep: parsed.nextStep ?? '',
+    summary: alias.unmask(parsed.summary ?? ''),
+    highlights: Array.isArray(parsed.highlights) ? parsed.highlights.map((h) => alias.unmask(h)) : [],
+    nextStep: alias.unmask(parsed.nextStep ?? ''),
   };
 }
 
@@ -419,17 +431,18 @@ export async function generatePastComparison(
   pastRecords: MemoryRecord[],
   recentRecords: MemoryRecord[],
   pastLabel: string,
+  alias: AliasMap = identityAlias,
 ): Promise<PastComparisonResult> {
-  // 振り返りと同じく、誰の出来事かをラベルで明示して送る
+  // 振り返りと同じく、誰の出来事かをラベルで明示して送る。人物名は別名化してから送る
   const format = (records: MemoryRecord[]) =>
     records
       .slice(0, 60) // 2期間分送るため、振り返り(80件)より片側の上限は絞る
       .map((r) => {
         const label =
           r.kind === 'person' || r.kind === 'promise'
-            ? `〔${r.personName}さんについてのメモ〕`
+            ? `〔${alias.aliasFor(r.personName ?? '')}についてのメモ〕`
             : '〔自分の日記〕';
-        return `${label}[${r.date}] ${r.text}`;
+        return `${label}[${r.date}] ${alias.mask(r.text)}`;
       })
       .join('\n');
 
@@ -463,10 +476,10 @@ export async function generatePastComparison(
     message?: string;
   };
   return {
-    summary: parsed.summary ?? '',
-    changes: Array.isArray(parsed.changes) ? parsed.changes : [],
-    worries: parsed.worries ?? '',
-    message: parsed.message ?? '',
+    summary: alias.unmask(parsed.summary ?? ''),
+    changes: Array.isArray(parsed.changes) ? parsed.changes.map((c) => alias.unmask(c)) : [],
+    worries: alias.unmask(parsed.worries ?? ''),
+    message: alias.unmask(parsed.message ?? ''),
   };
 }
 
@@ -481,6 +494,7 @@ export type ExtractedItem = {
 export async function extractCommitments(
   records: { date: string; text: string }[],
   maxItems = 30,
+  alias: AliasMap = identityAlias,
 ): Promise<ExtractedItem[]> {
   if (records.length === 0) {
     throw new Error('抽出できる記録がありません。');
@@ -488,7 +502,7 @@ export async function extractCommitments(
 
   const log = records
     .slice(0, 100) // 送信量を抑える（検索エンジンの方針に合わせ全件は送らない）
-    .map((r) => `[${r.date}] ${r.text}`)
+    .map((r) => `[${r.date}] ${alias.mask(r.text)}`)
     .join('\n');
 
   const text = await callAi(
@@ -517,5 +531,6 @@ export async function extractCommitments(
         typeof item.text === 'string' &&
         typeof item.date === 'string',
     )
+    .map((item) => ({ ...item, text: alias.unmask(item.text) }))
     .slice(0, maxItems);
 }

@@ -568,6 +568,20 @@ export default function SettingsScreen() {
           )}
         </View>
 
+        {/* AI必須のため、AI利用と外部送信の内容を設定でも常時確認できるようにする */}
+        <View style={styles.card}>
+          <View style={styles.aiDisclosureHeader}>
+            <Ionicons name="sparkles-outline" size={18} color={AppColors.primary} />
+            <Text style={styles.cardTitle}>{L.aiDisclosureTitle}</Text>
+          </View>
+          <Text style={styles.privacyDesc}>{L.aiDisclosureDesc}</Text>
+          <Pressable
+            onPress={() => Linking.openURL('https://sarjavexofficial.github.io/privacy.html')}
+            hitSlop={8}>
+            <Text style={styles.aiDisclosureLink}>{L.onboardingPolicyLink}</Text>
+          </Pressable>
+        </View>
+
         <View style={styles.card}>
           <Text style={styles.cardTitle}>{L.privacySection}</Text>
           {privacyItems.map((item) => (
@@ -795,6 +809,8 @@ const makeStyles = (AppColors: AppPalette) =>
   privacyDesc: { fontSize: 12, color: AppColors.muted, lineHeight: 17, marginTop: 2 },
   consentDivider: { height: 1, backgroundColor: AppColors.line },
   consentTitleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  aiDisclosureHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  aiDisclosureLink: { fontSize: 13, color: AppColors.primary, fontWeight: '700' },
   consentHistory: { fontSize: 11, color: AppColors.muted, marginTop: 4 },
   dataSummary: { fontSize: 13, color: AppColors.muted },
   actionButton: {
