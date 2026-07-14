@@ -3,13 +3,18 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useState } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { AppPalette } from '@/constants/app-colors';
+import { clearAiProfile } from '@/lib/ai-profile';
+import { deleteCloudBackup } from '@/lib/cloud-backup';
 import { confirmAsync } from '@/lib/confirm';
 import { useStrings } from '@/lib/i18n';
 import { makeThemed, useTheme } from '@/lib/theme';
 import { Account, useAuth } from '@/store/auth-context';
+import { useJournal } from '@/store/journal-context';
+import { usePeople } from '@/store/people-context';
+import { useTasks } from '@/store/tasks-context';
 
 // ブラウザ経由のOAuth（Google）から戻ってきたときにセッションを閉じる
 WebBrowser.maybeCompleteAuthSession();
@@ -24,8 +29,41 @@ export function AccountSection() {
   const { styles, AppColors } = useTheme(themed);
   const L = useStrings();
   const { account, saveAccount, signOut } = useAuth();
+  const { clearAllPeople } = usePeople();
+  const { clearAllEntries } = useJournal();
+  const { clearAllTasks } = useTasks();
   const [appleAvailable, setAppleAvailable] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // アカウント削除フロー（Apple 5.1.1(v)対応）: 合言葉入力でクラウドも消せる
+  const [showDelete, setShowDelete] = useState(false);
+  const [deletePass, setDeletePass] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [deleteDone, setDeleteDone] = useState<string | null>(null);
+
+  async function handleDeleteAccount() {
+    setDeleting(true);
+    let cloudNote = '';
+    try {
+      // 合言葉が入っていればクラウドの塊も消す。失敗（合言葉違い・未設定等）でも端末側の削除は進める
+      if (account && deletePass.trim()) {
+        try {
+          await deleteCloudBackup({ provider: account.provider, userId: account.userId }, deletePass.trim());
+        } catch {
+          cloudNote = L.deleteAccountCloudFailed;
+        }
+      }
+      clearAllPeople();
+      clearAllEntries();
+      clearAllTasks();
+      await clearAiProfile();
+      signOut();
+      setShowDelete(false);
+      setDeletePass('');
+      setDeleteDone(cloudNote ? `${L.deleteAccountDone} ${cloudNote}` : L.deleteAccountDone);
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   useEffect(() => {
     if (Platform.OS === 'ios') {
@@ -69,6 +107,13 @@ export function AccountSection() {
       <Text style={styles.cardTitle}>{L.accountSection}</Text>
       <Text style={styles.desc}>{L.accountDesc}</Text>
 
+      {deleteDone && (
+        <View style={styles.doneRow}>
+          <Ionicons name="checkmark-circle" size={15} color={AppColors.success} />
+          <Text style={styles.doneText}>{deleteDone}</Text>
+        </View>
+      )}
+
       {account ? (
         <>
           <View style={styles.signedInRow}>
@@ -84,6 +129,43 @@ export function AccountSection() {
           <Pressable style={styles.outlineButton} onPress={handleSignOut}>
             <Text style={styles.outlineButtonText}>{L.signOutButton}</Text>
           </Pressable>
+
+          {/* アカウント削除（Apple 5.1.1(v)）: 端末データ消去＋サインアウト＋任意でクラウド削除 */}
+          {!showDelete ? (
+            <Pressable onPress={() => setShowDelete(true)} hitSlop={6}>
+              <Text style={styles.deleteLink}>{L.deleteAccountButton}</Text>
+            </Pressable>
+          ) : (
+            <View style={styles.deletePanel}>
+              <Text style={styles.deletePanelText}>{L.deleteAccountMessage}</Text>
+              <TextInput
+                value={deletePass}
+                onChangeText={setDeletePass}
+                placeholder={L.deleteAccountPassPlaceholder}
+                placeholderTextColor={AppColors.muted}
+                style={styles.deleteInput}
+                secureTextEntry
+                autoCapitalize="none"
+                editable={!deleting}
+              />
+              <View style={styles.deleteButtonRow}>
+                <Pressable
+                  style={styles.deleteCancelButton}
+                  onPress={() => setShowDelete(false)}
+                  disabled={deleting}>
+                  <Text style={styles.deleteCancelText}>{L.personCancel}</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.deleteConfirmButton, deleting && { opacity: 0.6 }]}
+                  onPress={handleDeleteAccount}
+                  disabled={deleting}>
+                  <Text style={styles.deleteConfirmText}>
+                    {deleting ? L.savingButton : L.deleteAccountConfirm}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          )}
         </>
       ) : (
         <>
@@ -198,6 +280,51 @@ const makeStyles = (AppColors: AppPalette) =>
     outlineButtonText: { color: AppColors.muted, fontWeight: '700', fontSize: 13 },
     note: { fontSize: 11, color: AppColors.muted, lineHeight: 16 },
     error: { fontSize: 12, color: AppColors.danger },
+    doneRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    doneText: { flex: 1, fontSize: 12, color: AppColors.success, fontWeight: '600', lineHeight: 17 },
+    deleteLink: { fontSize: 12, color: AppColors.danger, fontWeight: '700', textAlign: 'center', paddingVertical: 6 },
+    deletePanel: {
+      borderWidth: 1,
+      borderColor: AppColors.danger,
+      borderRadius: 12,
+      padding: 12,
+      gap: 10,
+      backgroundColor: AppColors.dangerSoft,
+    },
+    deletePanelText: { fontSize: 12, color: AppColors.text, lineHeight: 18 },
+    deleteInput: {
+      borderWidth: 1,
+      borderColor: AppColors.line,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      minHeight: 42,
+      fontSize: 14,
+      color: AppColors.text,
+      backgroundColor: AppColors.background,
+    },
+    deleteButtonRow: { flexDirection: 'row', gap: 10 },
+    deleteCancelButton: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1.5,
+      borderColor: AppColors.line,
+      borderRadius: 10,
+      paddingVertical: 10,
+      minHeight: 42,
+    },
+    deleteCancelText: { color: AppColors.muted, fontWeight: '700', fontSize: 13 },
+    deleteConfirmButton: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: AppColors.danger,
+      borderRadius: 10,
+      paddingVertical: 10,
+      minHeight: 42,
+    },
+    deleteConfirmText: { color: '#ffffff', fontWeight: '800', fontSize: 13 },
   });
 
 const themed = makeThemed(makeStyles);

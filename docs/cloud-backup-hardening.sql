@@ -92,5 +92,29 @@ begin
 end;
 $get$;
 
+-- 削除(アプリ内アカウント削除フロー用・2026-07-14追加)。
+-- 本人が合言葉から導出したIDの塊だけを消せる。中身はゼロ知識だが「明示的に消す」導線を提供する(Apple 5.1.1(v))。
+create or replace function delete_backup(backup_id text, device text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $del$
+begin
+  if backup_id !~ '^[0-9a-f]{64}$' then
+    raise exception 'invalid backup id';
+  end if;
+  if device is null or length(device) < 8 or length(device) > 64 then
+    raise exception 'invalid device';
+  end if;
+  -- 1端末1日20回まで(削除の再試行に十分)
+  if bump_backup_op(device, 'del') > 20 then
+    raise exception 'rate limit exceeded';
+  end if;
+  delete from cloud_backups cb where cb.id = backup_id;
+end;
+$del$;
+
 grant execute on function put_backup(text, text, text) to anon;
 grant execute on function get_backup(text, text) to anon;
+grant execute on function delete_backup(text, text) to anon;

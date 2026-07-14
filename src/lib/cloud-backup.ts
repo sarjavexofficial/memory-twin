@@ -155,3 +155,16 @@ export async function downloadCloudBackup(
   const parsed = JSON.parse(decrypt(passphrase, packedHex)) as BackupPayload;
   return { people: parsed.people ?? [], journal: parsed.journal ?? [], tasks: parsed.tasks ?? [] };
 }
+
+// 削除（アカウント削除フローで使用）: アカウント＋合言葉からIDを導出し、その塊をサーバーから消す。
+// 中身は元々ゼロ知識（運営も読めない）だが、本人が明示的に削除できる導線を用意する（Apple 5.1.1(v)対応）。
+// 合言葉を知っている本人以外はIDを導出できないため、他人のバックアップは削除できない。
+export async function deleteCloudBackup(
+  account: BackupAccount,
+  passphrase: string,
+): Promise<void> {
+  await callRpc('delete_backup', {
+    backup_id: backupId(account, passphrase),
+    device: await getDeviceId(),
+  });
+}

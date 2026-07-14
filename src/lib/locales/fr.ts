@@ -241,6 +241,13 @@ export const fr: Dict = {
   signOutButton: 'Se déconnecter',
   signOutConfirmTitle: 'Se déconnecter ?',
   signOutConfirmMessage: 'Vos enregistrements restent sur cet appareil. Reconnectez-vous quand vous voulez.',
+  deleteAccountButton: 'Supprimer le compte',
+  deleteAccountMessage:
+    'Toutes les données de cet appareil (personnes, notes, tâches et la note de compréhension de l’IA) seront supprimées et vous serez déconnecté. Action irréversible. Si vous avez une sauvegarde cloud, saisissez votre phrase secrète pour la supprimer aussi du cloud (facultatif).',
+  deleteAccountPassPlaceholder: 'Phrase secrète (facultatif — pour supprimer aussi la copie cloud)',
+  deleteAccountConfirm: 'Supprimer',
+  deleteAccountDone: 'Votre compte et les données de cet appareil ont été supprimés.',
+  deleteAccountCloudFailed: 'La sauvegarde cloud n’a pas pu être supprimée (phrase secrète peut-être incorrecte).',
   accountAppleNote: 'La connexion Apple n’est disponible que sur iPhone.',
   accountGoogleNotConfigured: 'La connexion Google sera disponible une fois la configuration terminée.',
   signInFailed: 'Échec de la connexion.',
@@ -363,11 +370,11 @@ export const fr: Dict = {
   // 設定
   settingsTitle: 'Réglages',
   privacySection: 'Confidentialité et IA',
-  privacyLocalTitle: 'Stocké uniquement sur cet appareil',
-  privacyLocalDesc: 'Tous vos enregistrements restent sur l’appareil. Aucun envoi automatique vers nos serveurs.',
-  privacyAiTitle: 'L’IA ne s’exécute que sur votre action',
+  privacyLocalTitle: 'Stocké principalement sur cet appareil',
+  privacyLocalDesc: 'Vos enregistrements restent principalement sur l’appareil. Ils n’en sortent que pour les fonctions IA et les sauvegardes chiffrées optionnelles.',
+  privacyAiTitle: 'Envoyé à l’IA seulement si nécessaire',
   privacyAiDesc:
-    'Seuls les enregistrements nécessaires à votre action sont envoyés à l’IA. Chaque écran indique ce qui est envoyé.',
+    'Seuls les enregistrements nécessaires à l’action sont envoyés (les noms sont remplacés par des alias). Chaque écran indique ce qui est envoyé. Des extraits ne sont envoyés automatiquement que si vous activez l’auto-apprentissage Pro (désactivé par défaut).',
   privacyAdsTitle: 'Aucun usage publicitaire',
   privacyAdsDesc:
     'Vos enregistrements, personnes et échanges ne sont jamais utilisés ni vendus à des fins publicitaires.',
@@ -447,7 +454,7 @@ export const fr: Dict = {
   aboutCompany: 'Développeur',
   aboutName: 'Nom de l’app',
   aboutVersion: 'Version',
-  aboutVersionValue: '0.1.8 (dev)',
+  aboutVersionValue: '0.1.9 (dev)',
   contactButton: 'Nous contacter',
   privacyPolicyLink: 'Politique de confidentialité',
   termsLink: 'Conditions d’utilisation (CLUF standard Apple)',

@@ -17,6 +17,12 @@ const GEMINI_MODEL = 'gemini-2.5-flash';
 const ANTHROPIC_API_KEY = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY;
 const ANTHROPIC_MODEL = 'claude-haiku-4-5';
 
+// 本番はSarjavexリレー一本に固定する（APIキーをアプリ内へ埋め込まない）。
+// Gemini/Anthropicへの直接続は開発時（__DEV__）だけ許可する保険的な経路。
+// これにより、万一ビルドにキーが混入しても本番では使われず、常にサーバー経由になる。
+const ALLOW_DIRECT_KEYS = __DEV__;
+const AI_NOT_CONFIGURED = 'AI機能の接続設定が完了していません。時間をおいて再度お試しください。';
+
 export class AiConfigError extends Error {}
 
 // どの画面のAI応答でも、自社ブランド「Sarjavex AI」として振る舞い、基盤モデルの提供元を明かさないための共通指示
@@ -107,10 +113,9 @@ async function callAnthropic(prompt: string, maxTokens: number): Promise<string>
 }
 
 async function callAi(prompt: string, maxTokens = 400): Promise<string> {
-  if (!SARJAVEX_API_URL && !GEMINI_API_KEY && !ANTHROPIC_API_KEY) {
-    throw new AiConfigError(
-      'AI機能の接続設定がまだ完了していません。無料で始めるには https://aistudio.google.com でAPIキーを取得し、.env に EXPO_PUBLIC_GEMINI_API_KEY として設定してください。',
-    );
+  const canDirect = ALLOW_DIRECT_KEYS && (GEMINI_API_KEY || ANTHROPIC_API_KEY);
+  if (!SARJAVEX_API_URL && !canDirect) {
+    throw new AiConfigError(AI_NOT_CONFIGURED);
   }
   await checkAiQuota(); // プランごとの月間上限を確認
   const text = SARJAVEX_API_URL
@@ -138,10 +143,9 @@ const POLISH_PROMPTS: Record<TranscribeLanguage, string> = {
 };
 
 export async function polishEcho(rawText: string, language: TranscribeLanguage): Promise<string> {
-  if (!SARJAVEX_API_URL && !GEMINI_API_KEY && !ANTHROPIC_API_KEY) {
-    throw new AiConfigError(
-      'AI機能の接続設定がまだ完了していません。無料で始めるには https://aistudio.google.com でAPIキーを取得し、.env に EXPO_PUBLIC_GEMINI_API_KEY として設定してください。',
-    );
+  const canDirect = ALLOW_DIRECT_KEYS && (GEMINI_API_KEY || ANTHROPIC_API_KEY);
+  if (!SARJAVEX_API_URL && !canDirect) {
+    throw new AiConfigError(AI_NOT_CONFIGURED);
   }
   const prompt = `${POLISH_PROMPTS[language] ?? POLISH_PROMPTS.ja}\n\n${rawText}`;
   const text = SARJAVEX_API_URL
