@@ -17,6 +17,7 @@ type NewPersonInput = {
   likes: string[];
   photoUri?: string;
   color?: string;
+  tags?: string[];
 };
 
 type PeopleContextValue = {
@@ -103,6 +104,7 @@ export function PeopleProvider({ children }: { children: ReactNode }) {
       avatarEmoji: AVATAR_EMOJIS[Math.floor(Math.random() * AVATAR_EMOJIS.length)],
       photoUri: input.photoUri,
       color: input.color,
+      tags: input.tags && input.tags.length > 0 ? input.tags : undefined,
       birthday: input.birthday || undefined,
       likes: input.likes,
       dislikes: [],

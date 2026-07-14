@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,14 +14,33 @@ import { usePeople } from '@/store/people-context';
 export default function AddPersonScreen() {
   const { styles, AppColors } = useTheme(themed);
   const L = useStrings();
-  const { addPerson, isDuplicateName } = usePeople();
+  const { people, addPerson, isDuplicateName } = usePeople();
   const [name, setName] = useState('');
   const [relation, setRelation] = useState('');
   const [birthday, setBirthday] = useState('');
   const [likes, setLikes] = useState('');
+  const [tags, setTags] = useState('');
   const [photoUri, setPhotoUri] = useState<string | undefined>(undefined);
   const [color, setColor] = useState<string | undefined>(undefined);
   const [photoError, setPhotoError] = useState<string | null>(null);
+
+  // 既存の人物から使用中のタグを集めて「よく使うタグ」候補として出す（表記統一を促す）
+  const existingTags = useMemo(() => {
+    const seen = new Set<string>();
+    for (const p of people) for (const t of p.tags ?? []) seen.add(t);
+    return Array.from(seen).sort();
+  }, [people]);
+
+  // 入力欄に無いタグだけを候補チップに出す（区切りは追加/編集/検索で共通）
+  const selectedTags = useMemo(
+    () => tags.split(/[,、\s]+/).map((t) => t.trim()).filter(Boolean),
+    [tags],
+  );
+  const tagSuggestions = existingTags.filter((t) => !selectedTags.includes(t)).slice(0, 8);
+
+  function appendTag(tag: string) {
+    setTags((prev) => (prev.trim() ? `${prev.replace(/[,、\s]+$/, '')}, ${tag}` : tag));
+  }
 
   async function handlePickPhoto() {
     setPhotoError(null);
@@ -64,6 +83,7 @@ export default function AddPersonScreen() {
         .split(/[,、]/)
         .map((s) => s.trim())
         .filter(Boolean),
+      tags: selectedTags,
       photoUri,
       color,
     });
@@ -134,6 +154,31 @@ export default function AddPersonScreen() {
               </Pressable>
             ))}
           </View>
+        </View>
+
+        <View style={styles.field}>
+          <Text style={styles.label}>{L.personTagsLabel}</Text>
+          <TextInput
+            value={tags}
+            onChangeText={setTags}
+            placeholder={L.personTagsPlaceholder}
+            placeholderTextColor={AppColors.muted}
+            style={styles.input}
+            autoCapitalize="none"
+          />
+          {tagSuggestions.length > 0 && (
+            <>
+              <Text style={styles.tagSuggestLabel}>{L.personTagsSuggest}</Text>
+              <View style={styles.tagSuggestRow}>
+                {tagSuggestions.map((t) => (
+                  <Pressable key={t} style={styles.tagSuggestChip} onPress={() => appendTag(t)}>
+                    <Ionicons name="add" size={12} color={AppColors.primary} />
+                    <Text style={styles.tagSuggestChipText}>{t}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </>
+          )}
         </View>
 
         <View style={styles.field}>
@@ -218,6 +263,20 @@ const makeStyles = (AppColors: AppPalette) =>
       justifyContent: 'center',
     },
     colorSwatchSelected: { borderWidth: 2.5, borderColor: AppColors.text },
+    tagSuggestLabel: { fontSize: 12, color: AppColors.muted, fontWeight: '700', marginTop: 4 },
+    tagSuggestRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 },
+    tagSuggestChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 2,
+      paddingHorizontal: 10,
+      paddingVertical: 7,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: AppColors.primary,
+      backgroundColor: AppColors.primarySoft,
+    },
+    tagSuggestChipText: { fontSize: 12, color: AppColors.primary, fontWeight: '700' },
     note: { fontSize: 13, color: AppColors.muted, textAlign: 'center', marginTop: 8, lineHeight: 18 },
   });
 

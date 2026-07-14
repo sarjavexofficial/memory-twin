@@ -15,6 +15,7 @@ type PersonTexts = {
   birthday: string;
   likes: string[];
   dislikes: string[];
+  tags: string[]; // 人物タグ（分類・横断検索のデモを兼ねる）
   place: string;
   memos: string[];
   promiseAction: string; // 3人目の最新メモに付く「約束」（Today Recallのデモを兼ねる）
@@ -39,6 +40,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: '3月14日',
       likes: ['猫', 'カフェ巡り', '洋画'],
       dislikes: ['虫'],
+      tags: ['大学', '友人'],
       place: '渋谷のカフェ',
       memos: [
         '猫を飼い始めたと言っていた。名前は「もち」。',
@@ -53,6 +55,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: '11月2日',
       likes: ['サッカー', 'コーヒー'],
       dislikes: ['辛い食べ物'],
+      tags: ['サークル', '後輩'],
       place: '大学の食堂',
       memos: [
         'コーヒーが好きで、最近ハンドドリップを始めたらしい。',
@@ -66,6 +69,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: '8月20日',
       likes: ['旅行', 'ワイン'],
       dislikes: [],
+      tags: ['職場', '先輩'],
       place: 'オフィス',
       memos: [
         '来月、出張に行くと話していた。',
@@ -79,6 +83,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: '1月30日',
       likes: ['写真', '登山'],
       dislikes: ['高いところ（でも登山は好きらしい）'],
+      tags: ['高校', '友人'],
       place: 'オンライン通話',
       memos: ['新しいカメラを買ったと言っていた。'],
       promiseAction: '出張の感想を聞く',
@@ -91,6 +96,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: 'March 14',
       likes: ['Cats', 'Café hopping', 'Movies'],
       dislikes: ['Bugs'],
+      tags: ['College', 'Friend'],
       place: 'Café downtown',
       memos: [
         'Said she got a cat. Its name is Mochi.',
@@ -105,6 +111,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: 'November 2',
       likes: ['Soccer', 'Coffee'],
       dislikes: ['Spicy food'],
+      tags: ['Club', 'Junior'],
       place: 'Campus cafeteria',
       memos: [
         'Loves coffee — recently got into hand-drip brewing.',
@@ -118,6 +125,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: 'August 20',
       likes: ['Travel', 'Wine'],
       dislikes: [],
+      tags: ['Work', 'Senior'],
       place: 'Office',
       memos: [
         'Said she has a business trip next month.',
@@ -131,6 +139,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: 'January 30',
       likes: ['Photography', 'Hiking'],
       dislikes: ['Heights (still loves hiking)'],
+      tags: ['High school', 'Friend'],
       place: 'Video call',
       memos: ['Said she bought a new camera.'],
       promiseAction: 'Ask how the business trip went',
@@ -143,6 +152,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: '3月14日',
       likes: ['猫', '逛咖啡馆', '电影'],
       dislikes: ['虫子'],
+      tags: ['大学', '朋友'],
       place: '市中心的咖啡馆',
       memos: [
         '说开始养猫了，名字叫“年糕”。',
@@ -157,6 +167,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: '11月2日',
       likes: ['足球', '咖啡'],
       dislikes: ['辣的食物'],
+      tags: ['社团', '学弟'],
       place: '学校食堂',
       memos: ['很喜欢咖啡，最近开始玩手冲。', '说求职想做销售岗位。'],
       promiseAction: '问问出差的感受',
@@ -167,6 +178,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: '8月20日',
       likes: ['旅行', '红酒'],
       dislikes: [],
+      tags: ['公司', '前辈'],
       place: '办公室',
       memos: ['说下个月要出差。', '爱红酒，周末常去酒庄。'],
       promiseAction: '问问出差的感受',
@@ -177,6 +189,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: '1月30日',
       likes: ['摄影', '爬山'],
       dislikes: ['恐高（但还是喜欢爬山）'],
+      tags: ['高中', '朋友'],
       place: '线上通话',
       memos: ['说买了新相机。'],
       promiseAction: '问问出差的感受',
@@ -189,6 +202,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: '3월 14일',
       likes: ['고양이', '카페 투어', '영화'],
       dislikes: ['벌레'],
+      tags: ['대학', '친구'],
       place: '시내 카페',
       memos: [
         '고양이를 키우기 시작했다고 한다. 이름은 "모찌".',
@@ -203,6 +217,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: '11월 2일',
       likes: ['축구', '커피'],
       dislikes: ['매운 음식'],
+      tags: ['동아리', '후배'],
       place: '학생 식당',
       memos: ['커피를 좋아해서 최근 핸드드립을 시작했다고 한다.', '취업에서 영업직을 지망한다고 했다.'],
       promiseAction: '출장 소감 물어보기',
@@ -213,6 +228,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: '8월 20일',
       likes: ['여행', '와인'],
       dislikes: [],
+      tags: ['회사', '선배'],
       place: '사무실',
       memos: ['다음 달 출장을 간다고 했다.', '와인을 좋아해서 주말마다 와이너리를 다닌다고 한다.'],
       promiseAction: '출장 소감 물어보기',
@@ -223,6 +239,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: '1월 30일',
       likes: ['사진', '등산'],
       dislikes: ['높은 곳(그래도 등산은 좋아함)'],
+      tags: ['고등학교', '친구'],
       place: '화상 통화',
       memos: ['새 카메라를 샀다고 했다.'],
       promiseAction: '출장 소감 물어보기',
@@ -235,6 +252,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: '14 mars',
       likes: ['Chats', 'Cafés', 'Cinéma'],
       dislikes: ['Insectes'],
+      tags: ['Fac', 'Amie'],
       place: 'Café du centre',
       memos: [
         'Elle a adopté un chat. Il s’appelle « Mochi ».',
@@ -249,6 +267,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: '2 novembre',
       likes: ['Football', 'Café'],
       dislikes: ['Plats épicés'],
+      tags: ['Club', 'Cadet'],
       place: 'Cafétéria du campus',
       memos: [
         'Fan de café — il s’est mis au café filtre récemment.',
@@ -262,6 +281,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: '20 août',
       likes: ['Voyages', 'Vin'],
       dislikes: [],
+      tags: ['Travail', 'Senior'],
       place: 'Bureau',
       memos: [
         'Elle part en déplacement professionnel le mois prochain.',
@@ -275,6 +295,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: '30 janvier',
       likes: ['Photo', 'Randonnée'],
       dislikes: ['Le vertige (mais adore la rando)'],
+      tags: ['Lycée', 'Amie'],
       place: 'Appel vidéo',
       memos: ['Elle s’est acheté un nouvel appareil photo.'],
       promiseAction: 'Lui demander comment s’est passé le déplacement',
@@ -287,6 +308,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: '14 de março',
       likes: ['Gatos', 'Cafeterias', 'Filmes'],
       dislikes: ['Insetos'],
+      tags: ['Faculdade', 'Amiga'],
       place: 'Café no centro',
       memos: [
         'Disse que adotou um gato. O nome é "Mochi".',
@@ -301,6 +323,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: '2 de novembro',
       likes: ['Futebol', 'Café'],
       dislikes: ['Comida apimentada'],
+      tags: ['Clube', 'Calouro'],
       place: 'Refeitório do campus',
       memos: ['Adora café — começou com métodos coados recentemente.', 'Disse que quer uma vaga em vendas.'],
       promiseAction: 'Perguntar como foi a viagem de trabalho',
@@ -311,6 +334,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: '20 de agosto',
       likes: ['Viagens', 'Vinho'],
       dislikes: [],
+      tags: ['Trabalho', 'Sênior'],
       place: 'Escritório',
       memos: ['Disse que vai viajar a trabalho no mês que vem.', 'Ama vinho — passa fins de semana visitando vinícolas.'],
       promiseAction: 'Perguntar como foi a viagem de trabalho',
@@ -321,6 +345,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       birthday: '30 de janeiro',
       likes: ['Fotografia', 'Trilhas'],
       dislikes: ['Medo de altura (mas ama trilha)'],
+      tags: ['Colégio', 'Amiga'],
       place: 'Chamada de vídeo',
       memos: ['Disse que comprou uma câmera nova.'],
       promiseAction: 'Perguntar como foi a viagem de trabalho',
@@ -341,6 +366,7 @@ export function samplePeopleFor(language: Language): Person[] {
       birthday: t.birthday,
       likes: t.likes,
       dislikes: t.dislikes,
+      tags: t.tags,
       lastContact: s.lastContact,
       place: t.place,
       sample: true,

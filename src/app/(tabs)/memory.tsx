@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, FlatList, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AiSendNote } from '@/components/ai-send-note';
@@ -78,6 +78,18 @@ function PersonCard({ person }: { person: Person }) {
             {person.relation}
           </Text>
         </View>
+        {person.tags && person.tags.length > 0 && (
+          <View style={styles.cardTagRow}>
+            {person.tags.slice(0, 3).map((t) => (
+              <View key={t} style={styles.cardTagChip}>
+                <Text style={styles.cardTagChipText}>{t}</Text>
+              </View>
+            ))}
+            {person.tags.length > 3 && (
+              <Text style={styles.cardTagMore}>+{person.tags.length - 3}</Text>
+            )}
+          </View>
+        )}
         {latestMemo && (
           <Text style={styles.memoPreview} numberOfLines={1}>
             {latestMemo.text}
@@ -105,6 +117,8 @@ export default function MemoryScreen() {
   const { people, isLoaded } = usePeople();
   const { entries, addEntry } = useJournal();
   const [query, setQuery] = useState('');
+  // タグでの絞り込み（企画書の「同じ関係性や所属の人物をまとめて検索」）。同じタグを再タップで解除
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [isAsking, setIsAsking] = useState(false);
   const [aiResult, setAiResult] = useState<MemorySearchResult | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
@@ -145,16 +159,34 @@ export default function MemoryScreen() {
     }
   }
 
+  // 登録済みの人物タグを集めて絞り込みチップに出す（使用頻度の高い順）
+  const allTags = useMemo(() => {
+    const count = new Map<string, number>();
+    for (const p of people) for (const t of p.tags ?? []) count.set(t, (count.get(t) ?? 0) + 1);
+    return Array.from(count.entries())
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([t]) => t);
+  }, [people]);
+
+  // 選択タグが人物一覧から消えた（全員から外された等）場合は選択を解除する
+  useEffect(() => {
+    if (selectedTag && !allTags.includes(selectedTag)) setSelectedTag(null);
+  }, [allTags, selectedTag]);
+
   const filteredPeople = useMemo(() => {
-    if (!query.trim()) return people;
+    let base = people;
+    // まずタグで束ねる。企画書の「同じ所属の人物をまとめて」を担う一次フィルタ
+    if (selectedTag) base = base.filter((p) => (p.tags ?? []).includes(selectedTag));
+    if (!query.trim()) return base;
     const q = normalizeForMatch(query.trim());
-    return people.filter((p) => {
-      // 名前・関係・場所・好き嫌い・メモ本文・タグまで検索対象にする
+    return base.filter((p) => {
+      // 名前・関係・場所・人物タグ・好き嫌い・メモ本文/タグまで検索対象にする
       const haystack = normalizeForMatch(
         [
           p.name,
           p.relation,
           p.place ?? '',
+          ...(p.tags ?? []),
           ...p.likes,
           ...p.dislikes,
           ...p.memos.flatMap((m) => [m.text, ...(m.tags ?? [])]),
@@ -162,7 +194,7 @@ export default function MemoryScreen() {
       );
       return haystack.includes(q);
     });
-  }, [query, people]);
+  }, [query, people, selectedTag]);
 
   // ヒット0件のとき、名前・関係・場所が「近い」人を最大3人まで提案する
   const suggestions = useMemo(() => {
@@ -176,6 +208,7 @@ export default function MemoryScreen() {
           nameSimilarity(q, normalizeForMatch(person.name)),
           nameSimilarity(q, normalizeForMatch(person.relation ?? '')),
           nameSimilarity(q, normalizeForMatch(person.place ?? '')),
+          ...(person.tags ?? []).map((t) => nameSimilarity(q, normalizeForMatch(t))),
         ),
       }))
       .filter((s) => s.score >= 0.25)
@@ -218,6 +251,33 @@ export default function MemoryScreen() {
           </Pressable>
         )}
       </View>
+
+      {allTags.length > 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.tagFilterBar}
+          contentContainerStyle={styles.tagFilterContent}>
+          {allTags.map((t) => {
+            const active = selectedTag === t;
+            return (
+              <Pressable
+                key={t}
+                style={[styles.tagFilterChip, active && styles.tagFilterChipActive]}
+                onPress={() => setSelectedTag(active ? null : t)}>
+                <Ionicons
+                  name="pricetag"
+                  size={11}
+                  color={active ? AppColors.background : AppColors.muted}
+                />
+                <Text style={[styles.tagFilterChipText, active && styles.tagFilterChipTextActive]}>
+                  {t}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      )}
 
       {!isLoaded ? (
         <ActivityIndicator style={styles.loading} color={AppColors.primary} />
@@ -346,6 +406,23 @@ const makeStyles = (AppColors: AppPalette) =>
       marginBottom: 12,
     },
     input: { flex: 1, fontSize: 15, color: AppColors.text },
+    tagFilterBar: { flexGrow: 0, marginBottom: 12 },
+    tagFilterContent: { paddingHorizontal: 16, gap: 8 },
+    tagFilterChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      paddingHorizontal: 12,
+      paddingVertical: 7,
+      minHeight: 34,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: AppColors.line,
+      backgroundColor: AppColors.card,
+    },
+    tagFilterChipActive: { backgroundColor: AppColors.primary, borderColor: AppColors.primary },
+    tagFilterChipText: { fontSize: 13, color: AppColors.muted, fontWeight: '700' },
+    tagFilterChipTextActive: { color: AppColors.background },
     list: { paddingHorizontal: 16, paddingBottom: 100, gap: 12 },
     loading: { marginTop: 40 },
     empty: { textAlign: 'center', color: AppColors.muted, fontSize: 15, marginTop: 40, lineHeight: 22 },
@@ -408,6 +485,15 @@ const makeStyles = (AppColors: AppPalette) =>
       paddingVertical: 3,
       borderRadius: 999,
     },
+    cardTagRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6 },
+    cardTagChip: {
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: 999,
+      backgroundColor: AppColors.primarySoft,
+    },
+    cardTagChipText: { fontSize: 11, color: AppColors.primary, fontWeight: '700' },
+    cardTagMore: { fontSize: 11, color: AppColors.muted, fontWeight: '700' },
     memoPreview: { fontSize: 14, color: AppColors.muted, lineHeight: 19 },
     lastContactRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
     lastContact: { fontSize: 13, color: AppColors.accent, fontWeight: '600' },

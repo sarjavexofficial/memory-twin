@@ -21,6 +21,7 @@ export type Person = {
   avatarEmoji: string;
   photoUri?: string; // 設定されていれば絵文字の代わりに写真を表示
   color?: string; // 関係性タグの色（未設定はテーマのprimary）
+  tags?: string[]; // 人物タグ（同僚・A社・研究室など複数付けて分類/横断検索する。relationとは別軸）
   birthday?: string;
   likes: string[];
   dislikes: string[];

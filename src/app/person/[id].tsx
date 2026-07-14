@@ -149,6 +149,18 @@ export default function PersonDetailScreen() {
               {person.place ? `（${person.place}）` : ''}
             </Text>
           </View>
+          {person.tags && person.tags.length > 0 && (
+            <View style={styles.tagSection}>
+              <Text style={styles.infoLabel}>{L.personTagsLabel}</Text>
+              <View style={styles.tagRow}>
+                {person.tags.map((t) => (
+                  <View key={t} style={[styles.tag, styles.personTag]}>
+                    <Text style={styles.personTagText}>{t}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
           <View style={styles.tagSection}>
             <Text style={styles.infoLabel}>{L.likesLabel}</Text>
             <View style={styles.tagRow}>
@@ -356,6 +368,8 @@ const makeStyles = (AppColors: AppPalette) =>
   tag: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999 },
   successTag: { backgroundColor: AppColors.successSoft },
   successTagText: { color: AppColors.success, fontSize: 13, fontWeight: '700' },
+  personTag: { backgroundColor: AppColors.primarySoft },
+  personTagText: { color: AppColors.primary, fontSize: 13, fontWeight: '700' },
   dislikeTag: { backgroundColor: AppColors.dangerSoft },
   dislikeTagText: { color: AppColors.danger, fontSize: 13, fontWeight: '700' },
   dateField: { flexDirection: 'row', alignItems: 'center', gap: 10 },

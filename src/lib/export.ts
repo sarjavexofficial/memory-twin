@@ -94,7 +94,7 @@ function buildHtml(people: Person[], entries: JournalEntry[], tasks: UserTask[])
   const peopleRows = people
     .map(
       (p) =>
-        `<li><strong>${p.avatarEmoji} ${escapeHtml(p.name)}</strong>（${escapeHtml(p.relation)}）${p.birthday ? ` ・ 誕生日 ${escapeHtml(p.birthday)}` : ''}${p.likes.length ? ` ・ 好き: ${p.likes.map(escapeHtml).join('、')}` : ''}</li>`,
+        `<li><strong>${p.avatarEmoji} ${escapeHtml(p.name)}</strong>（${escapeHtml(p.relation)}）${p.tags?.length ? ` ・ タグ: ${p.tags.map(escapeHtml).join('、')}` : ''}${p.birthday ? ` ・ 誕生日 ${escapeHtml(p.birthday)}` : ''}${p.likes.length ? ` ・ 好き: ${p.likes.map(escapeHtml).join('、')}` : ''}</li>`,
     )
     .join('\n');
 

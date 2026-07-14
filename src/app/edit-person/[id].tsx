@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -33,15 +33,31 @@ export default function EditPersonScreen() {
 function EditPersonForm({ person }: { person: Person }) {
   const { styles, AppColors } = useTheme(themed);
   const L = useStrings();
-  const { updatePerson } = usePeople();
+  const { people, updatePerson } = usePeople();
 
   const [name, setName] = useState(person.name);
   const [relation, setRelation] = useState(person.relation);
   const [birthday, setBirthday] = useState(person.birthday ?? '');
   const [likes, setLikes] = useState(person.likes.join('、'));
+  const [tags, setTags] = useState((person.tags ?? []).join('、'));
   const [photoUri, setPhotoUri] = useState<string | undefined>(person.photoUri);
   const [color, setColor] = useState<string | undefined>(person.color);
   const [photoError, setPhotoError] = useState<string | null>(null);
+
+  // 他の人物で使われているタグを候補に出す（この人が既に持つタグは除く）
+  const selectedTags = useMemo(
+    () => tags.split(/[,、\s]+/).map((t) => t.trim()).filter(Boolean),
+    [tags],
+  );
+  const tagSuggestions = useMemo(() => {
+    const seen = new Set<string>();
+    for (const p of people) for (const t of p.tags ?? []) seen.add(t);
+    return Array.from(seen).filter((t) => !selectedTags.includes(t)).sort().slice(0, 8);
+  }, [people, selectedTags]);
+
+  function appendTag(tag: string) {
+    setTags((prev) => (prev.trim() ? `${prev.replace(/[,、\s]+$/, '')}、${tag}` : tag));
+  }
 
   async function handlePickPhoto() {
     setPhotoError(null);
@@ -76,6 +92,7 @@ function EditPersonForm({ person }: { person: Person }) {
         .split(/[,、]/)
         .map((s) => s.trim())
         .filter(Boolean),
+      tags: selectedTags.length > 0 ? selectedTags : undefined,
       photoUri,
       color,
     });
@@ -152,6 +169,31 @@ function EditPersonForm({ person }: { person: Person }) {
               </Pressable>
             ))}
           </View>
+        </View>
+
+        <View style={styles.field}>
+          <Text style={styles.label}>{L.personTagsLabel}</Text>
+          <TextInput
+            value={tags}
+            onChangeText={setTags}
+            placeholder={L.personTagsPlaceholder}
+            placeholderTextColor={AppColors.muted}
+            style={styles.input}
+            autoCapitalize="none"
+          />
+          {tagSuggestions.length > 0 && (
+            <>
+              <Text style={styles.tagSuggestLabel}>{L.personTagsSuggest}</Text>
+              <View style={styles.tagSuggestRow}>
+                {tagSuggestions.map((t) => (
+                  <Pressable key={t} style={styles.tagSuggestChip} onPress={() => appendTag(t)}>
+                    <Ionicons name="add" size={12} color={AppColors.primary} />
+                    <Text style={styles.tagSuggestChipText}>{t}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </>
+          )}
         </View>
 
         <View style={styles.field}>
@@ -238,6 +280,20 @@ const makeStyles = (AppColors: AppPalette) =>
       justifyContent: 'center',
     },
     colorSwatchSelected: { borderWidth: 2.5, borderColor: AppColors.text },
+    tagSuggestLabel: { fontSize: 12, color: AppColors.muted, fontWeight: '700', marginTop: 4 },
+    tagSuggestRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 },
+    tagSuggestChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 2,
+      paddingHorizontal: 10,
+      paddingVertical: 7,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: AppColors.primary,
+      backgroundColor: AppColors.primarySoft,
+    },
+    tagSuggestChipText: { fontSize: 12, color: AppColors.primary, fontWeight: '700' },
   });
 
 const themed = makeThemed(makeStyles);

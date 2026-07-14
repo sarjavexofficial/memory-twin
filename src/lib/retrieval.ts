@@ -66,13 +66,32 @@ export function retrieveRelevant(
 // 人物・日記の生データをMemoryRecordへ変換するヘルパー
 export function buildMemoryRecords(
   entries: { date: string; text: string; tags?: string[]; source?: string }[],
-  people: { name: string; memos: { date: string; text: string; tags?: string[]; promise?: { action: string; dueDate?: string; done: boolean } }[] }[],
+  people: {
+    name: string;
+    relation?: string;
+    tags?: string[];
+    likes?: string[];
+    lastContact?: string;
+    memos: { date: string; text: string; tags?: string[]; promise?: { action: string; dueDate?: string; done: boolean } }[];
+  }[],
 ): MemoryRecord[] {
   const records: MemoryRecord[] = [];
   for (const e of entries) {
     records.push({ date: e.date, text: e.text, kind: 'journal', tags: e.tags, source: e.source });
   }
   for (const p of people) {
+    // 人物プロフィール（関係性・タグ・好き）を1レコードにして、タグ検索や「同僚は誰？」にも答えられるようにする
+    const profileBits = [p.relation, ...(p.tags ?? []), ...(p.likes ?? [])].filter(Boolean);
+    if (profileBits.length > 0) {
+      const latest = p.lastContact ?? p.memos[0]?.date ?? '2020-01-01';
+      records.push({
+        date: latest,
+        text: `${p.name}（${profileBits.join(' / ')}）`,
+        kind: 'person',
+        personName: p.name,
+        tags: p.tags,
+      });
+    }
     for (const m of p.memos) {
       records.push({ date: m.date, text: m.text, kind: 'person', personName: p.name, tags: m.tags });
       if (m.promise) {
