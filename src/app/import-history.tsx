@@ -20,7 +20,8 @@ import { usePeople } from '@/store/people-context';
 import { useSettings } from '@/store/settings-context';
 import { useTasks } from '@/store/tasks-context';
 
-const PREVIEW_LIMIT = 30;
+// 解析結果のプレビュー行数。画面を簡潔に保つため冒頭3件だけ見せ、残りは件数表示にまとめる
+const PREVIEW_LIMIT = 3;
 
 export default function ImportHistoryScreen() {
   const L = useStrings();
@@ -48,6 +49,10 @@ export default function ImportHistoryScreen() {
   const [candidates, setCandidates] = useState<ExtractedItem[] | null>(null);
   const [approved, setApproved] = useState<boolean[]>([]);
   const [savedCount, setSavedCount] = useState<number | null>(null);
+  // 画面を簡潔に保つための折りたたみ: 主役は「ファイルを選ぶ」1ボタン。
+  // 取得方法ガイドと貼り付け入力は、必要な人だけ開く
+  const [showHowTo, setShowHowTo] = useState(false);
+  const [showPaste, setShowPaste] = useState(false);
 
   // 取り込み直後の自動発掘（初日の魔法）でも使うため、対象レコードを引数で受け取る
   async function runExtract(target: ImportedRecord[]) {
@@ -221,6 +226,22 @@ export default function ImportHistoryScreen() {
           <Text style={styles.fileButtonText}>{L.importPickFile}</Text>
         </Pressable>
 
+        {/* エクスポートZIPの取り方（ChatGPT/Claude）。必要な人だけ開く折りたたみ */}
+        <Pressable style={styles.toggleRow} onPress={() => setShowHowTo((v) => !v)} hitSlop={6}>
+          <Ionicons
+            name={showHowTo ? 'chevron-down' : 'chevron-forward'}
+            size={14}
+            color={AppColors.muted}
+          />
+          <Text style={styles.toggleText}>{L.importHowTo}</Text>
+        </Pressable>
+        {showHowTo && (
+          <View style={styles.guideBox}>
+            <Text style={styles.guideText}>{L.importHowToChatGPT}</Text>
+            <Text style={styles.guideText}>{L.importHowToClaude}</Text>
+          </View>
+        )}
+
         {backup && (
           <View style={styles.resultCard}>
             <Text style={styles.resultTitle}>{L.backupFound}</Text>
@@ -241,22 +262,35 @@ export default function ImportHistoryScreen() {
           </View>
         )}
 
-        <TextInput
-          value={rawText}
-          onChangeText={setRawText}
-          placeholder={L.importPastePlaceholder}
-          placeholderTextColor={AppColors.muted}
-          style={styles.textArea}
-          multiline
-        />
-
-        <Pressable
-          style={[styles.parseButton, !rawText.trim() && styles.buttonDisabled]}
-          onPress={handleParse}
-          disabled={!rawText.trim()}>
-          <Ionicons name="search-outline" size={16} color={AppColors.background} />
-          <Text style={styles.parseButtonText}>{L.importParse}</Text>
+        {/* 貼り付け入力は補助手段なので折りたたみ、主導線（ファイル選択）を1ボタンに保つ */}
+        <Pressable style={styles.toggleRow} onPress={() => setShowPaste((v) => !v)} hitSlop={6}>
+          <Ionicons
+            name={showPaste ? 'chevron-down' : 'chevron-forward'}
+            size={14}
+            color={AppColors.muted}
+          />
+          <Text style={styles.toggleText}>{L.importPasteToggle}</Text>
         </Pressable>
+        {showPaste && (
+          <>
+            <TextInput
+              value={rawText}
+              onChangeText={setRawText}
+              placeholder={L.importPastePlaceholder}
+              placeholderTextColor={AppColors.muted}
+              style={styles.textArea}
+              multiline
+            />
+
+            <Pressable
+              style={[styles.parseButton, !rawText.trim() && styles.buttonDisabled]}
+              onPress={handleParse}
+              disabled={!rawText.trim()}>
+              <Ionicons name="search-outline" size={16} color={AppColors.background} />
+              <Text style={styles.parseButtonText}>{L.importParse}</Text>
+            </Pressable>
+          </>
+        )}
 
         {error && <Text style={styles.error}>{error}</Text>}
 
@@ -459,6 +493,17 @@ const styles = StyleSheet.create({
   recordDate: { fontSize: 11, color: AppColors.muted, fontWeight: '700' },
   recordText: { fontSize: 13, color: AppColors.text, lineHeight: 18 },
   moreText: { fontSize: 12, color: AppColors.muted, textAlign: 'center' },
+  toggleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 2 },
+  toggleText: { fontSize: 13, color: AppColors.muted, fontWeight: '600' },
+  guideBox: {
+    backgroundColor: AppColors.card,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: AppColors.line,
+    padding: 12,
+    gap: 8,
+  },
+  guideText: { fontSize: 12, color: AppColors.text, lineHeight: 18 },
   importButton: {
     flexDirection: 'row',
     justifyContent: 'center',

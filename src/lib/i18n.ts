@@ -198,6 +198,12 @@ const ja = {
     'ChatGPTやClaudeの正規エクスポートに含まれる conversations.json を読み込み、会話した日付のままタイムラインに取り込みます。日付はファイル内の記録をそのまま使うため正確です。',
   importLocalNote: 'この処理は端末内だけで完結します。ファイルの内容がAIや外部に送信されることはありません。',
   importPickFile: 'ファイルを選ぶ（バックアップZIP / JSON）',
+  importHowTo: 'エクスポートファイルの取り方',
+  importHowToChatGPT:
+    'ChatGPT: 設定 → データコントロール → 「エクスポート」。届いたメールからZIPをダウンロードし、上のボタンでそのまま選ぶだけ（解凍不要）。',
+  importHowToClaude:
+    'Claude: 設定 → プライバシー → 「データをエクスポート」。届いたZIPをそのまま選ぶだけ（解凍不要）。',
+  importPasteToggle: 'ファイルを選べないときは、テキストを貼り付けて取り込む',
   backupFound: 'Memory Twinのバックアップが見つかりました',
   backupFoundDesc: (j: number, p: number) =>
     `記録 ${j}件・人物 ${p}人が入っています。復元すると今のデータに追加されます（同じものは重複しません）。`,
@@ -825,6 +831,12 @@ const en: typeof ja = {
     'Load the conversations.json included in official exports from ChatGPT or Claude, and add each conversation to your timeline on its original date. Dates come straight from the file, so they are accurate.',
   importLocalNote: 'This runs entirely on your device. The file contents are never sent to the AI or anywhere else.',
   importPickFile: 'Choose a file (backup ZIP / JSON)',
+  importHowTo: 'How to get the export file',
+  importHowToChatGPT:
+    'ChatGPT: Settings → Data controls → "Export data". Download the ZIP from the email you receive, then just pick it with the button above (no need to unzip).',
+  importHowToClaude:
+    'Claude: Settings → Privacy → "Export data". Just pick the ZIP you receive (no need to unzip).',
+  importPasteToggle: 'Can’t pick a file? Paste text instead',
   backupFound: 'Memory Twin backup found',
   backupFoundDesc: (j: number, p: number) =>
     `Contains ${j} records and ${p} people. Restoring adds them to your current data (no duplicates).`,

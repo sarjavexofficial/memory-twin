@@ -179,6 +179,12 @@ export const ko: Dict = {
     'ChatGPT나 Claude의 공식 내보내기에 포함된 conversations.json을 읽어, 대화한 날짜 그대로 타임라인에 가져옵니다. 날짜는 파일 안의 기록을 그대로 사용하므로 정확합니다.',
   importLocalNote: '이 처리는 기기 안에서만 완결됩니다. 파일 내용이 AI나 외부로 전송되지 않습니다.',
   importPickFile: '파일 선택(백업 ZIP / JSON)',
+  importHowTo: '내보내기 파일 받는 방법',
+  importHowToChatGPT:
+    'ChatGPT: 설정 → 데이터 제어 → "데이터 내보내기". 메일로 받은 ZIP을 내려받아 위 버튼으로 그대로 선택하면 됩니다(압축 해제 불필요).',
+  importHowToClaude:
+    'Claude: 설정 → 개인정보 보호 → "데이터 내보내기". 받은 ZIP을 그대로 선택하면 됩니다(압축 해제 불필요).',
+  importPasteToggle: '파일을 선택할 수 없나요? 텍스트를 붙여넣어 가져오기',
   backupFound: 'Memory Twin 백업을 찾았습니다',
   backupFoundDesc: (j: number, p: number) =>
     `기록 ${j}건·인물 ${p}명이 들어 있습니다. 복원하면 지금 데이터에 추가됩니다(중복되지 않습니다).`,

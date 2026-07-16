@@ -184,6 +184,12 @@ export const fr: Dict = {
   importLocalNote:
     'Ce traitement se fait entièrement sur l’appareil. Le contenu du fichier n’est jamais envoyé à l’IA ni ailleurs.',
   importPickFile: 'Choisir un fichier (ZIP de sauvegarde / JSON)',
+  importHowTo: 'Comment obtenir le fichier d’export',
+  importHowToChatGPT:
+    'ChatGPT : Paramètres → Contrôle des données → « Exporter les données ». Téléchargez le ZIP reçu par e-mail, puis sélectionnez-le avec le bouton ci-dessus (pas besoin de le décompresser).',
+  importHowToClaude:
+    'Claude : Paramètres → Confidentialité → « Exporter les données ». Sélectionnez simplement le ZIP reçu (pas besoin de le décompresser).',
+  importPasteToggle: 'Impossible de choisir un fichier ? Collez le texte',
   backupFound: 'Sauvegarde Memory Twin détectée',
   backupFoundDesc: (j: number, p: number) =>
     `Contient ${j} notes et ${p} personnes. La restauration les ajoute à vos données actuelles (sans doublons).`,

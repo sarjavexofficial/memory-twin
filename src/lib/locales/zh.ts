@@ -178,6 +178,11 @@ export const zh: Dict = {
     '读取 ChatGPT 或 Claude 官方导出中的 conversations.json，按对话原本的日期导入时间线。日期直接取自文件内的记录，准确可靠。',
   importLocalNote: '此处理只在设备内完成。文件内容不会发送给AI或外部。',
   importPickFile: '选择文件（备份ZIP / JSON）',
+  importHowTo: '如何获取导出文件',
+  importHowToChatGPT:
+    'ChatGPT：设置 → 数据控制 → “导出数据”。从收到的邮件下载ZIP，然后直接用上面的按钮选择即可（无需解压）。',
+  importHowToClaude: 'Claude：设置 → 隐私 → “导出数据”。直接选择收到的ZIP即可（无需解压）。',
+  importPasteToggle: '无法选择文件？粘贴文本导入',
   backupFound: '找到了Memory Twin的备份',
   backupFoundDesc: (j: number, p: number) =>
     `包含 ${j} 条记录和 ${p} 位人物。恢复后会添加到当前数据（不会重复）。`,
