@@ -126,7 +126,7 @@ export const ko: Dict = {
   personCancel: '취소',
   personSave: '저장',
   personNameLabel: '이름',
-  namePlaceholder: '예) 김서연',
+  namePlaceholder: '예) 별빛 라라',
   relationLabel: '관계',
   relationPlaceholder: '예) 대학 동기, 회사 선배',
   relationColorLabel: '관계 색상',

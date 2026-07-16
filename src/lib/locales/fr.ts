@@ -131,7 +131,7 @@ export const fr: Dict = {
   personCancel: 'Annuler',
   personSave: 'Enregistrer',
   personNameLabel: 'Nom',
-  namePlaceholder: 'ex. Camille Dupont',
+  namePlaceholder: 'ex. Luna Brumétoile',
   relationLabel: 'Relation',
   relationPlaceholder: 'ex. amie de fac, collègue senior',
   relationColorLabel: 'Couleur de la relation',

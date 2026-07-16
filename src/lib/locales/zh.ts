@@ -126,7 +126,7 @@ export const zh: Dict = {
   personCancel: '取消',
   personSave: '保存',
   personNameLabel: '姓名',
-  namePlaceholder: '例：王小雨',
+  namePlaceholder: '例：星尘悠悠',
   relationLabel: '关系',
   relationPlaceholder: '例：大学同学、公司前辈',
   relationColorLabel: '关系颜色',

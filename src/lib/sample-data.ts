@@ -35,7 +35,7 @@ const promiseDue = () => daysAgoLocal(-3);
 const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
   ja: [
     {
-      name: '高橋 さくら',
+      name: '星屑 るるか',
       relation: '大学の同期',
       birthday: '3月14日',
       likes: ['猫', 'カフェ巡り', '洋画'],
@@ -50,7 +50,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       promiseAction: '出張の感想を聞く',
     },
     {
-      name: '佐藤 健太',
+      name: '綿雲 ぽんた',
       relation: 'サークルの後輩',
       birthday: '11月2日',
       likes: ['サッカー', 'コーヒー'],
@@ -64,7 +64,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       promiseAction: '出張の感想を聞く',
     },
     {
-      name: '田中 美咲',
+      name: '月渡 みやび',
       relation: '職場の先輩',
       birthday: '8月20日',
       likes: ['旅行', 'ワイン'],
@@ -78,7 +78,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       promiseAction: '出張の感想を聞く',
     },
     {
-      name: '鈴木 陽菜',
+      name: '花霞 こまち',
       relation: '高校の友人',
       birthday: '1月30日',
       likes: ['写真', '登山'],
@@ -91,7 +91,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
   ],
   en: [
     {
-      name: 'Emily Carter',
+      name: 'Luna Stardrift',
       relation: 'College friend',
       birthday: 'March 14',
       likes: ['Cats', 'Café hopping', 'Movies'],
@@ -106,7 +106,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       promiseAction: 'Ask how the business trip went',
     },
     {
-      name: 'Jake Miller',
+      name: 'Milo Cloudpuff',
       relation: 'Club junior',
       birthday: 'November 2',
       likes: ['Soccer', 'Coffee'],
@@ -120,7 +120,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       promiseAction: 'Ask how the business trip went',
     },
     {
-      name: 'Olivia Bennett',
+      name: 'Aurora Moonberry',
       relation: 'Senior at work',
       birthday: 'August 20',
       likes: ['Travel', 'Wine'],
@@ -134,7 +134,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       promiseAction: 'Ask how the business trip went',
     },
     {
-      name: 'Chloe Adams',
+      name: 'Poppy Dewlight',
       relation: 'High school friend',
       birthday: 'January 30',
       likes: ['Photography', 'Hiking'],
@@ -147,7 +147,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
   ],
   zh: [
     {
-      name: '王小雨',
+      name: '星尘悠悠',
       relation: '大学同学',
       birthday: '3月14日',
       likes: ['猫', '逛咖啡馆', '电影'],
@@ -162,7 +162,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       promiseAction: '问问出差的感受',
     },
     {
-      name: '李强',
+      name: '云朵蓬蓬',
       relation: '社团学弟',
       birthday: '11月2日',
       likes: ['足球', '咖啡'],
@@ -173,7 +173,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       promiseAction: '问问出差的感受',
     },
     {
-      name: '陈静',
+      name: '月光宁宁',
       relation: '公司前辈',
       birthday: '8月20日',
       likes: ['旅行', '红酒'],
@@ -184,7 +184,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       promiseAction: '问问出差的感受',
     },
     {
-      name: '张悦',
+      name: '花雾朵朵',
       relation: '高中朋友',
       birthday: '1月30日',
       likes: ['摄影', '爬山'],
@@ -197,7 +197,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
   ],
   ko: [
     {
-      name: '김서연',
+      name: '별빛 라라',
       relation: '대학 동기',
       birthday: '3월 14일',
       likes: ['고양이', '카페 투어', '영화'],
@@ -212,7 +212,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       promiseAction: '출장 소감 물어보기',
     },
     {
-      name: '박민준',
+      name: '구름 몽몽',
       relation: '동아리 후배',
       birthday: '11월 2일',
       likes: ['축구', '커피'],
@@ -223,7 +223,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       promiseAction: '출장 소감 물어보기',
     },
     {
-      name: '이지은',
+      name: '달빛 미리내',
       relation: '회사 선배',
       birthday: '8월 20일',
       likes: ['여행', '와인'],
@@ -234,7 +234,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       promiseAction: '출장 소감 물어보기',
     },
     {
-      name: '최수아',
+      name: '꽃안개 소리',
       relation: '고등학교 친구',
       birthday: '1월 30일',
       likes: ['사진', '등산'],
@@ -247,7 +247,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
   ],
   fr: [
     {
-      name: 'Camille Dupont',
+      name: 'Luna Brumétoile',
       relation: 'Amie de fac',
       birthday: '14 mars',
       likes: ['Chats', 'Cafés', 'Cinéma'],
@@ -262,7 +262,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       promiseAction: 'Lui demander comment s’est passé le déplacement',
     },
     {
-      name: 'Lucas Martin',
+      name: 'Milo Nuageblanc',
       relation: 'Cadet du club',
       birthday: '2 novembre',
       likes: ['Football', 'Café'],
@@ -276,7 +276,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       promiseAction: 'Lui demander comment s’est passé le déplacement',
     },
     {
-      name: 'Sophie Bernard',
+      name: 'Aurore Lunargent',
       relation: 'Collègue senior',
       birthday: '20 août',
       likes: ['Voyages', 'Vin'],
@@ -290,7 +290,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       promiseAction: 'Lui demander comment s’est passé le déplacement',
     },
     {
-      name: 'Emma Laurent',
+      name: 'Violette Fleurdebrume',
       relation: 'Amie de lycée',
       birthday: '30 janvier',
       likes: ['Photo', 'Randonnée'],
@@ -303,7 +303,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
   ],
   pt: [
     {
-      name: 'Ana Souza',
+      name: 'Lua Estrelinha',
       relation: 'Amiga da faculdade',
       birthday: '14 de março',
       likes: ['Gatos', 'Cafeterias', 'Filmes'],
@@ -318,7 +318,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       promiseAction: 'Perguntar como foi a viagem de trabalho',
     },
     {
-      name: 'Pedro Lima',
+      name: 'Nino Nuvinha',
       relation: 'Calouro do clube',
       birthday: '2 de novembro',
       likes: ['Futebol', 'Café'],
@@ -329,7 +329,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       promiseAction: 'Perguntar como foi a viagem de trabalho',
     },
     {
-      name: 'Mariana Costa',
+      name: 'Aurora Luarzinho',
       relation: 'Colega sênior',
       birthday: '20 de agosto',
       likes: ['Viagens', 'Vinho'],
@@ -340,7 +340,7 @@ const PEOPLE_TEXTS: Record<Language, PersonTexts[]> = {
       promiseAction: 'Perguntar como foi a viagem de trabalho',
     },
     {
-      name: 'Beatriz Alves',
+      name: 'Flor Neblina',
       relation: 'Amiga do colégio',
       birthday: '30 de janeiro',
       likes: ['Fotografia', 'Trilhas'],

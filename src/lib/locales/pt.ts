@@ -128,7 +128,7 @@ export const pt: Dict = {
   personCancel: 'Cancelar',
   personSave: 'Salvar',
   personNameLabel: 'Nome',
-  namePlaceholder: 'ex.: Ana Souza',
+  namePlaceholder: 'ex.: Lua Estrelinha',
   relationLabel: 'Relação',
   relationPlaceholder: 'ex.: amiga da faculdade, colega de trabalho',
   relationColorLabel: 'Cor da relação',
