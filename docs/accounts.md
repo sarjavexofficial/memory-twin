@@ -3,7 +3,7 @@
 事業で使っているサービス・アカウントの一覧。**パスワードはここに書かない**（各サービスとも2段階認証ON・2026-07-12確認済み）。
 新しいサービスを契約したら必ずこの表に1行足すこと。
 
-## 現在使用中（5つ）
+## 現在使用中（7つ）
 
 | サービス | 何に使っているか | ログインID | 備考 |
 |---|---|---|---|
@@ -11,7 +11,9 @@
 | **GitHub** (sarjavexofficial) | コードの保管庫3つ（memory-twin / sarjavex-api / 会社サイト）＋会社サイトとプライバシーポリシーの公開（GitHub Pages）＋毎朝のサーバー起こし（Actions） | sarjavex.official@gmail.com | 無料枠 |
 | **Supabase** (プロジェクト名 sarjavex) | 暗号化クラウドバックアップの保管庫。こだま用のテーブルもあるが現在非公開 | sarjavex.official@gmail.com | 無料枠。1週間無アクセスで止まるがGitHub Actionsが毎朝起こしている |
 | **Render** (sarjavex-ai-api) | AIの中継サーバー（アプリ→Render→Gemini）。アプリにAIの鍵を持たせないための壁 | sarjavex.official@gmail.com | 無料枠。無通信でスリープし初回応答が遅いことがある |
-| **Google AI Studio** (Gemini APIキー) | AIの本体。キーはRenderの管理画面にだけ保存 | sarjavex.official@gmail.com（Googleアカウント配下） | 無料枠（データ利用条件は要検討事項） |
+| **Google AI Studio / Google Cloud** (Gemini APIキー) | AIの本体。キーはRenderの管理画面にだけ保存 | sarjavex.official@gmail.com | ⚠️ 2026-07-16 旧プロジェクトがGoogleに利用停止され（403・無料キー×中継サーバー構成の誤検知）、**課金有効化に方針変更**。¥1,500デポジット支払い済み（返金可・残高充当）。**新キーは2026-07-17 18時に発行予定**（AI Studioで作成→Render差替え）。発行後に予算アラート¥1,000/月を設定すること |
+| **Expo (EAS)** (アカウント sarjavex) | アプリの配信基盤。EAS Update（開いたら最新版）とEAS Build（ストア用ビルド）。接続設定はEASの「production環境変数」に登録済み（ローカル.envはビルドに入らない点に注意） | sarjavex.official@gmail.com | 無料枠。2026-07-13導入・07-16本格運用 |
+| **Apple Developer** | App Store公開・TestFlight配信。App Store ConnectのアプリID: 6791472591（Memory Twin） | Apple ID（ゆず個人） | 年99ドル。2026-07-16登録完了・ビルド7までアップロード済み |
 
 ## 準サービス（アカウントというほどではない）
 
@@ -24,8 +26,7 @@
 
 | サービス | いつ・何のため | 費用 |
 |---|---|---|
-| Expo | アプリ更新を「開いたら反映」にする（EAS Update）。開発体験の改善 | 無料 |
-| Apple Developer | App Store公開・TestFlight配信。これが最終形 | 年99ドル |
+| （2026-07-16時点で予定なし。ExpoとApple Developerは「使用中」へ昇格済み） | | |
 
 ## 覚え方
 
