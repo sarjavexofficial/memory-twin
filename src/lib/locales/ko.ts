@@ -192,6 +192,7 @@ export const ko: Dict = {
   backupRestored: (j: number, p: number, t = 0) =>
     `복원했습니다(기록 ${j}건·인물 ${p}명${t > 0 ? `·할 일 ${t}건` : ''} 추가).`,
   importFileTooLarge: (mb: number) => `파일이 너무 큽니다(최대 ${mb}MB).`,
+  importReading: '파일을 읽는 중… (큰 ZIP은 시간이 걸릴 수 있습니다)',
   importPastedChars: (n: number) => `${n.toLocaleString()}자 붙여넣음`,
   importParse: '분석하기',
   importFound: (n: number, from: string, to: string) => `${n}건의 대화를 찾았습니다(${from} ~ ${to})`,

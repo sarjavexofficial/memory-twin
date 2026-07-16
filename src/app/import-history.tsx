@@ -3,7 +3,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AiSendNote } from '@/components/ai-send-note';
@@ -138,6 +138,10 @@ export default function ImportHistoryScreen() {
     }
   }
 
+  // 大きなZIPの読み込み・解凍は数秒〜数十秒かかることがある。
+  // 進行表示ゼロだと「読み取られない」ように見えるため、読み込み中の状態を持つ
+  const [isReading, setIsReading] = useState(false);
+
   // ファイル選択（全プラットフォーム対応）。ZIPは解凍まで自動で行うので、
   // 利用者は「エクスポートしたファイルを選ぶだけ」でよい
   async function handlePickFile() {
@@ -156,6 +160,7 @@ export default function ImportHistoryScreen() {
             setError(L.importFileTooLarge(webMaxMb));
             return;
           }
+          setIsReading(true);
           try {
             if (webIsZip) {
               applyPicked(await readBackupZip(await file.arrayBuffer()));
@@ -164,6 +169,8 @@ export default function ImportHistoryScreen() {
             }
           } catch (e) {
             setError((e as Error).message);
+          } finally {
+            setIsReading(false);
           }
         };
         input.click();
@@ -184,16 +191,22 @@ export default function ImportHistoryScreen() {
         setError(L.importFileTooLarge(maxMb));
         return;
       }
-      if (isZip) {
-        const base64 = await FileSystem.readAsStringAsync(asset.uri, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-        applyPicked(await readBackupZip(base64));
-      } else {
-        applyPicked(classifyJsonText(await FileSystem.readAsStringAsync(asset.uri)));
+      setIsReading(true);
+      try {
+        if (isZip) {
+          const base64 = await FileSystem.readAsStringAsync(asset.uri, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+          applyPicked(await readBackupZip(base64));
+        } else {
+          applyPicked(classifyJsonText(await FileSystem.readAsStringAsync(asset.uri)));
+        }
+      } finally {
+        setIsReading(false);
       }
     } catch (e) {
       setError((e as Error).message);
+      setIsReading(false);
     }
   }
 
@@ -247,10 +260,21 @@ export default function ImportHistoryScreen() {
           <Text style={styles.noteText}>{L.importLocalNote}</Text>
         </View>
 
-        <Pressable style={styles.fileButton} onPress={handlePickFile}>
+        <Pressable
+          style={[styles.fileButton, isReading && styles.buttonDisabled]}
+          onPress={handlePickFile}
+          disabled={isReading}>
           <Ionicons name="folder-open-outline" size={16} color={AppColors.primary} />
           <Text style={styles.fileButtonText}>{L.importPickFile}</Text>
         </Pressable>
+
+        {/* 大きなZIPは読み込みに時間がかかる。無反応に見えないよう進行中を明示する */}
+        {isReading && (
+          <View style={styles.readingRow}>
+            <ActivityIndicator size="small" color={AppColors.primary} />
+            <Text style={styles.readingText}>{L.importReading}</Text>
+          </View>
+        )}
 
         {/* エクスポートZIPの取り方（ChatGPT/Claude）。必要な人だけ開く折りたたみ */}
         <Pressable style={styles.toggleRow} onPress={() => setShowHowTo((v) => !v)} hitSlop={6}>
@@ -490,6 +514,8 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   pasteCount: { fontSize: 12, color: AppColors.muted, textAlign: 'right', marginTop: -8 },
+  readingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  readingText: { fontSize: 12, color: AppColors.muted, fontWeight: '600' },
   parseButton: {
     flexDirection: 'row',
     justifyContent: 'center',

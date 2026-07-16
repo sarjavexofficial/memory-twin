@@ -197,6 +197,7 @@ export const fr: Dict = {
   backupRestored: (j: number, p: number, t = 0) =>
     `Restauré — ${j} notes, ${p} personnes${t > 0 ? `, ${t} tâches` : ''} ajoutées.`,
   importFileTooLarge: (mb: number) => `Fichier trop volumineux (${mb} Mo max).`,
+  importReading: 'Lecture du fichier… (les gros ZIP peuvent prendre un moment)',
   importPastedChars: (n: number) => `${n.toLocaleString()} caractères collés`,
   importParse: 'Analyser',
   importFound: (n: number, from: string, to: string) =>

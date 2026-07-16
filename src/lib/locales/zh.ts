@@ -190,6 +190,7 @@ export const zh: Dict = {
   backupRestored: (j: number, p: number, t = 0) =>
     `已恢复（新增 ${j} 条记录・${p} 位人物${t > 0 ? `・${t} 个任务` : ''}）。`,
   importFileTooLarge: (mb: number) => `文件太大（最大支持${mb}MB）。`,
+  importReading: '正在读取文件…（较大的ZIP会花一点时间）',
   importPastedChars: (n: number) => `已粘贴 ${n.toLocaleString()} 个字符`,
   importParse: '解析',
   importFound: (n: number, from: string, to: string) => `找到 ${n} 条对话（${from} 〜 ${to}）`,
