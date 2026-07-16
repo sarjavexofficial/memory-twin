@@ -23,6 +23,11 @@ import { useTasks } from '@/store/tasks-context';
 // 解析結果のプレビュー行数。画面を簡潔に保つため冒頭3件だけ見せ、残りは件数表示にまとめる
 const PREVIEW_LIMIT = 3;
 
+// ファイルサイズ上限。ZIPは画像などで大きくなりがち（ChatGPTのエクスポートは20MB超が普通）
+// なので大きめに許容し、生のJSON/テキストは解析メモリを考えて控えめにする
+const MAX_ZIP_MB = 100;
+const MAX_TEXT_MB = 30;
+
 export default function ImportHistoryScreen() {
   const L = useStrings();
   const { addEntries, restoreEntries } = useJournal();
@@ -94,27 +99,43 @@ export default function ImportHistoryScreen() {
 
   // 読み取ったファイルの中身に応じて表示を切り替える:
   // Memory Twinのバックアップ → 復元カード / それ以外のJSON → 従来の解析プレビュー
-  function applyPicked(picked: PickedData) {
-    setError(null);
+  // silent=true は貼り付け中の自動解析用（失敗してもエラーを出さず、静かに待つ）
+  function applyPicked(picked: PickedData, silent = false): boolean {
+    if (!silent) setError(null);
     setBackup(null);
     setRecords(null);
     setImportedCount(null);
     setRestored(null);
     if (picked.kind === 'backup') {
       setBackup(picked.backup);
-      return;
+      setRawText('');
+      return true;
     }
-    setRawText(picked.text);
     try {
       setRecords(parseAiHistory(picked.text));
+      // 解析に成功したら巨大な貼り付けテキストは入力欄から片付ける
+      // （結果カードが正になる。巨大な生JSONを入力欄に居座らせない）
+      setRawText('');
+      return true;
     } catch (e) {
-      setError((e as Error).message);
+      if (!silent) setError((e as Error).message);
+      return false;
     }
   }
 
   function handleParse() {
     // 貼り付けたテキストがバックアップJSONならそのまま復元カードを出す
     applyPicked(classifyJsonText(rawText));
+  }
+
+  // 貼り付けと同時に自動解析する。成功すればその場で結果カードに切り替わり、
+  // 「巨大なJSONが入力欄を占領して何が起きたか分からない」状態を避ける。
+  // 失敗（部分貼り付け等）は静かに無視し、明示的な「解析」ボタンでエラーを出す
+  function handlePasteChange(text: string) {
+    setRawText(text);
+    if (text.trim().length >= 200) {
+      applyPicked(classifyJsonText(text), true);
+    }
   }
 
   // ファイル選択（全プラットフォーム対応）。ZIPは解凍まで自動で行うので、
@@ -129,12 +150,14 @@ export default function ImportHistoryScreen() {
         input.onchange = async () => {
           const file = input.files?.[0];
           if (!file) return;
-          if (file.size > 20 * 1024 * 1024) {
-            setError(L.importFileTooLarge);
+          const webIsZip = /\.zip$/i.test(file.name);
+          const webMaxMb = webIsZip ? MAX_ZIP_MB : MAX_TEXT_MB;
+          if (file.size > webMaxMb * 1024 * 1024) {
+            setError(L.importFileTooLarge(webMaxMb));
             return;
           }
           try {
-            if (/\.zip$/i.test(file.name)) {
+            if (webIsZip) {
               applyPicked(await readBackupZip(await file.arrayBuffer()));
             } else {
               applyPicked(classifyJsonText(await file.text()));
@@ -147,17 +170,20 @@ export default function ImportHistoryScreen() {
         return;
       }
 
+      // 種別フィルタは正しいMIMEタイプのみ指定する（不正な値が混ざると
+      // iOS側の変換がおかしくなり、ZIPが選べない/読めない原因になり得る）
       const result = await DocumentPicker.getDocumentAsync({
         copyToCacheDirectory: true,
-        type: ['application/json', 'application/zip', 'text/plain', 'public.json', 'public.zip-archive'],
+        type: ['application/json', 'application/zip', 'text/plain'],
       });
       if (result.canceled) return;
       const asset = result.assets[0];
-      if ((asset.size ?? 0) > 20 * 1024 * 1024) {
-        setError(L.importFileTooLarge);
+      const isZip = /\.zip$/i.test(asset.name ?? '') || asset.mimeType === 'application/zip';
+      const maxMb = isZip ? MAX_ZIP_MB : MAX_TEXT_MB;
+      if ((asset.size ?? 0) > maxMb * 1024 * 1024) {
+        setError(L.importFileTooLarge(maxMb));
         return;
       }
-      const isZip = /\.zip$/i.test(asset.name ?? '') || asset.mimeType === 'application/zip';
       if (isZip) {
         const base64 = await FileSystem.readAsStringAsync(asset.uri, {
           encoding: FileSystem.EncodingType.Base64,
@@ -275,12 +301,16 @@ export default function ImportHistoryScreen() {
           <>
             <TextInput
               value={rawText}
-              onChangeText={setRawText}
+              onChangeText={handlePasteChange}
               placeholder={L.importPastePlaceholder}
               placeholderTextColor={AppColors.muted}
               style={styles.textArea}
               multiline
             />
+            {/* 巨大なJSONは表示しても読めないので、何文字入っているかを数字で伝える */}
+            {rawText.length > 0 && (
+              <Text style={styles.pasteCount}>{L.importPastedChars(rawText.length)}</Text>
+            )}
 
             <Pressable
               style={[styles.parseButton, !rawText.trim() && styles.buttonDisabled]}
@@ -453,12 +483,13 @@ const styles = StyleSheet.create({
     borderColor: AppColors.line,
     borderRadius: 12,
     padding: 14,
-    minHeight: 100,
-    maxHeight: 160,
+    minHeight: 80,
+    maxHeight: 110,
     fontSize: 13,
     color: AppColors.text,
     textAlignVertical: 'top',
   },
+  pasteCount: { fontSize: 12, color: AppColors.muted, textAlign: 'right', marginTop: -8 },
   parseButton: {
     flexDirection: 'row',
     justifyContent: 'center',

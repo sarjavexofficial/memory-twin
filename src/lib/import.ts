@@ -100,8 +100,10 @@ function parseGeneric(items: any[]): ImportedRecord[] {
 }
 
 export function parseAiHistory(jsonText: string): ImportedRecord[] {
-  if (jsonText.length > 20 * 1024 * 1024) {
-    throw new Error('ファイルが大きすぎます（20MBまで対応）。');
+  // 展開後のJSON本文の上限。ZIP自体の上限（import-history側・100MB）とは別で、
+  // JSON.parseのメモリ圧迫を防ぐための値
+  if (jsonText.length > 30 * 1024 * 1024) {
+    throw new Error('ファイルが大きすぎます（30MBまで対応）。');
   }
 
   let data: unknown;

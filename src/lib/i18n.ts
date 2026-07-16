@@ -210,7 +210,8 @@ const ja = {
   backupRestore: 'このバックアップを復元する',
   backupRestored: (j: number, p: number, t = 0) =>
     `復元しました（記録 ${j}件・人物 ${p}人${t > 0 ? `・タスク ${t}件` : ''}を追加）。`,
-  importFileTooLarge: 'ファイルが大きすぎます（20MBまで対応）。',
+  importFileTooLarge: (mb: number) => `ファイルが大きすぎます（${mb}MBまで対応）。`,
+  importPastedChars: (n: number) => `${n.toLocaleString()}文字を貼り付け中`,
   importParse: '解析する',
   importFound: (n: number, from: string, to: string) => `${n}件の会話が見つかりました（${from} 〜 ${to}）`,
   importMoreRecords: (n: number) => `他 ${n} 件（すべて取り込まれます）`,
@@ -844,7 +845,8 @@ const en: typeof ja = {
   backupRestore: 'Restore this backup',
   backupRestored: (j: number, p: number, t = 0) =>
     `Restored — added ${j} records, ${p} people${t > 0 ? `, ${t} tasks` : ''}.`,
-  importFileTooLarge: 'File is too large (up to 20 MB).',
+  importFileTooLarge: (mb: number) => `File is too large (up to ${mb} MB).`,
+  importPastedChars: (n: number) => `${n.toLocaleString()} characters pasted`,
   importParse: 'Parse',
   importFound: (n: number, from: string, to: string) =>
     `Found ${n} conversation${n === 1 ? '' : 's'} (${from} – ${to})`,

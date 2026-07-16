@@ -191,7 +191,8 @@ export const ko: Dict = {
   backupRestore: '이 백업 복원하기',
   backupRestored: (j: number, p: number, t = 0) =>
     `복원했습니다(기록 ${j}건·인물 ${p}명${t > 0 ? `·할 일 ${t}건` : ''} 추가).`,
-  importFileTooLarge: '파일이 너무 큽니다(최대 20MB).',
+  importFileTooLarge: (mb: number) => `파일이 너무 큽니다(최대 ${mb}MB).`,
+  importPastedChars: (n: number) => `${n.toLocaleString()}자 붙여넣음`,
   importParse: '분석하기',
   importFound: (n: number, from: string, to: string) => `${n}건의 대화를 찾았습니다(${from} ~ ${to})`,
   importMoreRecords: (n: number) => `외 ${n}건(모두 가져옵니다)`,
