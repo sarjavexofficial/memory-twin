@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Redirect, router } from 'expo-router';
+import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -51,8 +51,9 @@ export default function ReviewScreen() {
   const [shared, setShared] = useState(false);
   const [shareError, setShareError] = useState<string | null>(null);
 
-  // 企画書どおりStandard/Pro限定。Freeにはアップグレード導線を出す
-  const isPaid = settings.currentPlan !== 'free';
+  // 有料プラン公開時(paidPlans=true)はStandard/Pro限定（Freeにはアップグレード導線）。
+  // 無料先行リリース中は全員に開放する（AIコストは月間上限で頭打ちのため安全）
+  const isPaid = FEATURES.paidPlans ? settings.currentPlan !== 'free' : true;
 
   const periodLabel =
     period.kind === 'recent'
@@ -155,12 +156,6 @@ export default function ReviewScreen() {
     } finally {
       setIsSharing(false);
     }
-  }
-
-  // 週次レビューは有料専用機能。無料先行リリース中は入口を隠しているが、
-  // deep link 等で直接開かれてもホームへ戻す（paidPlans を true に戻せば復活）。
-  if (!FEATURES.paidPlans) {
-    return <Redirect href="/" />;
   }
 
   return (

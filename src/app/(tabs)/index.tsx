@@ -574,8 +574,7 @@ export default function TodayScreen() {
           <ActivityIndicator color={AppColors.primary} />
         ) : (
           <>
-            {/* 過去比較(compare-past)は有料専用。無料先行リリース中はプレビューごと隠す */}
-            {FEATURES.paidPlans && reunion && (
+            {reunion && (
               <View style={styles.reunionCard}>
                 <View style={styles.digestHeaderRow}>
                   <Ionicons name="hourglass-outline" size={16} color={AppColors.primary} />

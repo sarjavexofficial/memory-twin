@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Redirect, router } from 'expo-router';
+import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -38,8 +38,9 @@ export default function ComparePastScreen() {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
-  // Proだけの目玉機能。Standard以下にはアップグレード導線を出す
-  const isPaid = settings.currentPlan === 'pro';
+  // 有料プラン公開時(paidPlans=true)はProだけの目玉機能（Standard以下にはアップグレード導線）。
+  // 無料先行リリース中は全員に開放する（AIコストは月間上限で頭打ちのため安全）
+  const isPaid = FEATURES.paidPlans ? settings.currentPlan === 'pro' : true;
 
   const spanLabel = span === 'half' ? L.pastCompareHalfLabel : L.pastCompareYearLabel;
 
@@ -102,12 +103,6 @@ export default function ComparePastScreen() {
       source: '振り返り',
     });
     setSaved(true);
-  }
-
-  // 過去比較はPro専用機能。無料先行リリース中は入口を隠しているが、
-  // deep link 等で直接開かれてもホームへ戻す（paidPlans を true に戻せば復活）。
-  if (!FEATURES.paidPlans) {
-    return <Redirect href="/" />;
   }
 
   return (

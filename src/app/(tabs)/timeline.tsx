@@ -109,28 +109,23 @@ export default function TimelineScreen() {
         <TitleAccent />
         <Text style={styles.desc}>{L.timelineDesc}</Text>
 
-        {/* 週次レビュー・過去比較は有料専用。無料先行リリース中は入口を隠す（paidPlans参照） */}
-        {FEATURES.paidPlans && (
-          <Pressable style={styles.analysisLink} onPress={() => router.push('/review')}>
-            <Ionicons name="calendar-outline" size={20} color={AppColors.accent} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.analysisTitle}>{L.reviewLinkTitle}</Text>
-              <Text style={styles.analysisDesc}>{L.reviewLinkDesc}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={16} color={AppColors.muted} />
-          </Pressable>
-        )}
+        <Pressable style={styles.analysisLink} onPress={() => router.push('/review')}>
+          <Ionicons name="calendar-outline" size={20} color={AppColors.accent} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.analysisTitle}>{L.reviewLinkTitle}</Text>
+            <Text style={styles.analysisDesc}>{L.reviewLinkDesc}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={16} color={AppColors.muted} />
+        </Pressable>
 
-        {FEATURES.paidPlans && (
-          <Pressable style={styles.analysisLink} onPress={() => router.push('/compare-past')}>
-            <Ionicons name="hourglass-outline" size={20} color={AppColors.primary} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.analysisTitle}>{L.pastCompareLinkTitle}</Text>
-              <Text style={styles.analysisDesc}>{L.pastCompareLinkDesc}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={16} color={AppColors.muted} />
-          </Pressable>
-        )}
+        <Pressable style={styles.analysisLink} onPress={() => router.push('/compare-past')}>
+          <Ionicons name="hourglass-outline" size={20} color={AppColors.primary} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.analysisTitle}>{L.pastCompareLinkTitle}</Text>
+            <Text style={styles.analysisDesc}>{L.pastCompareLinkDesc}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={16} color={AppColors.muted} />
+        </Pressable>
 
         <Pressable style={styles.analysisLink} onPress={() => router.push('/insights')}>
           <Ionicons name="stats-chart-outline" size={20} color={AppColors.primary} />
