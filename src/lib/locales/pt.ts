@@ -231,7 +231,7 @@ export const pt: Dict = {
 
   accountSection: 'Conta',
   accountDesc:
-    'O login é opcional. Seus registros nunca são enviados automaticamente. Ele é usado para o backup criptografado na nuvem e a restauração de compras.',
+    'O login é opcional. Seus registros nunca são enviados automaticamente. Ele é usado para o backup criptografado na nuvem.',
   signInWithApple: 'Entrar com Apple',
   signInWithGoogle: 'Entrar com Google',
   signedInAs: (name: string) => `Conectado: ${name}`,
@@ -370,7 +370,7 @@ export const pt: Dict = {
   privacyLocalTitle: 'Salvo principalmente neste aparelho',
   privacyLocalDesc: 'Seus registros ficam principalmente no aparelho. Só saem dele nos recursos de IA e nos backups criptografados opcionais.',
   privacyAiTitle: 'Enviado à IA só quando necessário',
-  privacyAiDesc: 'Só os registros necessários para a ação são enviados (nomes viram apelidos). Cada tela mostra o que é enviado. Trechos só são enviados automaticamente se você ativar o autoaprendizado Pro (desligado por padrão).',
+  privacyAiDesc: 'Só os registros necessários para a ação são enviados (nomes viram apelidos). Cada tela mostra o que é enviado.',
   privacyAdsTitle: 'Nenhum uso para publicidade',
   privacyAdsDesc: 'Seus registros, pessoas e conversas nunca são usados nem vendidos para anúncios.',
   consentTitle: 'Contribuir dados para melhorar a IA',
@@ -499,7 +499,7 @@ export const pt: Dict = {
     'Seus dados são criptografados neste aparelho com uma chave derivada da sua frase secreta e guardados na nuvem vinculados à conta conectada (a mesma conta + frase sobrescreve). Nós não conseguimos ler o conteúdo. Após trocar de aparelho, entre com a mesma conta e restaure com a mesma frase. Se esquecê-la, ninguém poderá recuperar o backup.',
   cloudBackupNeedSignIn:
     'Entre em “Conta” acima para usar o backup na nuvem (isso mantém seu espaço de armazenamento exclusivo).',
-  importLimitReached: 'O plano gratuito permite até 3 importações. Standard / Pro: importações ilimitadas.',
+  importLimitReached: 'A versão gratuita permite até 3 importações no total.',
   planRecommended: 'Recomendado',
   planPerDay: (yen: string) => `≈ ¥${yen}/dia`,
   recallProUpsell: 'Pro mostra até 10',
@@ -515,8 +515,7 @@ export const pt: Dict = {
     `💎 ${n} ${n > 1 ? 'coisas esquecidas encontradas' : 'coisa esquecida encontrada'}`,
   reportShareImage: 'Compartilhar como imagem',
   reportImageFailed: 'Não foi possível criar a imagem.',
-  reportFreeUsed:
-    'O plano gratuito inclui apenas um relatório mensal. Assine Standard / Pro para ver relatórios e resumos da IA quando quiser.',
+  reportFreeUsed: 'A versão gratuita inclui apenas um relatório mensal no total.',
   cloudBackupPassPlaceholder: 'Frase secreta (mín. 8 caracteres)',
   cloudBackupSave: 'Criptografar e fazer backup',
   cloudBackupRestore: 'Restaurar com esta frase',
@@ -527,6 +526,9 @@ export const pt: Dict = {
   cloudBackupWeakPass:
     'Esta frase é fácil demais de adivinhar. Evite só números, caracteres repetidos e palavras comuns.',
   cloudBackupRateLimited: 'Você atingiu o limite de backups de hoje. Tente novamente amanhã.',
+  cloudSyncRemembered:
+    'Esta frase foi memorizada neste aparelho; a partir de agora a sincronização será automática.',
+  cloudSyncForget: 'Esquecer',
 
   appLockTitle: 'Bloqueio do app',
   appLockDesc:

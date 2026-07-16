@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 
 import { AiWakingBanner } from '@/components/ai-waking-banner';
 import { AppLockGate } from '@/components/app-lock-gate';
+import { CloudAutoSync } from '@/components/cloud-auto-sync';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { SaveErrorBanner } from '@/components/save-error-banner';
 import { warmUpSarjavex } from '@/lib/ai';
@@ -46,6 +47,7 @@ export default function RootLayout() {
             <SaveErrorBanner />
             <AiWakingBanner />
             <AppLockGate />
+            <CloudAutoSync />
           </TasksProvider>
           </JournalProvider>
         </PeopleProvider>

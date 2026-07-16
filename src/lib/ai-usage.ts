@@ -52,7 +52,7 @@ export async function checkAiQuota(): Promise<void> {
   const [usage, { limit }] = await Promise.all([getAiUsage(), getCurrentPlanLimit()]);
   if (usage.count >= limit) {
     throw new Error(
-      `今月のAI処理回数の上限（${limit}回）に達しました。毎月1日にリセットされます。上限を増やすには、設定タブからプランのアップグレードをご検討ください。`,
+      `今月のAI処理回数の上限（${limit}回）に達しました。毎月1日にリセットされます。`,
     );
   }
 }

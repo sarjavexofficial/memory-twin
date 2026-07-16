@@ -11,6 +11,7 @@ import { AppColors } from '@/constants/app-colors';
 import { AiConfigError, ExtractedItem, extractCommitments } from '@/lib/ai';
 import { buildAliasMap } from '@/lib/alias';
 import { BackupPayload, classifyJsonText, materializePhotos, PickedData, readBackupZip } from '@/lib/backup';
+import { FEATURES } from '@/lib/feature-flags';
 import { displayTag, useStrings } from '@/lib/i18n';
 import { ImportedRecord, parseAiHistory } from '@/lib/import';
 import { FREE_IMPORT_LIMIT, getImportCount, incrementImportCount } from '@/lib/usage-limits';
@@ -283,10 +284,13 @@ export default function ImportHistoryScreen() {
             {importLimitReached ? (
               <>
                 <Text style={styles.error}>{L.importLimitReached}</Text>
-                <Pressable style={styles.importButton} onPress={() => router.push('/plans')}>
-                  <Ionicons name="pricetags-outline" size={16} color={AppColors.background} />
-                  <Text style={styles.parseButtonText}>{L.planLink}</Text>
-                </Pressable>
+                {/* 有料プラン公開時のみアップグレード導線を出す。無料先行リリース中は案内文のみ。 */}
+                {FEATURES.paidPlans && (
+                  <Pressable style={styles.importButton} onPress={() => router.push('/plans')}>
+                    <Ionicons name="pricetags-outline" size={16} color={AppColors.background} />
+                    <Text style={styles.parseButtonText}>{L.planLink}</Text>
+                  </Pressable>
+                )}
               </>
             ) : (
               <>

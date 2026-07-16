@@ -12,6 +12,7 @@ import { AiConfigError, generateMonthlyNarrative } from '@/lib/ai';
 import { buildAliasMap } from '@/lib/alias';
 import { getAiProfile } from '@/lib/ai-profile';
 import { useTodayLocal } from '@/lib/date';
+import { FEATURES } from '@/lib/feature-flags';
 import { useStrings } from '@/lib/i18n';
 import { MOOD_EMOJIS } from '@/lib/journal-data';
 import {
@@ -177,13 +178,15 @@ export default function MonthlyReportScreen() {
         <Text style={styles.desc}>{L.reportDesc}</Text>
 
         {freeUsedUp ? (
-          // 無料プランの1回分は使用済み: 案内とアップグレード導線だけを出す
+          // 無料プランの1回分は使用済み: 案内文を出す（アップグレード導線は有料公開時のみ）
           <View style={styles.card}>
             <Text style={styles.upgradeText}>{L.reportFreeUsed}</Text>
-            <Pressable style={styles.planButton} onPress={() => router.push('/plans')}>
-              <Ionicons name="pricetags-outline" size={16} color={AppColors.primary} />
-              <Text style={styles.planButtonText}>{L.planLink}</Text>
-            </Pressable>
+            {FEATURES.paidPlans && (
+              <Pressable style={styles.planButton} onPress={() => router.push('/plans')}>
+                <Ionicons name="pricetags-outline" size={16} color={AppColors.primary} />
+                <Text style={styles.planButtonText}>{L.planLink}</Text>
+              </Pressable>
+            )}
           </View>
         ) : (
           <>

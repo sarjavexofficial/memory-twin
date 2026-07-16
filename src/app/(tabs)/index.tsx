@@ -12,6 +12,7 @@ import { organizeJournalEntry } from '@/lib/ai';
 import { buildAliasMap } from '@/lib/alias';
 import { maybeAutoLearn } from '@/lib/auto-learn';
 import { daysUntilBirthday } from '@/lib/birthday';
+import { FEATURES } from '@/lib/feature-flags';
 import { computeStreak } from '@/lib/streak';
 import {
   candidateMessage,
@@ -573,7 +574,8 @@ export default function TodayScreen() {
           <ActivityIndicator color={AppColors.primary} />
         ) : (
           <>
-            {reunion && (
+            {/* 過去比較(compare-past)は有料専用。無料先行リリース中はプレビューごと隠す */}
+            {FEATURES.paidPlans && reunion && (
               <View style={styles.reunionCard}>
                 <View style={styles.digestHeaderRow}>
                   <Ionicons name="hourglass-outline" size={16} color={AppColors.primary} />
@@ -744,7 +746,7 @@ export default function TodayScreen() {
                   <Text style={styles.digestMore}>{L.todoMore(recallRows.hidden)}</Text>
                 )}
                 {/* 上限に隠れた記憶がある瞬間が、いちばんProの価値が伝わる場所 */}
-                {settings.currentPlan !== 'pro' && recallRows.hidden > 0 && (
+                {FEATURES.paidPlans && settings.currentPlan !== 'pro' && recallRows.hidden > 0 && (
                   <Pressable style={styles.proUpsellRow} onPress={() => router.push('/plans')}>
                     <Ionicons name="flash-outline" size={13} color={AppColors.primary} />
                     <Text style={styles.proUpsellText}>{L.recallProUpsell}</Text>

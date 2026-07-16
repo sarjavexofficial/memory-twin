@@ -247,7 +247,7 @@ const ja = {
   // アカウント（Apple / Google サインイン。任意）
   accountSection: 'アカウント',
   accountDesc:
-    'ログインは任意です。記録が自動でサーバーに送られることはありません。暗号化クラウドバックアップや購入情報の引き継ぎに使います。',
+    'ログインは任意です。記録が自動でサーバーに送られることはありません。暗号化クラウドバックアップに使います。',
   signInWithApple: 'Appleでサインイン',
   signInWithGoogle: 'Googleでサインイン',
   signedInAs: (name: string) => `サインイン中: ${name}`,
@@ -383,7 +383,7 @@ const ja = {
   privacyLocalTitle: '保存先は主にこの端末',
   privacyLocalDesc: '記録は主に端末内に保存されます。外部へ出るのは、AI機能の利用時と、任意の暗号化バックアップのときだけです。',
   privacyAiTitle: 'AIへ送るのは必要なときだけ',
-  privacyAiDesc: 'AI利用時に、その操作に必要な記録だけを送信します（人物の実名は別名化）。何を送るかは操作画面に表示。Proの自動学習をONにした場合のみ抜粋を自動送信します（初期OFF）。',
+  privacyAiDesc: 'AI利用時に、その操作に必要な記録だけを送信します（人物の実名は別名化）。何を送るかは操作画面に表示します。',
   privacyAdsTitle: '広告目的の利用: なし',
   privacyAdsDesc: '記録・人物・相談内容を広告のために利用・販売することはありません。',
   consentTitle: 'AI改善へのデータ提供',
@@ -510,8 +510,7 @@ const ja = {
     '合言葉から作った鍵でこの端末上で暗号化してから、サインイン中のアカウントに紐づけてクラウドに1つだけ保管します（同じアカウント＋同じ合言葉で上書き）。中身は運営にも読めません。機種変更後は、同じアカウントでサインインして同じ合言葉を入れると復元できます。合言葉を忘れると、誰にも復元できません。',
   cloudBackupNeedSignIn:
     'クラウドバックアップは、上の「アカウント」でサインインすると使えます（保管場所をあなた専用にするため）。',
-  importLimitReached:
-    '無料プランで取り込めるのは3回までです。Standard / Proなら何度でも取り込めます。',
+  importLimitReached: '無料版で取り込めるのは通算3回までです。',
   planRecommended: 'おすすめ',
   planPerDay: (yen: string) => `1日あたり約¥${yen}`,
   recallProUpsell: 'Proなら最大10件表示',
@@ -526,8 +525,7 @@ const ja = {
   extractRevealTitle: (n: number) => `💎 ${n}件の「忘れもの」が見つかりました`,
   reportShareImage: '画像で共有',
   reportImageFailed: '画像の作成に失敗しました。',
-  reportFreeUsed:
-    '無料プランで見られる月次レポートは1回だけです。Standard / Proにすると、毎月いつでもレポートとAIのまとめを見られます。',
+  reportFreeUsed: '無料版で見られる月次レポートは通算1回までです。',
   cloudBackupPassPlaceholder: '合言葉（8文字以上）',
   cloudBackupSave: '暗号化してバックアップ',
   cloudBackupRestore: 'この合言葉で復元',
@@ -538,6 +536,8 @@ const ja = {
   cloudBackupWeakPass:
     'この合言葉は推測されやすいため使えません。数字だけ・同じ文字の繰り返し・ありがちな単語は避けてください。',
   cloudBackupRateLimited: '本日のバックアップ回数の上限に達しました。明日また試してください。',
+  cloudSyncRemembered: 'この合言葉をこの端末に記憶し、以後は自動で同期します。',
+  cloudSyncForget: '記憶を消す',
 
   // アプリロック（Face ID/パスコード）
   appLockTitle: 'アプリロック',
@@ -874,7 +874,7 @@ const en: typeof ja = {
 
   accountSection: 'Account',
   accountDesc:
-    'Signing in is optional. Your records are never uploaded automatically. It is used for encrypted cloud backup and purchase restore.',
+    'Signing in is optional. Your records are never uploaded automatically. It is used for encrypted cloud backup.',
   signInWithApple: 'Sign in with Apple',
   signInWithGoogle: 'Sign in with Google',
   signedInAs: (name: string) => `Signed in as ${name}`,
@@ -992,7 +992,7 @@ const en: typeof ja = {
   privacyLocalTitle: 'Stored mainly on this device',
   privacyLocalDesc: 'Your records stay mainly on your device. They leave it only for AI features and optional encrypted backups.',
   privacyAiTitle: 'Sent to AI only when needed',
-  privacyAiDesc: 'Only the records needed for an action are sent (names are replaced with aliases). Each screen shows what is sent. Excerpts are sent automatically only if you turn on Pro auto-learn (off by default).',
+  privacyAiDesc: 'Only the records needed for an action are sent (names are replaced with aliases). Each screen shows what is sent.',
   privacyAdsTitle: 'No advertising use',
   privacyAdsDesc: 'Your records, people, and conversations are never used or sold for ads.',
   consentTitle: 'Contribute data to improve AI',
@@ -1119,7 +1119,7 @@ const en: typeof ja = {
     'Your data is encrypted on this device with a key derived from your passphrase, then stored in the cloud tied to your signed-in account (the same account + passphrase overwrites it). We cannot read the contents. After switching devices, sign in with the same account and restore with the same passphrase. If you forget the passphrase, no one can recover the backup.',
   cloudBackupNeedSignIn:
     'Sign in under “Account” above to use cloud backup (this keeps your storage slot private to you).',
-  importLimitReached: 'The free plan includes up to 3 imports. Standard / Pro allows unlimited imports.',
+  importLimitReached: 'The free version allows up to 3 imports in total.',
   planRecommended: 'Recommended',
   planPerDay: (yen: string) => `≈ ¥${yen}/day`,
   recallProUpsell: 'Pro shows up to 10',
@@ -1134,8 +1134,7 @@ const en: typeof ja = {
   extractRevealTitle: (n: number) => `💎 Found ${n} forgotten thing${n > 1 ? 's' : ''}`,
   reportShareImage: 'Share as image',
   reportImageFailed: 'Could not create the image.',
-  reportFreeUsed:
-    'The free plan includes one monthly report. Upgrade to Standard / Pro to view reports and AI summaries anytime.',
+  reportFreeUsed: 'The free version includes one monthly report in total.',
   cloudBackupPassPlaceholder: 'Passphrase (8+ characters)',
   cloudBackupSave: 'Encrypt & back up',
   cloudBackupRestore: 'Restore with this passphrase',
@@ -1146,6 +1145,8 @@ const en: typeof ja = {
   cloudBackupWeakPass:
     'This passphrase is too easy to guess. Avoid digits only, repeated characters, and common words.',
   cloudBackupRateLimited: "You've reached today's backup limit. Please try again tomorrow.",
+  cloudSyncRemembered: 'This passphrase is remembered on this device, so it will sync automatically from now on.',
+  cloudSyncForget: 'Forget it',
 
   appLockTitle: 'App Lock',
   appLockDesc:

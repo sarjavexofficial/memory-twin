@@ -225,7 +225,7 @@ export const ko: Dict = {
 
   accountSection: '계정',
   accountDesc:
-    '로그인은 선택입니다. 기록이 자동으로 업로드되지 않습니다. 암호화 클라우드 백업과 구매 복원에 사용됩니다.',
+    '로그인은 선택입니다. 기록이 자동으로 업로드되지 않습니다. 암호화 클라우드 백업에 사용됩니다.',
   signInWithApple: 'Apple로 로그인',
   signInWithGoogle: 'Google로 로그인',
   signedInAs: (name: string) => `로그인 중: ${name}`,
@@ -358,7 +358,7 @@ export const ko: Dict = {
   privacyLocalTitle: '주로 이 기기에 저장',
   privacyLocalDesc: '기록은 주로 기기 안에 저장됩니다. 기기를 벗어나는 것은 AI 기능 이용 시와 선택적 암호화 백업 때뿐입니다.',
   privacyAiTitle: '필요할 때만 AI로 전송',
-  privacyAiDesc: '조작에 필요한 기록만 전송합니다(인물 실명은 별명으로 치환). 무엇을 보내는지는 화면에 표시됩니다. Pro 자동 학습을 켠 경우에만 발췌가 자동 전송됩니다(기본 OFF).',
+  privacyAiDesc: '조작에 필요한 기록만 전송합니다(인물 실명은 별명으로 치환). 무엇을 보내는지는 화면에 표시됩니다.',
   privacyAdsTitle: '광고 목적 이용: 없음',
   privacyAdsDesc: '기록·인물·상담 내용을 광고를 위해 이용하거나 판매하지 않습니다.',
   consentTitle: 'AI 개선을 위한 데이터 제공',
@@ -482,7 +482,7 @@ export const ko: Dict = {
     '암호에서 만든 키로 이 기기에서 암호화한 뒤, 로그인 중인 계정에 연결해 클라우드에 하나만 보관합니다(같은 계정＋같은 암호는 덮어쓰기). 운영자도 내용을 읽을 수 없습니다. 기기를 바꾼 후 같은 계정으로 로그인하고 같은 암호를 입력하면 복원할 수 있습니다. 암호를 잊으면 아무도 복원할 수 없습니다.',
   cloudBackupNeedSignIn:
     '클라우드 백업은 위의 “계정”에서 로그인하면 사용할 수 있습니다(보관 위치를 본인 전용으로 하기 위해서입니다).',
-  importLimitReached: '무료 플랜에서는 3회까지 가져올 수 있습니다. Standard / Pro는 무제한입니다.',
+  importLimitReached: '무료 버전에서는 총 3회까지 가져올 수 있습니다.',
   planRecommended: '추천',
   planPerDay: (yen: string) => `하루 약 ¥${yen}`,
   recallProUpsell: 'Pro는 최대 10건 표시',
@@ -497,8 +497,7 @@ export const ko: Dict = {
   extractRevealTitle: (n: number) => `💎 ${n}건의 "잊고 있던 것"을 찾았습니다`,
   reportShareImage: '이미지로 공유',
   reportImageFailed: '이미지 생성에 실패했습니다.',
-  reportFreeUsed:
-    '무료 플랜에서 볼 수 있는 월간 리포트는 1회뿐입니다. Standard / Pro로 업그레이드하면 리포트와 AI 요약을 언제든지 볼 수 있습니다.',
+  reportFreeUsed: '무료 버전에서 볼 수 있는 월간 리포트는 총 1회입니다.',
   cloudBackupPassPlaceholder: '암호(8자 이상)',
   cloudBackupSave: '암호화하여 백업',
   cloudBackupRestore: '이 암호로 복원',
@@ -509,6 +508,8 @@ export const ko: Dict = {
   cloudBackupWeakPass:
     '이 암호는 추측되기 쉬워 사용할 수 없습니다. 숫자만, 같은 문자 반복, 흔한 단어는 피해 주세요.',
   cloudBackupRateLimited: '오늘의 백업 횟수 상한에 도달했습니다. 내일 다시 시도해 주세요.',
+  cloudSyncRemembered: '이 암호를 이 기기에 기억해 두었으며, 앞으로는 자동으로 동기화됩니다.',
+  cloudSyncForget: '기억 지우기',
 
   appLockTitle: '앱 잠금',
   appLockDesc:

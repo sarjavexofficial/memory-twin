@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useState } from 'react';
 import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -210,6 +210,12 @@ export default function PlansScreen() {
       accentSoft: AppColors.primarySoft,
     },
   ].map((p) => ({ ...p, current: p.key === currentPlan }));
+
+  // 無料先行リリース中は課金画面を出荷しない（deep link等で開かれてもホームへ）。
+  // 課金解禁時は feature-flags.ts の paidPlans を true に戻すだけでこの画面が復活する。
+  if (!FEATURES.paidPlans) {
+    return <Redirect href="/" />;
+  }
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>

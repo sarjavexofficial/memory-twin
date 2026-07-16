@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -155,6 +155,12 @@ export default function ReviewScreen() {
     } finally {
       setIsSharing(false);
     }
+  }
+
+  // 週次レビューは有料専用機能。無料先行リリース中は入口を隠しているが、
+  // deep link 等で直接開かれてもホームへ戻す（paidPlans を true に戻せば復活）。
+  if (!FEATURES.paidPlans) {
+    return <Redirect href="/" />;
   }
 
   return (

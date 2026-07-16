@@ -234,7 +234,7 @@ export const fr: Dict = {
 
   accountSection: 'Compte',
   accountDesc:
-    'La connexion est facultative. Vos enregistrements ne sont jamais envoyés automatiquement. Elle sert à la sauvegarde cloud chiffrée et à la restauration des achats.',
+    'La connexion est facultative. Vos enregistrements ne sont jamais envoyés automatiquement. Elle sert à la sauvegarde cloud chiffrée.',
   signInWithApple: 'Se connecter avec Apple',
   signInWithGoogle: 'Se connecter avec Google',
   signedInAs: (name: string) => `Connecté : ${name}`,
@@ -374,7 +374,7 @@ export const fr: Dict = {
   privacyLocalDesc: 'Vos enregistrements restent principalement sur l’appareil. Ils n’en sortent que pour les fonctions IA et les sauvegardes chiffrées optionnelles.',
   privacyAiTitle: 'Envoyé à l’IA seulement si nécessaire',
   privacyAiDesc:
-    'Seuls les enregistrements nécessaires à l’action sont envoyés (les noms sont remplacés par des alias). Chaque écran indique ce qui est envoyé. Des extraits ne sont envoyés automatiquement que si vous activez l’auto-apprentissage Pro (désactivé par défaut).',
+    'Seuls les enregistrements nécessaires à l’action sont envoyés (les noms sont remplacés par des alias). Chaque écran indique ce qui est envoyé.',
   privacyAdsTitle: 'Aucun usage publicitaire',
   privacyAdsDesc:
     'Vos enregistrements, personnes et échanges ne sont jamais utilisés ni vendus à des fins publicitaires.',
@@ -507,7 +507,7 @@ export const fr: Dict = {
     'Vos données sont chiffrées sur cet appareil avec une clé dérivée de votre phrase secrète, puis stockées dans le cloud, liées à votre compte connecté (le même compte + la même phrase écrase la précédente). Nous ne pouvons pas en lire le contenu. Après un changement d’appareil, connectez-vous avec le même compte et restaurez avec la même phrase. Si vous l’oubliez, personne ne peut récupérer la sauvegarde.',
   cloudBackupNeedSignIn:
     'Connectez-vous dans « Compte » ci-dessus pour utiliser la sauvegarde cloud (votre espace de stockage reste ainsi personnel).',
-  importLimitReached: 'Le forfait gratuit permet 3 imports au maximum. Standard / Pro : imports illimités.',
+  importLimitReached: 'La version gratuite permet 3 imports au maximum au total.',
   planRecommended: 'Recommandé',
   planPerDay: (yen: string) => `≈ ${yen} ¥/jour`,
   recallProUpsell: 'Pro : jusqu’à 10 affichés',
@@ -522,8 +522,7 @@ export const fr: Dict = {
   extractRevealTitle: (n: number) => `💎 ${n} trésor${n > 1 ? 's' : ''} oublié${n > 1 ? 's' : ''} retrouvé${n > 1 ? 's' : ''}`,
   reportShareImage: 'Partager en image',
   reportImageFailed: 'Échec de la création de l’image.',
-  reportFreeUsed:
-    'Le forfait gratuit inclut un seul rapport mensuel. Passez à Standard / Pro pour consulter rapports et résumés IA à tout moment.',
+  reportFreeUsed: 'La version gratuite inclut un seul rapport mensuel au total.',
   cloudBackupPassPlaceholder: 'Phrase secrète (8 caractères min.)',
   cloudBackupSave: 'Chiffrer et sauvegarder',
   cloudBackupRestore: 'Restaurer avec cette phrase',
@@ -535,6 +534,9 @@ export const fr: Dict = {
     'Cette phrase est trop facile à deviner. Évitez les chiffres seuls, les caractères répétés et les mots courants.',
   cloudBackupRateLimited:
     'Vous avez atteint la limite de sauvegardes du jour. Réessayez demain.',
+  cloudSyncRemembered:
+    'Cette phrase est mémorisée sur cet appareil ; la synchronisation sera désormais automatique.',
+  cloudSyncForget: 'Oublier',
 
   appLockTitle: 'Verrouillage de l’app',
   appLockDesc:

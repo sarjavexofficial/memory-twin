@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,6 +10,7 @@ import { AppPalette } from '@/constants/app-colors';
 import { AiConfigError, generatePastComparison, PastComparisonResult } from '@/lib/ai';
 import { buildAliasMap } from '@/lib/alias';
 import { daysAgoLocal, todayLocal } from '@/lib/date';
+import { FEATURES } from '@/lib/feature-flags';
 import { useStrings } from '@/lib/i18n';
 import { makeThemed, useTheme } from '@/lib/theme';
 import { buildMemoryRecords } from '@/lib/retrieval';
@@ -101,6 +102,12 @@ export default function ComparePastScreen() {
       source: '振り返り',
     });
     setSaved(true);
+  }
+
+  // 過去比較はPro専用機能。無料先行リリース中は入口を隠しているが、
+  // deep link 等で直接開かれてもホームへ戻す（paidPlans を true に戻せば復活）。
+  if (!FEATURES.paidPlans) {
+    return <Redirect href="/" />;
   }
 
   return (

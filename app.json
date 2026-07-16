@@ -72,7 +72,8 @@
         {
           "faceIDPermission": "アプリロック（記録の保護）のためにFace IDを使用します。"
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,

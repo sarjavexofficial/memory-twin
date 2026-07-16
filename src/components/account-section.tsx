@@ -7,8 +7,11 @@ import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-na
 
 import { AppPalette } from '@/constants/app-colors';
 import { clearAiProfile } from '@/lib/ai-profile';
-import { deleteCloudBackup } from '@/lib/cloud-backup';
+import { materializePhotos } from '@/lib/backup';
+import { deleteCloudBackup, downloadCloudBackup } from '@/lib/cloud-backup';
+import { clearCachedPassphrase, getCachedPassphrase } from '@/lib/cloud-sync-cache';
 import { confirmAsync } from '@/lib/confirm';
+import { FEATURES } from '@/lib/feature-flags';
 import { useStrings } from '@/lib/i18n';
 import { makeThemed, useTheme } from '@/lib/theme';
 import { Account, useAuth } from '@/store/auth-context';
@@ -29,9 +32,9 @@ export function AccountSection() {
   const { styles, AppColors } = useTheme(themed);
   const L = useStrings();
   const { account, saveAccount, signOut } = useAuth();
-  const { clearAllPeople } = usePeople();
-  const { clearAllEntries } = useJournal();
-  const { clearAllTasks } = useTasks();
+  const { clearAllPeople, restorePeople } = usePeople();
+  const { clearAllEntries, restoreEntries } = useJournal();
+  const { clearAllTasks, restoreTasks } = useTasks();
   const [appleAvailable, setAppleAvailable] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // アカウント削除フロー（Apple 5.1.1(v)対応）: 合言葉入力でクラウドも消せる
@@ -39,6 +42,23 @@ export function AccountSection() {
   const [deletePass, setDeletePass] = useState('');
   const [deleting, setDeleting] = useState(false);
   const [deleteDone, setDeleteDone] = useState<string | null>(null);
+  // 自動クラウド同期: サインイン直後に、この端末に記憶済みの合言葉があれば静かに復元する
+  const [autoSyncMsg, setAutoSyncMsg] = useState<string | null>(null);
+
+  async function tryAutoSync(nextAccount: Account) {
+    if (!FEATURES.autoCloudSync) return;
+    const cached = await getCachedPassphrase(nextAccount);
+    if (!cached) return; // この端末で合言葉を入力したことがない（初回サインイン等） → 何もしない
+    try {
+      const backup = await downloadCloudBackup(nextAccount, cached);
+      const j = restoreEntries(backup.journal);
+      const p = restorePeople(await materializePhotos(backup.people));
+      const t = restoreTasks(backup.tasks ?? []);
+      setAutoSyncMsg(L.backupRestored(j, p, t));
+    } catch {
+      // 通信失敗・合言葉変更済みなどは静かに諦める。Settings画面から手動でも復元できる
+    }
+  }
 
   async function handleDeleteAccount() {
     setDeleting(true);
@@ -52,6 +72,7 @@ export function AccountSection() {
           cloudNote = L.deleteAccountCloudFailed;
         }
       }
+      if (account) await clearCachedPassphrase(account);
       clearAllPeople();
       clearAllEntries();
       clearAllTasks();
@@ -84,13 +105,15 @@ export function AccountSection() {
       const name = [credential.fullName?.familyName, credential.fullName?.givenName]
         .filter(Boolean)
         .join(' ');
-      saveAccount({
+      const nextAccount: Account = {
         provider: 'apple',
         userId: credential.user,
         name: name || undefined,
         email: credential.email ?? undefined,
         signedInAt: new Date().toISOString(),
-      });
+      };
+      saveAccount(nextAccount);
+      tryAutoSync(nextAccount);
     } catch (e) {
       // ユーザー自身のキャンセルはエラー表示しない
       if ((e as { code?: string }).code !== 'ERR_REQUEST_CANCELED') setError(L.signInFailed);
@@ -99,7 +122,9 @@ export function AccountSection() {
 
   async function handleSignOut() {
     const proceed = await confirmAsync(L.signOutConfirmTitle, L.signOutConfirmMessage);
-    if (proceed) signOut();
+    if (!proceed) return;
+    if (account) await clearCachedPassphrase(account);
+    signOut();
   }
 
   return (
@@ -111,6 +136,13 @@ export function AccountSection() {
         <View style={styles.doneRow}>
           <Ionicons name="checkmark-circle" size={15} color={AppColors.success} />
           <Text style={styles.doneText}>{deleteDone}</Text>
+        </View>
+      )}
+
+      {autoSyncMsg && (
+        <View style={styles.doneRow}>
+          <Ionicons name="cloud-done-outline" size={15} color={AppColors.success} />
+          <Text style={styles.doneText}>{autoSyncMsg}</Text>
         </View>
       )}
 
@@ -179,7 +211,10 @@ export function AccountSection() {
           )}
           {googleConfigured ? (
             <GoogleSignInButton
-              onDone={saveAccount}
+              onDone={(nextAccount) => {
+                saveAccount(nextAccount);
+                tryAutoSync(nextAccount);
+              }}
               onError={() => setError(L.signInFailed)}
               label={L.signInWithGoogle}
             />

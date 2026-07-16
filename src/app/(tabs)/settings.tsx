@@ -42,7 +42,9 @@ import {
   MIN_PASSPHRASE_LENGTH,
   uploadCloudBackup,
 } from '@/lib/cloud-backup';
+import { clearCachedPassphrase, getCachedPassphrase, saveCachedPassphrase } from '@/lib/cloud-sync-cache';
 import { confirmAsync } from '@/lib/confirm';
+import { FEATURES } from '@/lib/feature-flags';
 import { candidateMessage, previewBestCandidate } from '@/lib/daily-message';
 import {
   cancelProactiveNotifications,
@@ -223,6 +225,30 @@ export default function SettingsScreen() {
   const [cloudBusy, setCloudBusy] = useState<'save' | 'restore' | null>(null);
   const [cloudMsg, setCloudMsg] = useState<string | null>(null);
   const [cloudErr, setCloudErr] = useState<string | null>(null);
+  // 自動クラウド同期: 一度手動でバックアップ/復元に成功した合言葉を端末に記憶しているかどうか
+  const [passRemembered, setPassRemembered] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      if (FEATURES.autoCloudSync && account) {
+        getCachedPassphrase(account).then((cached) => {
+          if (active) setPassRemembered(!!cached);
+        });
+      } else {
+        setPassRemembered(false);
+      }
+      return () => {
+        active = false;
+      };
+    }, [account]),
+  );
+
+  async function handleForgetCloudPass() {
+    if (!account) return;
+    await clearCachedPassphrase(account);
+    setPassRemembered(false);
+  }
 
   async function handleCloudBackup() {
     const pass = cloudPass.trim();
@@ -249,6 +275,10 @@ export default function SettingsScreen() {
         journal: entries,
         tasks,
       });
+      if (FEATURES.autoCloudSync) {
+        await saveCachedPassphrase(account, pass);
+        setPassRemembered(true);
+      }
       setCloudMsg(L.cloudBackupSaved);
     } catch (e) {
       if (e instanceof CloudBackupRateLimitError) setCloudErr(L.cloudBackupRateLimited);
@@ -277,6 +307,10 @@ export default function SettingsScreen() {
       const j = restoreEntries(backup.journal);
       const p = restorePeople(await materializePhotos(backup.people));
       const t = restoreTasks(backup.tasks ?? []);
+      if (FEATURES.autoCloudSync) {
+        await saveCachedPassphrase(account, pass);
+        setPassRemembered(true);
+      }
       setCloudMsg(L.backupRestored(j, p, t));
     } catch (e) {
       if (e instanceof CloudBackupNotFoundError) setCloudErr(L.cloudBackupNotFound);
@@ -476,46 +510,58 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>{L.planSection}</Text>
-          <Text style={styles.dataSummary}>
-            {L.planCurrent(
-              settings.currentPlan === 'standard'
-                ? '⭐ Standard'
-                : settings.currentPlan === 'pro'
-                  ? '⚡ Pro'
-                  : '🌱 Free',
-            )}
-          </Text>
-          {aiUsedCount !== null && (
+        {/* 有料プラン公開時(paidPlans=true)はプラン表示＋アップグレード導線を出す。
+            無料先行リリース中は課金UIを出さず、今月のAI利用状況だけを表示する。 */}
+        {FEATURES.paidPlans ? (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>{L.planSection}</Text>
             <Text style={styles.dataSummary}>
-              {L.aiUsage(aiUsedCount, PLAN_AI_LIMITS[settings.currentPlan] ?? PLAN_AI_LIMITS.free)}
-            </Text>
-          )}
-          {/* Pro無料体験中は残り日数を出す（期限が意識されるほど転換率が上がる） */}
-          {settings.trialEndsAt && (
-            <Text style={[styles.dataSummary, { color: AppColors.primary, fontWeight: '700' }]}>
-              {L.trialBadge(
-                Math.max(
-                  1,
-                  Math.ceil((new Date(settings.trialEndsAt).getTime() - Date.now()) / 86400000),
-                ),
+              {L.planCurrent(
+                settings.currentPlan === 'standard'
+                  ? '⭐ Standard'
+                  : settings.currentPlan === 'pro'
+                    ? '⚡ Pro'
+                    : '🌱 Free',
               )}
             </Text>
-          )}
-          {/* Standardで上限の8割に達したら、その場でProを案内する */}
-          {settings.currentPlan === 'standard' &&
-            aiUsedCount !== null &&
-            aiUsedCount >= PLAN_AI_LIMITS.standard * 0.8 && (
-              <Text style={[styles.dataSummary, { color: AppColors.accent, fontWeight: '700' }]}>
-                {L.aiUsageUpsell}
+            {aiUsedCount !== null && (
+              <Text style={styles.dataSummary}>
+                {L.aiUsage(aiUsedCount, PLAN_AI_LIMITS[settings.currentPlan] ?? PLAN_AI_LIMITS.free)}
               </Text>
             )}
-          <Pressable style={styles.actionButton} onPress={() => router.push('/plans')}>
-            <Ionicons name="pricetags-outline" size={16} color={AppColors.primary} />
-            <Text style={styles.actionButtonText}>{L.planLink}</Text>
-          </Pressable>
-        </View>
+            {/* Pro無料体験中は残り日数を出す（期限が意識されるほど転換率が上がる） */}
+            {settings.trialEndsAt && (
+              <Text style={[styles.dataSummary, { color: AppColors.primary, fontWeight: '700' }]}>
+                {L.trialBadge(
+                  Math.max(
+                    1,
+                    Math.ceil((new Date(settings.trialEndsAt).getTime() - Date.now()) / 86400000),
+                  ),
+                )}
+              </Text>
+            )}
+            {/* Standardで上限の8割に達したら、その場でProを案内する */}
+            {settings.currentPlan === 'standard' &&
+              aiUsedCount !== null &&
+              aiUsedCount >= PLAN_AI_LIMITS.standard * 0.8 && (
+                <Text style={[styles.dataSummary, { color: AppColors.accent, fontWeight: '700' }]}>
+                  {L.aiUsageUpsell}
+                </Text>
+              )}
+            <Pressable style={styles.actionButton} onPress={() => router.push('/plans')}>
+              <Ionicons name="pricetags-outline" size={16} color={AppColors.primary} />
+              <Text style={styles.actionButtonText}>{L.planLink}</Text>
+            </Pressable>
+          </View>
+        ) : (
+          aiUsedCount !== null && (
+            <View style={styles.card}>
+              <Text style={styles.dataSummary}>
+                {L.aiUsage(aiUsedCount, PLAN_AI_LIMITS.free)}
+              </Text>
+            </View>
+          )
+        )}
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>{L.aiProfileSection}</Text>
@@ -542,24 +588,27 @@ export default function SettingsScreen() {
             loading={isLearning}
             disabled={learnableCount === 0}
           />
-          {/* 自動学習はPro限定・オプトイン。ONの間は記録が増えるたびに裏で理解を更新する */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 13, fontWeight: '700', color: AppColors.text }}>
-                {L.autoLearnLabel}
-              </Text>
-              <Text style={styles.exportHintText}>{L.autoLearnNote}</Text>
-            </View>
-            {settings.currentPlan === 'pro' ? (
-              <Switch value={!!settings.autoLearn} onValueChange={setAutoLearn} />
-            ) : (
-              <Pressable onPress={() => router.push('/plans')} hitSlop={8}>
-                <Text style={{ color: AppColors.primary, fontWeight: '700', fontSize: 12 }}>
-                  {L.autoLearnProOnly}
+          {/* 自動学習はPro限定・オプトイン。無料先行リリース中は入口ごと非表示（paidPlans参照）。
+              手動の「理解ノートを更新」ボタン(上のGradientButton)は無料でも使える。 */}
+          {FEATURES.paidPlans && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 13, fontWeight: '700', color: AppColors.text }}>
+                  {L.autoLearnLabel}
                 </Text>
-              </Pressable>
-            )}
-          </View>
+                <Text style={styles.exportHintText}>{L.autoLearnNote}</Text>
+              </View>
+              {settings.currentPlan === 'pro' ? (
+                <Switch value={!!settings.autoLearn} onValueChange={setAutoLearn} />
+              ) : (
+                <Pressable onPress={() => router.push('/plans')} hitSlop={8}>
+                  <Text style={{ color: AppColors.primary, fontWeight: '700', fontSize: 12 }}>
+                    {L.autoLearnProOnly}
+                  </Text>
+                </Pressable>
+              )}
+            </View>
+          )}
           {learnError && <Text style={styles.errorText}>{learnError}</Text>}
           {aiProfile && (
             <Pressable onPress={handleClearProfile} hitSlop={8}>
@@ -706,6 +755,15 @@ export default function SettingsScreen() {
                   {cloudBusy === 'restore' ? '…' : L.cloudBackupRestore}
                 </Text>
               </Pressable>
+              {passRemembered && (
+                <View style={styles.rememberedRow}>
+                  <Ionicons name="checkmark-circle-outline" size={14} color={AppColors.success} />
+                  <Text style={styles.rememberedText}>{L.cloudSyncRemembered}</Text>
+                  <Pressable onPress={handleForgetCloudPass} hitSlop={6}>
+                    <Text style={styles.rememberedForget}>{L.cloudSyncForget}</Text>
+                  </Pressable>
+                </View>
+              )}
             </>
           )}
           {cloudMsg && <Text style={styles.successText}>{cloudMsg}</Text>}
@@ -867,6 +925,9 @@ const makeStyles = (AppColors: AppPalette) =>
     backgroundColor: AppColors.background,
   },
   passInputField: { flex: 1, paddingVertical: 11, color: AppColors.text, fontSize: 14 },
+  rememberedRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  rememberedText: { flex: 1, fontSize: 11, color: AppColors.success, fontWeight: '600' },
+  rememberedForget: { fontSize: 11, color: AppColors.muted, textDecorationLine: 'underline' },
   aboutLabel: { fontSize: 14, color: AppColors.muted, fontWeight: '600' },
   aboutValue: { fontSize: 14, color: AppColors.text },
 });
