@@ -1,0 +1,48 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="d-bg" cx="50%" cy="38%" r="85%">
+      <stop offset="0%" stop-color="#151C45"/>
+      <stop offset="60%" stop-color="#0B1029"/>
+      <stop offset="100%" stop-color="#05070F"/>
+    </radialGradient>
+    <linearGradient id="d-cy" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7DEFFF"/>
+      <stop offset="100%" stop-color="#0EA5E9"/>
+    </linearGradient>
+    <linearGradient id="d-pu" x1="1" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#6D28D9"/>
+      <stop offset="100%" stop-color="#A78BFA"/>
+    </linearGradient>
+    <radialGradient id="d-halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.7"/>
+      <stop offset="55%" stop-color="#DCEBFF" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#DCEBFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#d-bg)"/>
+
+  <circle cx="196" cy="186" r="6" fill="#9AA6C4" opacity="0.40"/>
+  <circle cx="836" cy="222" r="7" fill="#9AA6C4" opacity="0.45"/>
+  <circle cx="520" cy="112" r="4" fill="#9AA6C4" opacity="0.35"/>
+  <circle cx="880" cy="560" r="4" fill="#9AA6C4" opacity="0.30"/>
+  <circle cx="828" cy="836" r="6" fill="#9AA6C4" opacity="0.40"/>
+  <circle cx="176" cy="792" r="5" fill="#9AA6C4" opacity="0.35"/>
+  <circle cx="128" cy="470" r="4" fill="#9AA6C4" opacity="0.30"/>
+
+  <rect x="170" y="262" width="400" height="250" rx="84" fill="none" stroke="#22D3EE" stroke-width="56" opacity="0.12"/>
+  <rect x="454" y="512" width="400" height="250" rx="84" fill="none" stroke="#8B5CF6" stroke-width="56" opacity="0.14"/>
+
+  <g fill="url(#d-cy)">
+    <rect x="170" y="262" width="400" height="250" rx="84"/>
+    <path d="M300 500 L378 500 L288 592 Z"/>
+  </g>
+
+  <g fill="url(#d-pu)">
+    <rect x="454" y="512" width="400" height="250" rx="84"/>
+    <path d="M724 524 L646 524 L736 432 Z"/>
+  </g>
+
+  <circle cx="512" cy="512" r="140" fill="url(#d-halo)"/>
+  <circle cx="512" cy="512" r="34" fill="#FFFFFF"/>
+</svg>
