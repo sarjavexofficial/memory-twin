@@ -78,6 +78,7 @@ export default function MonthlyReportScreen() {
   }
 
   async function handleGenerate() {
+    if (isFreePlan && freeUsedUp) return; // ボタンは出し分けているが、念のため処理側でも防ぐ
     setError(null);
     setIsGenerating(true);
     try {
@@ -93,6 +94,11 @@ export default function MonthlyReportScreen() {
       );
       // 端末に保存して、次からは無料で読み返せるようにする
       setNarrative(await saveNarrative(month, text, stats.totalRecords));
+      // 無料プランの1回分は「生成が成功した」このタイミングで消費する（見るだけでは減らない）
+      if (isFreePlan) {
+        await markFreeMonthlyReportUsed();
+        setFreeUsedUp(true);
+      }
     } catch (e) {
       setError(e instanceof AiConfigError ? e.message : (e as Error).message);
     } finally {
@@ -138,8 +144,9 @@ export default function MonthlyReportScreen() {
 
   const hasData = stats.totalRecords > 0;
 
-  // 無料プランは全体で1回だけ閲覧できる（プラン比較表の「1回のみ」と対応）。
-  // 中身のあるレポートを見た時点で1回分を消費し、次回からは案内だけを出す
+  // 無料プランのAIまとめ生成は全体で1回だけ（プラン比較表の「1回のみ」と対応）。
+  // 消費するのは「AIで生成」を実行した時だけ。画面を開いて統計を見るだけ・
+  // 保存済みのまとめを読み返すだけでは消費しない
   const [freeUsedUp, setFreeUsedUp] = useState(false);
   useEffect(() => {
     if (!isFreePlan) {
@@ -147,17 +154,13 @@ export default function MonthlyReportScreen() {
       return;
     }
     let active = true;
-    (async () => {
-      if (await hasUsedFreeMonthlyReport()) {
-        if (active) setFreeUsedUp(true);
-      } else if (hasData) {
-        await markFreeMonthlyReportUsed();
-      }
-    })();
+    hasUsedFreeMonthlyReport().then((used) => {
+      if (active) setFreeUsedUp(used);
+    });
     return () => {
       active = false;
     };
-  }, [isFreePlan, hasData]);
+  }, [isFreePlan]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -177,19 +180,6 @@ export default function MonthlyReportScreen() {
         <TitleAccent />
         <Text style={styles.desc}>{L.reportDesc}</Text>
 
-        {freeUsedUp ? (
-          // 無料プランの1回分は使用済み: 案内文を出す（アップグレード導線は有料公開時のみ）
-          <View style={styles.card}>
-            <Text style={styles.upgradeText}>{L.reportFreeUsed}</Text>
-            {FEATURES.paidPlans && (
-              <Pressable style={styles.planButton} onPress={() => router.push('/plans')}>
-                <Ionicons name="pricetags-outline" size={16} color={AppColors.primary} />
-                <Text style={styles.planButtonText}>{L.planLink}</Text>
-              </Pressable>
-            )}
-          </View>
-        ) : (
-          <>
         <View style={styles.monthRow}>
           {(
             [
@@ -273,9 +263,19 @@ export default function MonthlyReportScreen() {
                     />
                   )}
                 </>
+              ) : isFreePlan && freeUsedUp ? (
+                // 無料の生成1回分は使用済み: 生成ボタンの代わりに案内を出す
+                // （統計の閲覧と、生成済みの月のまとめの読み返しは無料のまま）
+                <>
+                  <Text style={styles.upgradeText}>{L.reportFreeUsed}</Text>
+                  {FEATURES.paidPlans && (
+                    <Pressable style={styles.planButton} onPress={() => router.push('/plans')}>
+                      <Ionicons name="pricetags-outline" size={16} color={AppColors.primary} />
+                      <Text style={styles.planButtonText}>{L.planLink}</Text>
+                    </Pressable>
+                  )}
+                </>
               ) : (
-                // 無料プランの1回きりの閲覧でもAIまとめまで体験できるようにする
-                // （ここに来られる時点で閲覧権はあるので、プランでの出し分けはしない）
                 <>
                   <AiSendNote text={L.reportAiSendNote} />
                   <GradientButton
@@ -302,8 +302,6 @@ export default function MonthlyReportScreen() {
               <Ionicons name="share-outline" size={16} color={AppColors.primary} />
               <Text style={styles.shareButtonText}>{L.reportShareButton}</Text>
             </Pressable>
-          </>
-        )}
           </>
         )}
       </ScrollView>

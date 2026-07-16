@@ -167,9 +167,10 @@ Memory Twin is a private journal with AI recall. Notes for review:
    encrypted cloud backup. Full local data deletion is also available under
    Settings > Data. (Guideline 5.1.1(v).)
 4. Cloud backup is end-to-end encrypted on device; we cannot read the data.
-5. AI requests go through our relay to Google Gemini (used under a paid,
-   commercial configuration). Personal names are replaced with aliases before
-   any AI request; email, credentials, and passwords are never sent.
+5. AI requests go through our relay to Google Gemini. Personal names are
+   replaced with aliases before any AI request; email, credentials, and
+   passwords are never sent. Provider-side data handling is disclosed in
+   our privacy policy (Section 2).
 6. "Echoes" (anonymous community sharing) is DISABLED in this release via a
    feature flag, so there is no user-generated content in the app.
 7. This release is a FREE app with NO in-app purchases. Subscription code

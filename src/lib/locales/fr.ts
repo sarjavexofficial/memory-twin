@@ -528,7 +528,8 @@ export const fr: Dict = {
   extractRevealTitle: (n: number) => `💎 ${n} trésor${n > 1 ? 's' : ''} oublié${n > 1 ? 's' : ''} retrouvé${n > 1 ? 's' : ''}`,
   reportShareImage: 'Partager en image',
   reportImageFailed: 'Échec de la création de l’image.',
-  reportFreeUsed: 'La version gratuite inclut un seul rapport mensuel au total.',
+  reportFreeUsed:
+    'La version gratuite inclut une seule génération de résumé IA au total. Les statistiques et un résumé déjà généré restent consultables à tout moment.',
   cloudBackupPassPlaceholder: 'Phrase secrète (8 caractères min.)',
   cloudBackupSave: 'Chiffrer et sauvegarder',
   cloudBackupRestore: 'Restaurer avec cette phrase',

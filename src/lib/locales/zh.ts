@@ -491,7 +491,7 @@ export const zh: Dict = {
   extractRevealTitle: (n: number) => `💎 找到了 ${n} 件“遗忘之物”`,
   reportShareImage: '以图片分享',
   reportImageFailed: '生成图片失败。',
-  reportFreeUsed: '免费版只能查看1次每月报告。',
+  reportFreeUsed: '免费版的AI总结生成共计1次。统计和已生成的总结随时可以查看。',
   cloudBackupPassPlaceholder: '口令（至少8个字符）',
   cloudBackupSave: '加密并备份',
   cloudBackupRestore: '用此口令恢复',

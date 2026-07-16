@@ -521,7 +521,8 @@ export const pt: Dict = {
     `💎 ${n} ${n > 1 ? 'coisas esquecidas encontradas' : 'coisa esquecida encontrada'}`,
   reportShareImage: 'Compartilhar como imagem',
   reportImageFailed: 'Não foi possível criar a imagem.',
-  reportFreeUsed: 'A versão gratuita inclui apenas um relatório mensal no total.',
+  reportFreeUsed:
+    'A versão gratuita inclui apenas uma geração de resumo por IA no total. As estatísticas e um resumo já gerado continuam disponíveis a qualquer momento.',
   cloudBackupPassPlaceholder: 'Frase secreta (mín. 8 caracteres)',
   cloudBackupSave: 'Criptografar e fazer backup',
   cloudBackupRestore: 'Restaurar com esta frase',

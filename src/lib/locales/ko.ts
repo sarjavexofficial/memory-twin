@@ -503,7 +503,7 @@ export const ko: Dict = {
   extractRevealTitle: (n: number) => `💎 ${n}건의 "잊고 있던 것"을 찾았습니다`,
   reportShareImage: '이미지로 공유',
   reportImageFailed: '이미지 생성에 실패했습니다.',
-  reportFreeUsed: '무료 버전에서 볼 수 있는 월간 리포트는 총 1회입니다.',
+  reportFreeUsed: '무료 버전의 AI 요약 생성은 총 1회입니다. 통계와 생성된 요약은 언제든지 볼 수 있습니다.',
   cloudBackupPassPlaceholder: '암호(8자 이상)',
   cloudBackupSave: '암호화하여 백업',
   cloudBackupRestore: '이 암호로 복원',

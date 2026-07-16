@@ -531,7 +531,8 @@ const ja = {
   extractRevealTitle: (n: number) => `💎 ${n}件の「忘れもの」が見つかりました`,
   reportShareImage: '画像で共有',
   reportImageFailed: '画像の作成に失敗しました。',
-  reportFreeUsed: '無料版で見られる月次レポートは通算1回までです。',
+  reportFreeUsed:
+    '無料版でAIまとめを生成できるのは通算1回までです。統計と、生成済みのまとめの読み返しはいつでも無料です。',
   cloudBackupPassPlaceholder: '合言葉（8文字以上）',
   cloudBackupSave: '暗号化してバックアップ',
   cloudBackupRestore: 'この合言葉で復元',
@@ -1146,7 +1147,8 @@ const en: typeof ja = {
   extractRevealTitle: (n: number) => `💎 Found ${n} forgotten thing${n > 1 ? 's' : ''}`,
   reportShareImage: 'Share as image',
   reportImageFailed: 'Could not create the image.',
-  reportFreeUsed: 'The free version includes one monthly report in total.',
+  reportFreeUsed:
+    'The free version includes one AI summary generation in total. Stats and any saved summary stay viewable anytime.',
   cloudBackupPassPlaceholder: 'Passphrase (8+ characters)',
   cloudBackupSave: 'Encrypt & back up',
   cloudBackupRestore: 'Restore with this passphrase',
