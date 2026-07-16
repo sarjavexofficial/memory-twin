@@ -556,8 +556,19 @@ export default function SettingsScreen() {
         ) : (
           aiUsedCount !== null && (
             <View style={styles.card}>
+              {/* 7日間Pro無料体験中は残り日数を明示（体験中はAI上限も1500回に上がる） */}
+              {settings.trialEndsAt && (
+                <Text style={[styles.dataSummary, { color: AppColors.primary, fontWeight: '700' }]}>
+                  {L.trialBadge(
+                    Math.max(
+                      1,
+                      Math.ceil((new Date(settings.trialEndsAt).getTime() - Date.now()) / 86400000),
+                    ),
+                  )}
+                </Text>
+              )}
               <Text style={styles.dataSummary}>
-                {L.aiUsage(aiUsedCount, PLAN_AI_LIMITS.free)}
+                {L.aiUsage(aiUsedCount, PLAN_AI_LIMITS[settings.currentPlan] ?? PLAN_AI_LIMITS.free)}
               </Text>
             </View>
           )

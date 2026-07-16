@@ -3,7 +3,6 @@ import { createContext, ReactNode, useContext, useEffect, useState } from 'react
 
 import { setAiResponseLanguage } from '@/lib/ai-language';
 import { setAppTimeZone } from '@/lib/date';
-import { FEATURES } from '@/lib/feature-flags';
 
 const STORAGE_KEY = 'memory-twin:settings';
 
@@ -163,10 +162,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   function markOnboardingSeen() {
     setSettings((prev) => {
       // 初回だけ7日間のPro無料体験を開始する（8日目に自動で無料プランへ）。
-      // 良さを先に体験してもらい、機能が減る「損失感」でアップグレード動機を作る。
-      // ただし無料先行リリース中(paidPlans=false)は有料プラン自体が無いため体験も付与しない
-      // （付与すると無料枠=AI月20回が7日間効かず、コスト・整合性の両面で問題になる）。
-      const startTrial = FEATURES.paidPlans && !prev.trialUsed && prev.currentPlan === 'free';
+      // 良さを先に体験してもらう（2026-07-16 ゆず判断で無料先行リリースでも付与する。
+      // 体験中はAI上限が月1500回になるが、サーバー側の端末150回/日・全体500回/日の
+      // ガードが効いているため原価は暴走しない。7日後の自動ダウングレードは
+      // 設定読み込み時のtrialEndsAt期限切れ判定が行う）
+      const startTrial = !prev.trialUsed && prev.currentPlan === 'free';
       return {
         ...prev,
         hasSeenOnboarding: true,
