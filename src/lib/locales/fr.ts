@@ -244,6 +244,8 @@ export const fr: Dict = {
   accountDesc:
     'La connexion est facultative. Vos enregistrements ne sont jamais envoyés automatiquement. Elle sert à la sauvegarde cloud chiffrée.',
   signInWithApple: 'Se connecter avec Apple',
+  accountTrialNote: 'La connexion démarre un essai gratuit Pro de 7 jours (une fois par compte).',
+  trialStarted: 'Votre essai gratuit Pro de 7 jours a commencé !',
   signInWithGoogle: 'Se connecter avec Google',
   signedInAs: (name: string) => `Connecté : ${name}`,
   signOutButton: 'Se déconnecter',

@@ -235,6 +235,8 @@ export const ko: Dict = {
   accountDesc:
     '로그인은 선택입니다. 기록이 자동으로 업로드되지 않습니다. 암호화 클라우드 백업에 사용됩니다.',
   signInWithApple: 'Apple로 로그인',
+  accountTrialNote: '로그인하면 7일간의 Pro 무료 체험이 시작됩니다(계정당 1회).',
+  trialStarted: '7일간의 Pro 무료 체험이 시작되었습니다!',
   signInWithGoogle: 'Google로 로그인',
   signedInAs: (name: string) => `로그인 중: ${name}`,
   signOutButton: '로그아웃',

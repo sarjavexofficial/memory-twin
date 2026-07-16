@@ -257,6 +257,8 @@ const ja = {
   accountDesc:
     'ログインは任意です。記録が自動でサーバーに送られることはありません。暗号化クラウドバックアップに使います。',
   signInWithApple: 'Appleでサインイン',
+  accountTrialNote: 'サインインすると、7日間のPro無料体験が始まります（1アカウントにつき1回）。',
+  trialStarted: '7日間のPro無料体験が始まりました！',
   signInWithGoogle: 'Googleでサインイン',
   signedInAs: (name: string) => `サインイン中: ${name}`,
   signOutButton: 'サインアウト',
@@ -893,6 +895,8 @@ const en: typeof ja = {
   accountDesc:
     'Signing in is optional. Your records are never uploaded automatically. It is used for encrypted cloud backup.',
   signInWithApple: 'Sign in with Apple',
+  accountTrialNote: 'Signing in starts a 7-day Pro free trial (once per account).',
+  trialStarted: 'Your 7-day Pro free trial has started!',
   signInWithGoogle: 'Sign in with Google',
   signedInAs: (name: string) => `Signed in as ${name}`,
   signOutButton: 'Sign out',

@@ -176,6 +176,9 @@ Memory Twin is a private journal with AI recall. Notes for review:
 7. This release is a FREE app with NO in-app purchases. Subscription code
    exists in the codebase but is fully disabled behind a feature flag
    (paidPlans=false): no purchase UI, pricing, or upgrade prompt is reachable.
+8. Signing in (optional) grants a one-time 7-day "Pro" trial that only raises
+   in-app usage limits. No payment, subscription, or purchase is involved;
+   after 7 days the app simply returns to the free limits.
 ```
 
 **審査リスクと事前対策**:

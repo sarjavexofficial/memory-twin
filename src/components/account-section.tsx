@@ -14,7 +14,9 @@ import { confirmAsync } from '@/lib/confirm';
 import { FEATURES } from '@/lib/feature-flags';
 import { useStrings } from '@/lib/i18n';
 import { makeThemed, useTheme } from '@/lib/theme';
+import { claimTrial } from '@/lib/trial';
 import { Account, useAuth } from '@/store/auth-context';
+import { useSettings } from '@/store/settings-context';
 import { useJournal } from '@/store/journal-context';
 import { usePeople } from '@/store/people-context';
 import { useTasks } from '@/store/tasks-context';
@@ -35,8 +37,11 @@ export function AccountSection() {
   const { clearAllPeople, restorePeople } = usePeople();
   const { clearAllEntries, restoreEntries } = useJournal();
   const { clearAllTasks, restoreTasks } = useTasks();
+  const { settings, applyTrial, endTrial } = useSettings();
   const [appleAvailable, setAppleAvailable] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 7日間のPro無料体験が「今」始まったときだけ出すお祝いメッセージ
+  const [trialMsg, setTrialMsg] = useState<string | null>(null);
   // アカウント削除フロー（Apple 5.1.1(v)対応）: 合言葉入力でクラウドも消せる
   const [showDelete, setShowDelete] = useState(false);
   const [deletePass, setDeletePass] = useState('');
@@ -78,6 +83,7 @@ export function AccountSection() {
       clearAllTasks();
       await clearAiProfile();
       signOut();
+      endTrial();
       setShowDelete(false);
       setDeletePass('');
       setDeleteDone(cloudNote ? `${L.deleteAccountDone} ${cloudNote}` : L.deleteAccountDone);
@@ -91,6 +97,27 @@ export function AccountSection() {
       AppleAuthentication.isAvailableAsync().then(setAppleAvailable).catch(() => {});
     }
   }, []);
+
+  // 7日間のPro無料体験: サインイン済みアカウントに対して1回だけ付与する。
+  // 「1回だけ」の判定はサーバー（Supabase claim_trial）に記録されるため、
+  // 再インストール・端末変更・データ全削除でも同じアカウントには再付与されない。
+  // 通信失敗時は静かに何もしない（サインイン直後や次回この画面を開いたときに再試行される）
+  useEffect(() => {
+    if (!account || settings.trialUsed) return;
+    let active = true;
+    (async () => {
+      const claim = await claimTrial(account);
+      if (!claim || !active) return;
+      applyTrial(claim.trialEndsAt);
+      if (claim.granted && new Date(claim.trialEndsAt).getTime() > Date.now()) {
+        setTrialMsg(L.trialStarted);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [account, settings.trialUsed]);
 
   async function handleAppleSignIn() {
     setError(null);
@@ -125,6 +152,9 @@ export function AccountSection() {
     if (!proceed) return;
     if (account) await clearCachedPassphrase(account);
     signOut();
+    // 体験はアカウントに紐づく特典なので、サインアウトした端末では終了する
+    // （同じアカウントで再サインインすれば残り日数がサーバーから復元される）
+    endTrial();
   }
 
   return (
@@ -143,6 +173,13 @@ export function AccountSection() {
         <View style={styles.doneRow}>
           <Ionicons name="cloud-done-outline" size={15} color={AppColors.success} />
           <Text style={styles.doneText}>{autoSyncMsg}</Text>
+        </View>
+      )}
+
+      {trialMsg && (
+        <View style={styles.doneRow}>
+          <Ionicons name="sparkles-outline" size={15} color={AppColors.success} />
+          <Text style={styles.doneText}>{trialMsg}</Text>
         </View>
       )}
 
@@ -221,6 +258,8 @@ export function AccountSection() {
           ) : (
             <Text style={styles.note}>{L.accountGoogleNotConfigured}</Text>
           )}
+          {/* 未使用アカウントへの特典案内（付与判定はサーバーが行う） */}
+          {!settings.trialUsed && <Text style={styles.note}>{L.accountTrialNote}</Text>}
         </>
       )}
       {error && <Text style={styles.error}>{error}</Text>}

@@ -241,6 +241,8 @@ export const pt: Dict = {
   accountDesc:
     'O login é opcional. Seus registros nunca são enviados automaticamente. Ele é usado para o backup criptografado na nuvem.',
   signInWithApple: 'Entrar com Apple',
+  accountTrialNote: 'Ao entrar, começa um teste grátis do Pro por 7 dias (uma vez por conta).',
+  trialStarted: 'Seu teste grátis do Pro de 7 dias começou!',
   signInWithGoogle: 'Entrar com Google',
   signedInAs: (name: string) => `Conectado: ${name}`,
   signOutButton: 'Sair',

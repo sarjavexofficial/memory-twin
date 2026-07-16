@@ -232,6 +232,8 @@ export const zh: Dict = {
   accountSection: '账户',
   accountDesc: '登录是可选的。记录不会被自动上传。用于加密云备份。',
   signInWithApple: '通过Apple登录',
+  accountTrialNote: '登录后即开始7天Pro免费体验（每个账号仅限1次）。',
+  trialStarted: '7天Pro免费体验已开始！',
   signInWithGoogle: '通过Google登录',
   signedInAs: (name: string) => `已登录：${name}`,
   signOutButton: '退出登录',

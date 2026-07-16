@@ -79,6 +79,8 @@ type SettingsContextValue = {
   markRetentionOfferUsed: (plan: string) => void;
   setCurrentPlan: (plan: PlanKey, cycle?: BillingCycle) => void;
   markOnboardingSeen: () => void;
+  applyTrial: (endsAt: string) => void;
+  endTrial: () => void;
   setTimezone: (tz: string) => void;
   setProactiveNotify: (value: boolean) => void;
   setNotifyHour: (hour: number) => void;
@@ -160,27 +162,37 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   }
 
   function markOnboardingSeen() {
+    // Pro無料体験はここでは付与しない（2026-07-17 ゆず判断）。
+    // 端末フラグだけの付与は再インストールで何度でも取れてしまうため、
+    // 体験はサインイン時にサーバー照会（claim_trial）で1アカウント1回だけ付与する。
+    // → applyTrial / endTrial と src/lib/trial.ts を参照
+    setSettings((prev) => ({
+      ...prev,
+      hasSeenOnboarding: true,
+      // AI必須のため、オンボーディング完了＝外部AI送信への情報提供済み同意として日時を記録
+      aiConsentAt: prev.aiConsentAt ?? new Date().toISOString(),
+    }));
+  }
+
+  // サーバー（claim_trial）が付与/照会したPro無料体験を反映する。
+  // 期限が未来なら体験を有効化、過去なら「このアカウントは使用済み」の記録だけ行う
+  function applyTrial(endsAt: string) {
     setSettings((prev) => {
-      // 初回だけ7日間のPro無料体験を開始する（8日目に自動で無料プランへ）。
-      // 良さを先に体験してもらう（2026-07-16 ゆず判断で無料先行リリースでも付与する。
-      // 体験中はAI上限が月1500回になるが、サーバー側の端末150回/日・全体500回/日の
-      // ガードが効いているため原価は暴走しない。7日後の自動ダウングレードは
-      // 設定読み込み時のtrialEndsAt期限切れ判定が行う）
-      const startTrial = !prev.trialUsed && prev.currentPlan === 'free';
+      const active = new Date(endsAt).getTime() > Date.now();
       return {
         ...prev,
-        hasSeenOnboarding: true,
-        // AI必須のため、オンボーディング完了＝外部AI送信への情報提供済み同意として日時を記録
-        aiConsentAt: prev.aiConsentAt ?? new Date().toISOString(),
-        ...(startTrial
-          ? {
-              currentPlan: 'pro' as PlanKey,
-              trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-              trialUsed: true,
-            }
-          : {}),
+        trialUsed: true,
+        ...(active ? { currentPlan: 'pro' as PlanKey, trialEndsAt: endsAt } : {}),
       };
     });
+  }
+
+  // サインアウト・アカウント削除時に体験を終了する（体験はアカウントに紐づく特典のため、
+  // アカウントを外した端末では継続しない。再サインインすれば残り日数がサーバーから復元される）
+  function endTrial() {
+    setSettings((prev) =>
+      prev.trialEndsAt ? { ...prev, currentPlan: 'free' as PlanKey, trialEndsAt: undefined } : prev,
+    );
   }
 
   function setAutoLearn(value: boolean) {
@@ -217,6 +229,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         markRetentionOfferUsed,
         setCurrentPlan,
         markOnboardingSeen,
+        applyTrial,
+        endTrial,
         setTimezone,
         setProactiveNotify,
         setNotifyHour,
