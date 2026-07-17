@@ -464,7 +464,7 @@ export const fr: Dict = {
   aboutCompany: 'Développeur',
   aboutName: 'Nom de l’app',
   aboutVersion: 'Version',
-  aboutVersionValue: '0.1.9 (dev)',
+  aboutVersionValue: '1.0.0',
   contactButton: 'Nous contacter',
   privacyPolicyLink: 'Politique de confidentialité',
   termsLink: 'Conditions d’utilisation (CLUF standard Apple)',

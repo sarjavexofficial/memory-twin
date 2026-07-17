@@ -444,7 +444,7 @@ export const ko: Dict = {
   aboutCompany: '개발사',
   aboutName: '앱 이름',
   aboutVersion: '버전',
-  aboutVersionValue: '0.1.9(개발판)',
+  aboutVersionValue: '1.0.0',
   contactButton: '문의하기',
   privacyPolicyLink: '개인정보 처리방침',
   termsLink: '이용약관(Apple 표준 EULA)',

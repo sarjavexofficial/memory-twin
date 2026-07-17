@@ -458,7 +458,7 @@ export const pt: Dict = {
   aboutCompany: 'Desenvolvedora',
   aboutName: 'Nome do app',
   aboutVersion: 'Versão',
-  aboutVersionValue: '0.1.9 (dev)',
+  aboutVersionValue: '1.0.0',
   contactButton: 'Fale conosco',
   privacyPolicyLink: 'Política de Privacidade',
   termsLink: 'Termos de Uso (EULA padrão da Apple)',

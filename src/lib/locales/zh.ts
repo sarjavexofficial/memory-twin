@@ -436,7 +436,7 @@ export const zh: Dict = {
   aboutCompany: '开发方',
   aboutName: '应用名称',
   aboutVersion: '版本',
-  aboutVersionValue: '0.1.9（开发版）',
+  aboutVersionValue: '1.0.0',
   contactButton: '联系我们',
   privacyPolicyLink: '隐私政策',
   termsLink: '使用条款（Apple标准EULA）',
