@@ -432,8 +432,8 @@ export const pt: Dict = {
   planLink: 'Ver planos e preços',
   planCurrent: (name: string) => `Plano atual: ${name}`,
   aiUsage: (used: number, limit: number) => `Ações de IA neste mês: ${used} / ${limit}`,
-  selectPlan: 'Escolher este plano (demo)',
-  planChanged: (name: string) => `Plano alterado para ${name} (demo — sem cobrança real).`,
+  selectPlan: 'Escolher este plano',
+  planChanged: (name: string) => `Plano alterado para ${name}.`,
   purchaseSheetTitle: 'Confirmar compra no app (demo)',
   purchaseAppLabel: 'App',
   purchasePlanLabel: 'Plano',
@@ -595,7 +595,7 @@ export const pt: Dict = {
   compareFeature: 'Recurso',
   comparePlanned: 'Em breve',
   compareNote:
-    'Nesta versão de desenvolvimento nada é cobrado e todos os recursos estão liberados.',
+    'Upgrades valem na hora; downgrades e cancelamentos valem ao fim do período atual (a Apple cuida disso).',
   compareRows: [
     { label: 'Registros, memos de pessoas e timeline', free: '○', standard: '○', pro: '○' },
     { label: 'Armazenamento no aparelho (sem envio automático)', free: '○', standard: '○', pro: '○' },
@@ -621,7 +621,7 @@ export const pt: Dict = {
   restoreDone: (plan: string) => `Plano ${plan} restaurado.`,
   restoreNone: 'Nenhuma compra para restaurar.',
   restoreFailed: 'Falha ao restaurar. Verifique a conexão e tente de novo.',
-  cancelDemoLink: 'Fluxo de cancelamento (demo)',
+  cancelDemoLink: 'Gerenciar assinatura (alterar ou cancelar)',
   cancelModalTitle: 'Cancelar mesmo?',
   cancelOfferBadge: 'Oferta única',
   cancelOfferText: (price: string) =>

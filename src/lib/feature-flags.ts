@@ -11,16 +11,13 @@ export const FEATURES = {
   // 問題が出た場合はここをfalseにすれば手動操作のみの旧挙動に戻せる。
   autoCloudSync: true,
 
-  // App内課金（有料プラン）: 2026-07-16 初回リリースは「無料アプリ」として提出するため非公開。
-  // 理由: RevenueCat未接続のデモ課金UIのまま提出するとApp Store審査でリジェクトされるため、
-  // まず無料で先行リリースし、課金は後続アップデートで有効化する（app-store-kit.md §8 参照）。
-  // false の間の挙動:
-  //   - 課金画面(/plans)は開いてもホームへリダイレクト（購入UIを出荷しない）
-  //   - すべてのアップグレード導線・購入シート・復元/解約UIを非表示
-  //   - 有料専用機能（週次レビュー・過去比較・自動学習）の入口を非表示
-  //   - 無料枠の上限（AI月20回・インポート3回・月次レポート1回）はそのまま維持
-  // RevenueCatを接続し課金を解禁するときは true に戻すだけでよい（billing.ts / iap-setup-guide.md）。
-  paidPlans: false,
+  // App内課金（有料プラン）: 2026-07-17 ゆずの決定で初回リリースから本物の課金を提供する
+  // （無料 / Standard ¥980 / Pro ¥1,980）。billing.ts は RevenueCat 実装に接続済み。
+  // デモ購入UIは撤去済みで、購入はAppleの標準購入シート・解約はAppleのサブスク管理画面。
+  // 動作条件: EXPO_PUBLIC_REVENUECAT_IOS_KEY（.env/EAS環境変数）と、
+  // App Store Connect の4商品 + RevenueCat の Entitlements（docs/iap-setup-guide.md）。
+  // キー未設定・Web・課金モジュール無しの旧バイナリでは、課金だけが安全に「利用不可」になる。
+  paidPlans: true,
 
   // 7日間のPro無料体験: 2026-07-17 ゆずの判断で初回リリースでは提供しない。
   // 仕組み（サインイン必須・Supabaseのclaim_trialで1アカウント1回を厳格記録）は

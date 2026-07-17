@@ -443,8 +443,8 @@ const ja = {
   planLink: '料金プランを見る',
   planCurrent: (name: string) => `現在のプラン: ${name}`,
   aiUsage: (used: number, limit: number) => `今月のAI処理: ${used} / ${limit}回`,
-  selectPlan: 'このプランにする（デモ）',
-  planChanged: (name: string) => `${name}プランに変更しました（デモ・実際の課金は発生しません）。`,
+  selectPlan: 'このプランにする',
+  planChanged: (name: string) => `${name}プランに変更しました。`,
   purchaseSheetTitle: 'App内課金の確認（デモ）',
   purchaseAppLabel: 'アプリ',
   purchasePlanLabel: 'プラン',
@@ -604,7 +604,8 @@ const ja = {
   compareTitle: 'プラン比較表',
   compareFeature: '機能',
   comparePlanned: '準備中',
-  compareNote: '現在の開発版では課金は発生せず、すべての機能を試せます。',
+  compareNote:
+    'アップグレードは即時反映、ダウングレード・解約は現在の期間終了後に適用されます（Appleが自動処理）。',
   compareRows: [
     { label: '記録・人物メモ・タイムライン', free: '○', standard: '○', pro: '○' },
     { label: '端末内保存（自動送信なし）', free: '○', standard: '○', pro: '○' },
@@ -630,7 +631,7 @@ const ja = {
   restoreDone: (plan: string) => `${plan}プランを復元しました。`,
   restoreNone: '復元できる購入は見つかりませんでした。',
   restoreFailed: '復元に失敗しました。通信環境を確認して、もう一度お試しください。',
-  cancelDemoLink: '解約手続き（デモ）',
+  cancelDemoLink: 'サブスクリプションを管理（プラン変更・解約）',
   cancelModalTitle: '本当に解約しますか？',
   cancelOfferBadge: 'いまなら一度だけ',
   cancelOfferText: (price: string) =>
@@ -1064,8 +1065,8 @@ const en: typeof ja = {
   planLink: 'View pricing plans',
   planCurrent: (name: string) => `Current plan: ${name}`,
   aiUsage: (used: number, limit: number) => `AI actions this month: ${used} / ${limit}`,
-  selectPlan: 'Choose this plan (demo)',
-  planChanged: (name: string) => `Switched to ${name} (demo — no actual charge).`,
+  selectPlan: 'Choose this plan',
+  planChanged: (name: string) => `Switched to ${name}.`,
   purchaseSheetTitle: 'Confirm in-app purchase (demo)',
   purchaseAppLabel: 'App',
   purchasePlanLabel: 'Plan',
@@ -1222,7 +1223,8 @@ const en: typeof ja = {
   compareTitle: 'Plan comparison',
   compareFeature: 'Feature',
   comparePlanned: 'Coming soon',
-  compareNote: 'In this dev version nothing is charged and every feature is available.',
+  compareNote:
+    'Upgrades apply immediately; downgrades and cancellations take effect at the end of the current period (handled by Apple).',
   compareRows: [
     { label: 'Records, people memos & timeline', free: '○', standard: '○', pro: '○' },
     { label: 'On-device storage (no auto-upload)', free: '○', standard: '○', pro: '○' },
@@ -1248,7 +1250,7 @@ const en: typeof ja = {
   restoreDone: (plan: string) => `Restored your ${plan} plan.`,
   restoreNone: 'No purchases available to restore.',
   restoreFailed: 'Restore failed. Please check your connection and try again.',
-  cancelDemoLink: 'Cancellation flow (demo)',
+  cancelDemoLink: 'Manage subscription (change or cancel)',
   cancelModalTitle: 'Really cancel?',
   cancelOfferBadge: 'One-time offer',
   cancelOfferText: (price: string) =>

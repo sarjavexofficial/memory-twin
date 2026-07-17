@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 import { setAiResponseLanguage } from '@/lib/ai-language';
+import { getCurrentPlanFromStore, initBillingOnLaunch } from '@/lib/billing';
 import { setAppTimeZone } from '@/lib/date';
 import { FEATURES } from '@/lib/feature-flags';
 
@@ -126,6 +127,33 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     if (!isLoaded) return;
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(settings)).catch(() => {});
   }, [settings, isLoaded]);
+
+  // 起動時にApple側の契約状態をアプリへ同期する（解約・期限切れ・機種変更の反映）。
+  // - 有効な契約が見つかればそのプランに合わせる
+  // - 照会に成功して「契約なし」と確定したときだけ無料へ戻す
+  // - 判定不能（Web・旧バイナリ・通信不調）は billing.ts が throw する → 現状維持
+  useEffect(() => {
+    if (!isLoaded || !FEATURES.paidPlans) return;
+    initBillingOnLaunch();
+    getCurrentPlanFromStore()
+      .then((stored) => {
+        setSettings((prev) => {
+          if (stored) {
+            if (prev.currentPlan === stored.plan && prev.billingCycle === stored.cycle) return prev;
+            return { ...prev, currentPlan: stored.plan, billingCycle: stored.cycle, trialEndsAt: undefined };
+          }
+          // ストア照会は成功したが有効な契約が無い = 解約済みor未購入。
+          // 無料体験中(trialEndsAt)は除き、無料プランへ戻す
+          if (prev.currentPlan !== 'free' && !prev.trialEndsAt) {
+            return { ...prev, currentPlan: 'free' as PlanKey, billingCycle: undefined };
+          }
+          return prev;
+        });
+      })
+      .catch(() => {
+        // ネットワーク不調・課金モジュール無し等: 現状のプラン表示を維持
+      });
+  }, [isLoaded]);
 
   // AIの返答言語を表示言語に追従させる（振り返り・検索などの出力が選択言語で返る）
   useEffect(() => {

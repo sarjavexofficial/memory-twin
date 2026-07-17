@@ -1,7 +1,8 @@
 import Purchases, { CustomerInfo } from 'react-native-purchases';
 
-import { PRODUCT_IDS, PurchaseResult } from '@/lib/billing';
-import { BillingCycle, PlanKey } from '@/store/settings-context';
+import { PRODUCT_IDS } from '@/lib/billing';
+import type { PurchaseResult } from '@/lib/billing';
+import type { BillingCycle, PlanKey } from '@/store/settings-context';
 
 // RevenueCat による本物の課金実装(2026-07-12作成・接続待ち)。
 //

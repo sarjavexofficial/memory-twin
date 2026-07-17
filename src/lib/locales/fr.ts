@@ -437,8 +437,8 @@ export const fr: Dict = {
   planLink: 'Voir les formules',
   planCurrent: (name: string) => `Formule actuelle : ${name}`,
   aiUsage: (used: number, limit: number) => `Actions IA ce mois-ci : ${used} / ${limit}`,
-  selectPlan: 'Choisir cette formule (démo)',
-  planChanged: (name: string) => `Formule ${name} activée (démo — aucun débit réel).`,
+  selectPlan: 'Choisir cette formule',
+  planChanged: (name: string) => `Formule ${name} activée.`,
   purchaseSheetTitle: 'Confirmer l’achat intégré (démo)',
   purchaseAppLabel: 'App',
   purchasePlanLabel: 'Formule',
@@ -602,7 +602,8 @@ export const fr: Dict = {
   compareTitle: 'Comparatif des formules',
   compareFeature: 'Fonction',
   comparePlanned: 'Bientôt',
-  compareNote: 'Cette version de développement est gratuite et complète.',
+  compareNote:
+    'Les surclassements s’appliquent immédiatement ; rétrogradations et résiliations prennent effet à la fin de la période en cours (géré par Apple).',
   compareRows: [
     { label: 'Notes, mémos de personnes et timeline', free: '○', standard: '○', pro: '○' },
     { label: 'Stockage sur l’appareil (aucun envoi auto)', free: '○', standard: '○', pro: '○' },
@@ -628,7 +629,7 @@ export const fr: Dict = {
   restoreDone: (plan: string) => `Formule ${plan} restaurée.`,
   restoreNone: 'Aucun achat à restaurer.',
   restoreFailed: 'Échec de la restauration. Vérifiez votre connexion et réessayez.',
-  cancelDemoLink: 'Parcours de résiliation (démo)',
+  cancelDemoLink: 'Gérer l’abonnement (modifier ou résilier)',
   cancelModalTitle: 'Vraiment résilier ?',
   cancelOfferBadge: 'Offre unique',
   cancelOfferText: (price: string) =>

@@ -87,7 +87,7 @@
     },
     "owner": "sarjavex",
     "runtimeVersion": {
-      "policy": "sdkVersion"
+      "policy": "appVersion"
     },
     "updates": {
       "url": "https://u.expo.dev/693ee30f-a7b6-4a71-91e0-8de4993e666d",

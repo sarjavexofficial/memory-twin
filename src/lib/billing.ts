@@ -1,15 +1,16 @@
-import { BillingCycle, PlanKey } from '@/store/settings-context';
+import { Platform } from 'react-native';
+
+import type { BillingCycle, PlanKey } from '@/store/settings-context';
 
 // App内課金（IAP）の窓口。アプリ内で課金に触る場所はこのファイルだけにする。
 //
-// 現在: デモ実装（常に成功を返す）。実際のお金は動かない。
-// 本物のRevenueCat実装は billing-revenuecat.ts に作成済み（未接続）。
-// 有効化するときは、下の purchasePlan / restorePurchases の中身を
-// billing-revenuecat.ts からの再エクスポートに差し替えるだけ。呼び出し側は変更不要。
-// 手順: docs/iap-setup-guide.md 参照。
+// 実体は RevenueCat 実装（billing-revenuecat.ts）。2026-07-17 に接続済み。
+// セットアップ全体は docs/iap-setup-guide.md を参照。
 //
-// 注意: react-native-purchases はネイティブモジュールのため Expo Go では動かない。
-//       導入時は EAS の開発ビルド（dev client）へ移行が必要。
+// 安全ガード:
+// - Web ではネイティブ課金が存在しないため、常に「利用不可」を返す
+// - react-native-purchases 未搭載の旧バイナリ（ビルド7以前）が新しいJSを受け取った場合も、
+//   require が失敗するだけでアプリ本体は壊れない（課金だけが「利用不可」になる）
 
 // App Store Connect に登録する商品ID。先に決めておき、登録時にこのIDを使う。
 // 命名規則: <アプリ略称>_<プラン>_<サイクル>（後から変更できないため慎重に）
@@ -29,17 +30,56 @@ export type PurchaseResult =
   | { success: true }
   | { success: false; error: string };
 
-// プラン購入（またはプラン/サイクル変更）。
-// デモ実装では常に成功。RevenueCat導入後は該当商品の purchase 呼び出しに差し替える。
-export async function purchasePlan(
-  _plan: Exclude<PlanKey, 'free'>,
-  _cycle: BillingCycle,
-): Promise<PurchaseResult> {
-  return { success: true };
+const UNAVAILABLE_ERROR =
+  'この環境ではApp内課金を利用できません。App Storeの最新版アプリからお試しください。';
+
+type RevenueCatModule = typeof import('@/lib/billing-revenuecat');
+
+// ネイティブ課金モジュールを遅延読み込みする。読み込めない環境では null。
+function loadRevenueCat(): RevenueCatModule | null {
+  if (Platform.OS === 'web') return null;
+  try {
+    return require('@/lib/billing-revenuecat') as RevenueCatModule;
+  } catch {
+    return null;
+  }
 }
 
-// 機種変更・再インストール時の購入復元。
-// デモ実装では何も購入していない扱い。RevenueCat導入後は restorePurchases() に差し替える。
+// 起動時に1回呼ぶ（設定コンテキストのロード完了後）。失敗しても静かに無視
+export function initBillingOnLaunch(): void {
+  try {
+    loadRevenueCat()?.initBilling();
+  } catch {
+    // キー未設定・旧バイナリ等。課金機能だけが無効になる
+  }
+}
+
+// 起動時にストア側の契約状態を取得する（解約・期限切れ・再インストールの反映用）。
+// 戻り値の意味を厳密に分ける:
+//   - {plan, cycle} = 有効な契約あり / null = 照会に成功し「契約なし」と確定
+//   - throw = 判定不能（Web・旧バイナリ・通信不調）→ 呼び出し側は現状維持すること
+export async function getCurrentPlanFromStore(): Promise<{
+  plan: Exclude<PlanKey, 'free'>;
+  cycle: BillingCycle;
+} | null> {
+  const rc = loadRevenueCat();
+  if (!rc) throw new Error('billing unavailable');
+  return rc.getCurrentPlanFromStore();
+}
+
+// プラン購入（またはプラン/サイクル変更）。Appleの購入シートが表示される
+export async function purchasePlan(
+  plan: Exclude<PlanKey, 'free'>,
+  cycle: BillingCycle,
+): Promise<PurchaseResult> {
+  const rc = loadRevenueCat();
+  if (!rc) return { success: false, error: UNAVAILABLE_ERROR };
+  return rc.purchasePlan(plan, cycle);
+}
+
+// 機種変更・再インストール時の購入復元
 export async function restorePurchases(): Promise<{ plan: PlanKey; cycle: BillingCycle } | null> {
-  return null;
+  const rc = loadRevenueCat();
+  if (!rc) return null;
+  return rc.restorePurchases();
 }

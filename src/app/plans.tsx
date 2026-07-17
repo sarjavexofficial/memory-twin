@@ -1,9 +1,7 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { Redirect, router } from 'expo-router';
-import * as LocalAuthentication from 'expo-local-authentication';
 import { useState } from 'react';
-import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppPalette } from '@/constants/app-colors';
@@ -13,16 +11,16 @@ import { useStrings } from '@/lib/i18n';
 import { makeThemed, useTheme } from '@/lib/theme';
 import { BillingCycle, PlanKey, useSettings } from '@/store/settings-context';
 
-const HALF_PRICE: Record<PlanKey, string> = { free: '0', standard: '490', pro: '990' };
 const PLAN_NAMES: Record<PlanKey, string> = { free: 'Free', standard: 'Standard', pro: 'Pro' };
-// 表示価格の一覧。年額は「月額×10」（=2か月分お得）で統一する
+// 表示価格の一覧。年額は「月額×10」（=2か月分お得）で統一する。
+// 実際の請求額はApp Store Connectの商品設定が正（このIDと価格を一致させること）
 const PLAN_PRICES: Record<'standard' | 'pro', { monthly: string; yearly: string }> = {
   standard: { monthly: '980', yearly: '9,800' },
   pro: { monthly: '1,980', yearly: '19,800' },
 };
 
-// 解約時フィードバックは端末内に蓄積（サーバー送信は運用開始後に実装）
-const CANCEL_FEEDBACK_KEY = 'memory-twin:cancel-feedback';
+// iOSのサブスクリプション管理画面（プラン変更・解約はAppleの標準画面で行う）
+const MANAGE_SUBSCRIPTIONS_URL = 'https://apps.apple.com/account/subscriptions';
 
 // 1日あたりの金額（月払い=30日、年払い=365日換算）。「1日66円」の実感で価格の心理的ハードルを下げる
 function perDayYen(prices: { monthly: string; yearly: string }, cycle: BillingCycle): string {
@@ -33,9 +31,7 @@ function perDayYen(prices: { monthly: string; yearly: string }, cycle: BillingCy
 export default function PlansScreen() {
   const { styles, AppColors } = useTheme(themed);
   const L = useStrings();
-  const { settings, markRetentionOfferUsed, setCurrentPlan } = useSettings();
-  const [cancelModalOpen, setCancelModalOpen] = useState(false);
-  const [cancelResult, setCancelResult] = useState<string | null>(null);
+  const { settings, setCurrentPlan } = useSettings();
   const [changeResult, setChangeResult] = useState<string | null>(null);
 
   const currentPlan = settings.currentPlan;
@@ -44,59 +40,33 @@ export default function PlansScreen() {
   const trialDaysLeft = settings.trialEndsAt
     ? Math.max(1, Math.ceil((new Date(settings.trialEndsAt).getTime() - Date.now()) / 86400000))
     : null;
-  const offerAvailable = !settings.retentionOfferUsed?.[currentPlan];
   // 画面上で選択中の支払いサイクル（購入するまでは保存しない）
   const [cycle, setCycle] = useState<BillingCycle>(currentCycle);
-  const [pendingPlan, setPendingPlan] = useState<PlanKey | null>(null);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  // 購入処理中のプラン（Appleの購入シートが出ている間、ボタンを無効化する）
+  const [purchasingPlan, setPurchasingPlan] = useState<PlanKey | null>(null);
 
-  function handleSelectPlan(planKey: PlanKey) {
+  // 有料プランの購入・変更。Appleの購入シートがそのまま表示される（確認や認証はApple側が行う）。
+  // 無料への変更（解約）はアプリからはできず、Appleのサブスクリプション管理画面で行う
+  async function handleSelectPlan(planKey: 'standard' | 'pro') {
     setPurchaseError(null);
-    if (planKey === 'free') {
-      // 無料への変更（ダウングレード）は認証不要
-      setCurrentPlan(planKey);
-      setChangeResult(L.planChanged(PLAN_NAMES[planKey]));
-      setCancelResult(null);
-      return;
-    }
-    // 有料プランは実際のiOS課金と同じく、承認シート＋生体認証を経由する
-    setPendingPlan(planKey);
-  }
-
-  async function handleApprovePurchase() {
-    if (!pendingPlan) return;
-    setIsAuthenticating(true);
-    setPurchaseError(null);
+    setChangeResult(null);
+    setRestoreMsg(null);
+    setPurchasingPlan(planKey);
     try {
-      if (Platform.OS !== 'web') {
-        const hasHardware = await LocalAuthentication.hasHardwareAsync();
-        if (hasHardware) {
-          const result = await LocalAuthentication.authenticateAsync({
-            promptMessage: L.purchasePrompt(PLAN_NAMES[pendingPlan]),
-          });
-          if (!result.success) {
-            setPurchaseError(L.purchaseFailed);
-            return;
-          }
-        }
-      }
-      // 課金処理は billing.ts に集約（現在はデモ。RevenueCat導入時もこの呼び出しのまま）
-      const result = await purchasePlan(pendingPlan as 'standard' | 'pro', cycle);
-      if (!result.success) {
+      const result = await purchasePlan(planKey, cycle);
+      if (result.success) {
+        setCurrentPlan(planKey, cycle);
+        setChangeResult(L.planChanged(PLAN_NAMES[planKey]));
+      } else {
         setPurchaseError(result.error);
-        return;
       }
-      setCurrentPlan(pendingPlan, cycle);
-      setChangeResult(L.planChanged(PLAN_NAMES[pendingPlan]));
-      setCancelResult(null);
-      setPendingPlan(null);
     } finally {
-      setIsAuthenticating(false);
+      setPurchasingPlan(null);
     }
   }
 
-  // 購入の復元(機種変更・再インストール時)。billing.ts 経由なのでRevenueCat導入後もこのまま動く
+  // 購入の復元(機種変更・再インストール時)。App Store審査で必須のUI
   const [restoring, setRestoring] = useState(false);
   const [restoreMsg, setRestoreMsg] = useState<string | null>(null);
 
@@ -116,54 +86,6 @@ export default function PlansScreen() {
     } finally {
       setRestoring(false);
     }
-  }
-
-  // 解約フィードバック（理由チップ＋自由記述）。解約確認→フィードバック→完了の2段階
-  const [feedbackMode, setFeedbackMode] = useState(false);
-  const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
-  const [feedbackText, setFeedbackText] = useState('');
-
-  function handleAcceptOffer() {
-    markRetentionOfferUsed(currentPlan);
-    closeCancelModal();
-    setCancelResult(L.offerAccepted);
-  }
-
-  function closeCancelModal() {
-    setCancelModalOpen(false);
-    setFeedbackMode(false);
-    setSelectedReasons([]);
-    setFeedbackText('');
-  }
-
-  function toggleReason(reason: string) {
-    setSelectedReasons((prev) =>
-      prev.includes(reason) ? prev.filter((r) => r !== reason) : [...prev, reason],
-    );
-  }
-
-  async function finalizeCancel(sendFeedback: boolean) {
-    const hasFeedback = sendFeedback && (selectedReasons.length > 0 || feedbackText.trim().length > 0);
-    if (hasFeedback) {
-      try {
-        const raw = await AsyncStorage.getItem(CANCEL_FEEDBACK_KEY);
-        const list = raw ? (JSON.parse(raw) as unknown[]) : [];
-        list.push({
-          date: new Date().toISOString(),
-          plan: currentPlan,
-          reasons: selectedReasons,
-          comment: feedbackText.trim(),
-        });
-        await AsyncStorage.setItem(CANCEL_FEEDBACK_KEY, JSON.stringify(list));
-      } catch {
-        // フィードバック保存に失敗しても解約自体は続行する
-      }
-    }
-    // 解約 = 無料プランへ戻る（デモ）
-    setCurrentPlan('free');
-    closeCancelModal();
-    setCancelResult(hasFeedback ? `${L.cancelFeedbackThanks}\n${L.cancelProceeded}` : L.cancelProceeded);
-    setChangeResult(null);
   }
 
   const plans = [
@@ -211,8 +133,7 @@ export default function PlansScreen() {
     },
   ].map((p) => ({ ...p, current: p.key === currentPlan }));
 
-  // 無料先行リリース中は課金画面を出荷しない（deep link等で開かれてもホームへ）。
-  // 課金解禁時は feature-flags.ts の paidPlans を true に戻すだけでこの画面が復活する。
+  // 課金を提供していないビルドでは課金画面を出荷しない（deep link等で開かれてもホームへ）
   if (!FEATURES.paidPlans) {
     return <Redirect href="/" />;
   }
@@ -301,17 +222,28 @@ export default function PlansScreen() {
                 </View>
               ))}
             </View>
-            {/* 同じプランでも支払いサイクルが違えば変更ボタンを出す（月払い→年払いの乗り換え） */}
-            {(!plan.current || (plan.key !== 'free' && cycle !== currentCycle)) && (
+            {/* 購入ボタンは有料プランのみ（無料へ戻す=解約はAppleのサブスクリプション管理から）。
+                同じプランでも支払いサイクルが違えば変更ボタンを出す（月払い→年払いの乗り換え） */}
+            {plan.key !== 'free' && (!plan.current || cycle !== currentCycle) && (
               <Pressable
-                style={[styles.selectButton, { backgroundColor: plan.accent }]}
-                onPress={() => handleSelectPlan(plan.key)}>
-                <Text style={styles.selectButtonText}>{L.selectPlan}</Text>
+                style={[
+                  styles.selectButton,
+                  { backgroundColor: plan.accent },
+                  purchasingPlan !== null && { opacity: 0.6 },
+                ]}
+                disabled={purchasingPlan !== null}
+                onPress={() => handleSelectPlan(plan.key as 'standard' | 'pro')}>
+                {purchasingPlan === plan.key ? (
+                  <ActivityIndicator size="small" color={AppColors.background} />
+                ) : (
+                  <Text style={styles.selectButtonText}>{L.selectPlan}</Text>
+                )}
               </Pressable>
             )}
           </View>
         ))}
 
+        {purchaseError && <Text style={styles.purchaseErrorText}>{purchaseError}</Text>}
         {changeResult && <Text style={styles.changeResult}>{changeResult}</Text>}
 
         {/* どの機能がどのプランでどこまで使えるかを一覧できる比較表 */}
@@ -367,166 +299,22 @@ export default function PlansScreen() {
             <Text style={styles.paymentText}>{L.paymentCancel}</Text>
           </View>
           {/* 機種変更・再インストール時の復元窓口(App Store審査で必須のUI) */}
-          <Pressable style={styles.cancelDemoLink} onPress={handleRestore} disabled={restoring}>
+          <Pressable style={styles.footerLink} onPress={handleRestore} disabled={restoring}>
             <Ionicons name="refresh-outline" size={14} color={AppColors.muted} />
-            <Text style={styles.cancelDemoText}>{restoring ? '…' : L.restoreButton}</Text>
+            <Text style={styles.footerLinkText}>{restoring ? '…' : L.restoreButton}</Text>
           </Pressable>
-          {restoreMsg && <Text style={styles.cancelResult}>{restoreMsg}</Text>}
+          {restoreMsg && <Text style={styles.footerResult}>{restoreMsg}</Text>}
+          {/* プラン変更・解約はAppleの標準管理画面で行う */}
           {currentPlan !== 'free' && (
-            <Pressable style={styles.cancelDemoLink} onPress={() => setCancelModalOpen(true)}>
-              <Ionicons name="exit-outline" size={14} color={AppColors.muted} />
-              <Text style={styles.cancelDemoText}>{L.cancelDemoLink}</Text>
+            <Pressable
+              style={styles.footerLink}
+              onPress={() => Linking.openURL(MANAGE_SUBSCRIPTIONS_URL).catch(() => {})}>
+              <Ionicons name="settings-outline" size={14} color={AppColors.muted} />
+              <Text style={styles.footerLinkText}>{L.cancelDemoLink}</Text>
             </Pressable>
           )}
-          {cancelResult && <Text style={styles.cancelResult}>{cancelResult}</Text>}
-        </View>
-
-        <View style={styles.noticeBox}>
-          <Ionicons name="information-circle-outline" size={15} color={AppColors.muted} />
-          <Text style={styles.noticeText}>{L.plansNotice}</Text>
         </View>
       </ScrollView>
-
-      <Modal
-        visible={cancelModalOpen}
-        transparent
-        animationType="fade"
-        onRequestClose={closeCancelModal}>
-        <Pressable style={styles.modalBackdrop} onPress={closeCancelModal}>
-          <Pressable style={styles.modalSheet} onPress={(e) => e.stopPropagation()}>
-            {!feedbackMode ? (
-              <>
-                <Text style={styles.modalTitle}>{L.cancelModalTitle}</Text>
-
-                {offerAvailable && (
-                  <View style={styles.offerBox}>
-                    <View style={styles.offerHeaderRow}>
-                      <Ionicons name="gift-outline" size={15} color={AppColors.success} />
-                      <Text style={styles.offerTitle}>{L.cancelOfferBadge}</Text>
-                    </View>
-                    <Text style={styles.offerText}>{L.cancelOfferText(HALF_PRICE[currentPlan])}</Text>
-                  </View>
-                )}
-
-                {offerAvailable && (
-                  <Pressable style={styles.offerButton} onPress={handleAcceptOffer}>
-                    <Ionicons name="sparkles-outline" size={15} color={AppColors.background} />
-                    <Text style={styles.offerButtonText}>{L.acceptOffer(HALF_PRICE[currentPlan])}</Text>
-                  </Pressable>
-                )}
-                <Pressable style={styles.cancelAnywayButton} onPress={() => setFeedbackMode(true)}>
-                  <Text style={styles.cancelAnywayText}>{L.cancelAnyway}</Text>
-                </Pressable>
-                <Pressable style={styles.keepButton} onPress={closeCancelModal}>
-                  <Text style={styles.keepButtonText}>{L.keepPlan}</Text>
-                </Pressable>
-              </>
-            ) : (
-              <>
-                <Text style={styles.modalTitle}>{L.cancelFeedbackTitle}</Text>
-                <Text style={styles.feedbackDesc}>{L.cancelFeedbackDesc}</Text>
-
-                <View style={styles.reasonWrap}>
-                  {L.cancelReasons.map((reason) => {
-                    const selected = selectedReasons.includes(reason);
-                    return (
-                      <Pressable
-                        key={reason}
-                        style={[styles.reasonChip, selected && styles.reasonChipSelected]}
-                        onPress={() => toggleReason(reason)}>
-                        <Text style={[styles.reasonChipText, selected && styles.reasonChipTextSelected]}>
-                          {reason}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-
-                <TextInput
-                  value={feedbackText}
-                  onChangeText={setFeedbackText}
-                  placeholder={L.cancelFeedbackPlaceholder}
-                  placeholderTextColor={AppColors.muted}
-                  style={styles.feedbackInput}
-                  multiline
-                />
-
-                <Pressable style={styles.offerButton} onPress={() => finalizeCancel(true)}>
-                  <Ionicons name="paper-plane-outline" size={15} color={AppColors.background} />
-                  <Text style={styles.offerButtonText}>{L.cancelSubmitAndCancel}</Text>
-                </Pressable>
-                <Pressable style={styles.cancelAnywayButton} onPress={() => finalizeCancel(false)}>
-                  <Text style={styles.cancelAnywayText}>{L.cancelSkipFeedback}</Text>
-                </Pressable>
-                <Pressable style={styles.keepButton} onPress={closeCancelModal}>
-                  <Text style={styles.keepButtonText}>{L.keepPlan}</Text>
-                </Pressable>
-              </>
-            )}
-          </Pressable>
-        </Pressable>
-      </Modal>
-
-      <Modal
-        visible={pendingPlan !== null}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setPendingPlan(null)}>
-        <Pressable style={styles.purchaseBackdrop} onPress={() => setPendingPlan(null)}>
-          <Pressable style={styles.purchaseSheet} onPress={(e) => e.stopPropagation()}>
-            <View style={styles.purchaseGrabber} />
-            <View style={styles.purchaseHeaderRow}>
-              <Ionicons name="bag-outline" size={18} color={AppColors.text} />
-              <Text style={styles.purchaseTitle}>{L.purchaseSheetTitle}</Text>
-            </View>
-
-            {pendingPlan && (
-              <View style={styles.purchaseInfo}>
-                <View style={styles.purchaseInfoRow}>
-                  <Text style={styles.purchaseInfoLabel}>{L.purchaseAppLabel}</Text>
-                  <Text style={styles.purchaseInfoValue}>Memory Twin</Text>
-                </View>
-                <View style={styles.purchaseInfoRow}>
-                  <Text style={styles.purchaseInfoLabel}>{L.purchasePlanLabel}</Text>
-                  <Text style={styles.purchaseInfoValue}>
-                    {pendingPlan === 'standard' ? '⭐ Standard' : '⚡ Pro'}
-                  </Text>
-                </View>
-                <View style={styles.purchaseInfoRow}>
-                  <Text style={styles.purchaseInfoLabel}>{L.purchasePriceLabel}</Text>
-                  <Text style={styles.purchaseInfoValue}>
-                    {(() => {
-                      const prices = pendingPlan === 'standard' ? PLAN_PRICES.standard : PLAN_PRICES.pro;
-                      return cycle === 'monthly'
-                        ? L.planPerMonth(prices.monthly)
-                        : `${L.planPerYear(prices.yearly)}（${L.billingYearlySave}）`;
-                    })()}
-                  </Text>
-                </View>
-              </View>
-            )}
-
-            {purchaseError && <Text style={styles.purchaseErrorText}>{purchaseError}</Text>}
-
-            <Pressable
-              style={[styles.purchaseAuthButton, isAuthenticating && { opacity: 0.6 }]}
-              onPress={handleApprovePurchase}
-              disabled={isAuthenticating}>
-              <Ionicons
-                name={Platform.OS === 'web' ? 'checkmark-circle-outline' : 'scan-outline'}
-                size={18}
-                color={AppColors.background}
-              />
-              <Text style={styles.purchaseAuthText}>
-                {Platform.OS === 'web' ? L.purchaseWebFallbackButton : L.purchaseAuthButton}
-              </Text>
-            </Pressable>
-            <Pressable style={styles.keepButton} onPress={() => setPendingPlan(null)}>
-              <Text style={styles.keepButtonText}>{L.purchaseCancelButton}</Text>
-            </Pressable>
-          </Pressable>
-        </Pressable>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -589,17 +377,6 @@ const makeStyles = (AppColors: AppPalette) =>
   featureList: { gap: 6 },
   featureRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   featureText: { fontSize: 13, color: AppColors.text, lineHeight: 18 },
-  noticeBox: {
-    flexDirection: 'row',
-    gap: 8,
-    alignItems: 'flex-start',
-    backgroundColor: AppColors.card,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: AppColors.line,
-    padding: 12,
-  },
-  noticeText: { flex: 1, fontSize: 12, color: AppColors.muted, lineHeight: 17 },
   paymentCard: {
     backgroundColor: AppColors.card,
     borderRadius: 18,
@@ -612,24 +389,16 @@ const makeStyles = (AppColors: AppPalette) =>
   paymentRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
   paymentIcon: { marginTop: 2 },
   paymentText: { flex: 1, fontSize: 12, color: AppColors.muted, lineHeight: 18 },
-  offerBox: {
-    backgroundColor: AppColors.successSoft,
-    borderRadius: 12,
-    padding: 12,
-    gap: 6,
-  },
-  offerHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  offerTitle: { fontSize: 13, fontWeight: '800', color: AppColors.success },
-  offerText: { fontSize: 12, color: AppColors.text, lineHeight: 18 },
-  cancelDemoLink: {
+  footerLink: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
     paddingVertical: 8,
+    minHeight: 40,
   },
-  cancelDemoText: { fontSize: 12, color: AppColors.muted, textDecorationLine: 'underline' },
-  cancelResult: { fontSize: 12, color: AppColors.success, lineHeight: 17, textAlign: 'center' },
+  footerLinkText: { fontSize: 12, color: AppColors.muted, textDecorationLine: 'underline' },
+  footerResult: { fontSize: 12, color: AppColors.success, lineHeight: 17, textAlign: 'center' },
   selectButton: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -639,6 +408,7 @@ const makeStyles = (AppColors: AppPalette) =>
   },
   selectButtonText: { color: AppColors.background, fontWeight: '800', fontSize: 14 },
   changeResult: { fontSize: 13, color: AppColors.success, textAlign: 'center', lineHeight: 18 },
+  purchaseErrorText: { fontSize: 12, color: AppColors.danger, textAlign: 'center', lineHeight: 17 },
   compareCard: {
     backgroundColor: AppColors.card,
     borderRadius: 18,
@@ -668,6 +438,7 @@ const makeStyles = (AppColors: AppPalette) =>
     textAlign: 'center',
   },
   compareCellOff: { color: AppColors.muted, fontWeight: '400' },
+  compareNote: { fontSize: 11, color: AppColors.muted, lineHeight: 16, marginTop: 12 },
   plannedBadge: {
     alignSelf: 'flex-start',
     backgroundColor: AppColors.accentSoft,
@@ -694,109 +465,6 @@ const makeStyles = (AppColors: AppPalette) =>
     paddingVertical: 9,
   },
   trialBannerText: { fontSize: 13, fontWeight: '800', color: AppColors.primary },
-  compareNote: { fontSize: 11, color: AppColors.muted, lineHeight: 16, marginTop: 12 },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  modalSheet: {
-    backgroundColor: AppColors.card,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: AppColors.line,
-    padding: 20,
-    gap: 12,
-  },
-  modalTitle: { fontSize: 18, fontWeight: '800', color: AppColors.text, textAlign: 'center' },
-  offerButton: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: AppColors.success,
-    borderRadius: 12,
-    paddingVertical: 14,
-    minHeight: 44,
-  },
-  offerButtonText: { color: AppColors.background, fontWeight: '800', fontSize: 14 },
-  cancelAnywayButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: AppColors.danger,
-    borderRadius: 12,
-    paddingVertical: 13,
-    minHeight: 44,
-  },
-  cancelAnywayText: { color: AppColors.danger, fontWeight: '700', fontSize: 14 },
-  feedbackDesc: { fontSize: 12, color: AppColors.muted, lineHeight: 17, textAlign: 'center' },
-  reasonWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center' },
-  reasonChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 999,
-    borderWidth: 1.5,
-    borderColor: AppColors.line,
-  },
-  reasonChipSelected: { borderColor: AppColors.primary, backgroundColor: AppColors.primarySoft },
-  reasonChipText: { fontSize: 13, color: AppColors.muted, fontWeight: '600' },
-  reasonChipTextSelected: { color: AppColors.primary, fontWeight: '800' },
-  feedbackInput: {
-    borderWidth: 1,
-    borderColor: AppColors.line,
-    borderRadius: 12,
-    padding: 12,
-    minHeight: 70,
-    fontSize: 14,
-    color: AppColors.text,
-    textAlignVertical: 'top',
-  },
-  keepButton: { alignItems: 'center', justifyContent: 'center', paddingVertical: 10, minHeight: 44 },
-  keepButtonText: { color: AppColors.muted, fontWeight: '700', fontSize: 14 },
-  purchaseBackdrop: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.6)', justifyContent: 'flex-end' },
-  purchaseSheet: {
-    backgroundColor: AppColors.card,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    borderWidth: 1,
-    borderColor: AppColors.line,
-    padding: 20,
-    paddingBottom: 34,
-    gap: 14,
-  },
-  purchaseGrabber: {
-    alignSelf: 'center',
-    width: 40,
-    height: 4,
-    borderRadius: 999,
-    backgroundColor: AppColors.line,
-  },
-  purchaseHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  purchaseTitle: { fontSize: 16, fontWeight: '800', color: AppColors.text },
-  purchaseInfo: {
-    borderWidth: 1,
-    borderColor: AppColors.line,
-    borderRadius: 14,
-    padding: 14,
-    gap: 10,
-  },
-  purchaseInfoRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  purchaseInfoLabel: { fontSize: 13, color: AppColors.muted, fontWeight: '600' },
-  purchaseInfoValue: { fontSize: 13, color: AppColors.text, fontWeight: '700' },
-  purchaseErrorText: { fontSize: 12, color: AppColors.danger, textAlign: 'center', lineHeight: 17 },
-  purchaseAuthButton: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: AppColors.primary,
-    borderRadius: 12,
-    paddingVertical: 14,
-    minHeight: 48,
-  },
-  purchaseAuthText: { color: AppColors.background, fontWeight: '800', fontSize: 13, flexShrink: 1 },
 });
 
 const themed = makeThemed(makeStyles);

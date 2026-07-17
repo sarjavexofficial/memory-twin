@@ -418,8 +418,8 @@ export const ko: Dict = {
   planLink: '요금제 보기',
   planCurrent: (name: string) => `현재 플랜: ${name}`,
   aiUsage: (used: number, limit: number) => `이번 달 AI 처리: ${used} / ${limit}회`,
-  selectPlan: '이 플랜으로 하기(데모)',
-  planChanged: (name: string) => `${name} 플랜으로 변경했습니다(데모·실제 결제는 발생하지 않습니다).`,
+  selectPlan: '이 플랜으로 하기',
+  planChanged: (name: string) => `${name} 플랜으로 변경했습니다.`,
   purchaseSheetTitle: '앱 내 결제 확인(데모)',
   purchaseAppLabel: '앱',
   purchasePlanLabel: '플랜',
@@ -574,7 +574,7 @@ export const ko: Dict = {
   compareTitle: '플랜 비교표',
   compareFeature: '기능',
   comparePlanned: '준비 중',
-  compareNote: '현재 개발판에서는 결제가 발생하지 않으며 모든 기능을 시험해 볼 수 있습니다.',
+  compareNote: '업그레이드는 즉시 적용되며, 다운그레이드·해지는 현재 기간 종료 후 적용됩니다(Apple이 자동 처리).',
   compareRows: [
     { label: '기록·인물 메모·타임라인', free: '○', standard: '○', pro: '○' },
     { label: '기기 내 저장(자동 전송 없음)', free: '○', standard: '○', pro: '○' },
@@ -600,7 +600,7 @@ export const ko: Dict = {
   restoreDone: (plan: string) => `${plan} 플랜을 복원했습니다.`,
   restoreNone: '복원할 수 있는 구매를 찾지 못했습니다.',
   restoreFailed: '복원에 실패했습니다. 네트워크를 확인하고 다시 시도해 주세요.',
-  cancelDemoLink: '해지 절차(데모)',
+  cancelDemoLink: '구독 관리(변경·해지)',
   cancelModalTitle: '정말 해지할까요?',
   cancelOfferBadge: '지금 단 한 번',
   cancelOfferText: (price: string) =>
