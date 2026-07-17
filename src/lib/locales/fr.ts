@@ -48,7 +48,7 @@ export const fr: Dict = {
   dailyMsgUndated: (person: string, action: string) =>
     `Votre promesse envers ${person} — « ${action} » — n’a pas encore de date. On en fixe une ? Je vous la rappellerai avant que vous l’oubliiez.`,
   dailyMsgStale: (person: string, days: number) =>
-    `Cela fait ${days} jours sans contact avec ${person}. Même un court message ferait plaisir.`,
+    `Aucune note sur ${person} depuis ${days} jours. Et si vous preniez de ses nouvelles ?`,
   dailyMsgSleep:
     'Votre sommeil est sous les 6 heures depuis 3 enregistrements d’affilée. Et si vous vous couchiez tôt ce soir ?',
   dailyWhy: 'Pourquoi ce sujet ?',
@@ -56,7 +56,7 @@ export const fr: Dict = {
   dailyReasonUpcoming: 'Les promesses à échéance proche sont signalées tant qu’il est encore temps.',
   dailyReasonUndated: 'Les promesses sans date s’oublient vite : je propose d’en fixer une.',
   dailyReasonStale:
-    'Les personnes sans contact depuis plus de 30 jours sont signalées avant que le lien ne se distende.',
+    'Les personnes sans note depuis plus de 30 jours sont signalées avant que le lien ne se distende.',
   dailyReasonSleep: 'Une baisse consécutive du temps de sommeil a été détectée dans vos derniers enregistrements.',
   dailySourceLabel: 'Enregistrements sources',
   dailyHelpful: 'Utile',
@@ -83,7 +83,7 @@ export const fr: Dict = {
   projectCreate: 'Créer',
   todoList: 'Today Recall',
   todoMore: (n: number) => `${n} de plus`,
-  staleTitle: 'On perd le fil ?',
+  staleTitle: 'Pas de notes récentes',
   promiseDue: (date: string) => ` ・ échéance ${date}`,
   recallOverdue: 'En retard',
   recallDueToday: 'Pour aujourd’hui',
@@ -122,8 +122,8 @@ export const fr: Dict = {
   searchDidYouMean: 'Vouliez-vous dire :',
   journalHits: (n: number) => `${n} ${n === 1 ? 'correspondance' : 'correspondances'} dans vos notes`,
   contactToday: 'Contacté aujourd’hui',
-  contactDaysAgo: (n: number) => `Il y a ${n} jour${n > 1 ? 's' : ''}`,
-  contactStale: (n: number) => `Sans contact depuis ${n} jours`,
+  contactDaysAgo: (n: number) => `Dernière note il y a ${n} jour${n > 1 ? 's' : ''}`,
+  contactStale: (n: number) => `Aucune note depuis ${n} jours`,
 
   // 人物の登録・編集フォーム
   personAddTitle: 'Ajouter une personne',
@@ -157,7 +157,7 @@ export const fr: Dict = {
   // 人物詳細
   personBasicInfo: 'Infos de base',
   personUnset: 'Non renseigné',
-  personLastContact: 'Dernier contact',
+  personLastContact: 'Dernière note',
   personDislikes: 'N’aime pas',
   memoAddTitle: 'Ajouter un mémo',
   memoDateLabel: 'Date',

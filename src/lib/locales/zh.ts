@@ -46,13 +46,13 @@ export const zh: Dict = {
   dailyMsgUndated: (person: string, action: string) =>
     `你和${person}的“${action}”还没有定日期。要不要定一个？定了日期我会在你忘记之前提醒你。`,
   dailyMsgStale: (person: string, days: number) =>
-    `你已经${days}天没有联系${person}了。哪怕发一条简短的消息也好？`,
+    `已经${days}天没有关于${person}的记录了。要不要问问近况？`,
   dailyMsgSleep: '睡眠已连续3次不足6小时。今天要不要早点休息？',
   dailyWhy: '为什么是这个话题？',
   dailyReasonOverdue: '已过期限的约定会被最优先提醒。',
   dailyReasonUpcoming: '临近期限的约定会趁还来得及时提醒你。',
   dailyReasonUndated: '没有日期的约定容易被遗忘，所以建议定一个日期。',
-  dailyReasonStale: '超过30天没有联系的人，会在关系疏远之前提醒你。',
+  dailyReasonStale: '超过30天没有相关记录的人，会在关系疏远之前提醒你。',
   dailyReasonSleep: '从最近的记录中检测到睡眠时间连续下降。',
   dailySourceLabel: '依据的记录',
   dailyHelpful: '有帮助',
@@ -78,7 +78,7 @@ export const zh: Dict = {
   projectCreate: '创建',
   todoList: 'Today Recall ─ 今天要想起的事',
   todoMore: (n: number) => `另外还有 ${n} 条`,
-  staleTitle: '可能正在疏远',
+  staleTitle: '最近没有记录的人',
   promiseDue: (date: string) => ` ・ ${date}之前`,
   recallOverdue: '已过期',
   recallDueToday: '今天到期',
@@ -117,8 +117,8 @@ export const zh: Dict = {
   searchDidYouMean: '你是不是要找：',
   journalHits: (n: number) => `你的记录中有 ${n} 条匹配`,
   contactToday: '今天联系过',
-  contactDaysAgo: (n: number) => `${n}天前联系过`,
-  contactStale: (n: number) => `${n}天未联系・可能疏远了`,
+  contactDaysAgo: (n: number) => `${n}天前有记录`,
+  contactStale: (n: number) => `${n}天没有记录`,
 
   // 人物の登録・編集フォーム
   personAddTitle: '登记人物',
@@ -152,7 +152,7 @@ export const zh: Dict = {
   // 人物詳細
   personBasicInfo: '基本信息',
   personUnset: '未登记',
-  personLastContact: '最近联系',
+  personLastContact: '最近记录',
   personDislikes: '不喜欢',
   memoAddTitle: '添加备忘',
   memoDateLabel: '日期',

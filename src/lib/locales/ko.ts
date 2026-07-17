@@ -46,13 +46,13 @@ export const ko: Dict = {
   dailyMsgUndated: (person: string, action: string) =>
     `${person}님과의 "${action}", 언제 할지 정해 볼까요? 날짜를 정하면 잊기 전에 알려 드립니다.`,
   dailyMsgStale: (person: string, days: number) =>
-    `${person}님과 ${days}일째 연락하지 않은 것 같아요. 짧은 메시지라도 보내 볼까요?`,
+    `${person}님에 대한 기록이 ${days}일째 없습니다. 요즘 어떻게 지내는지 물어볼까요?`,
   dailyMsgSleep: '수면이 3회 연속 6시간을 밑돌고 있습니다. 오늘은 조금 일찍 쉬는 건 어떨까요.',
   dailyWhy: '왜 이 이야기?',
   dailyReasonOverdue: '기한이 지난 약속을 최우선으로 알려 드립니다.',
   dailyReasonUpcoming: '기한이 가까운 약속을 늦기 전에 알려 드립니다.',
   dailyReasonUndated: '기한이 없는 약속은 잊기 쉬워서 날짜 정하기를 권해 드립니다.',
-  dailyReasonStale: '연락 간격이 30일 이상 벌어진 사람을 사이가 멀어지기 전에 알려 드립니다.',
+  dailyReasonStale: '기록 간격이 30일 이상 벌어진 사람을 사이가 멀어지기 전에 알려 드립니다.',
   dailyReasonSleep: '최근 기록에서 수면 시간의 연속 감소를 감지했습니다.',
   dailySourceLabel: '근거가 된 기록',
   dailyHelpful: '도움이 됐어요',
@@ -78,7 +78,7 @@ export const ko: Dict = {
   projectCreate: '만들기',
   todoList: 'Today Recall ─ 오늘 떠올릴 것',
   todoMore: (n: number) => `외 ${n}건`,
-  staleTitle: '멀어지고 있을지도',
+  staleTitle: '한동안 기록이 없는 사람',
   promiseDue: (date: string) => ` ・ ${date}까지`,
   recallOverdue: '기한 지남',
   recallDueToday: '오늘까지',
@@ -117,8 +117,8 @@ export const ko: Dict = {
   searchDidYouMean: '혹시 이 사람인가요?',
   journalHits: (n: number) => `내 기록에서 ${n}건`,
   contactToday: '오늘 연락함',
-  contactDaysAgo: (n: number) => `${n}일 전에 연락`,
-  contactStale: (n: number) => `${n}일 연락 없음·멀어졌을지도`,
+  contactDaysAgo: (n: number) => `${n}일 전에 기록`,
+  contactStale: (n: number) => `${n}일간 기록 없음`,
 
   // 人物の登録・編集フォーム
   personAddTitle: '인물 등록',
@@ -153,7 +153,7 @@ export const ko: Dict = {
   // 人物詳細
   personBasicInfo: '기본 정보',
   personUnset: '미등록',
-  personLastContact: '마지막 연락',
+  personLastContact: '마지막 기록',
   personDislikes: '싫어하는 것',
   memoAddTitle: '메모 추가',
   memoDateLabel: '날짜',
