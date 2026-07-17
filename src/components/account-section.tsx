@@ -103,6 +103,7 @@ export function AccountSection() {
   // 再インストール・端末変更・データ全削除でも同じアカウントには再付与されない。
   // 通信失敗時は静かに何もしない（サインイン直後や次回この画面を開いたときに再試行される）
   useEffect(() => {
+    if (!FEATURES.proTrial) return; // 初回リリースでは体験を提供しない（feature-flags参照）
     if (!account || settings.trialUsed) return;
     let active = true;
     (async () => {
@@ -258,8 +259,10 @@ export function AccountSection() {
           ) : (
             <Text style={styles.note}>{L.accountGoogleNotConfigured}</Text>
           )}
-          {/* 未使用アカウントへの特典案内（付与判定はサーバーが行う） */}
-          {!settings.trialUsed && <Text style={styles.note}>{L.accountTrialNote}</Text>}
+          {/* 未使用アカウントへの特典案内（付与判定はサーバーが行う。体験の提供中のみ表示） */}
+          {FEATURES.proTrial && !settings.trialUsed && (
+            <Text style={styles.note}>{L.accountTrialNote}</Text>
+          )}
         </>
       )}
       {error && <Text style={styles.error}>{error}</Text>}

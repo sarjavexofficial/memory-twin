@@ -21,4 +21,11 @@ export const FEATURES = {
   //   - 無料枠の上限（AI月20回・インポート3回・月次レポート1回）はそのまま維持
   // RevenueCatを接続し課金を解禁するときは true に戻すだけでよい（billing.ts / iap-setup-guide.md）。
   paidPlans: false,
+
+  // 7日間のPro無料体験: 2026-07-17 ゆずの判断で初回リリースでは提供しない。
+  // 仕組み（サインイン必須・Supabaseのclaim_trialで1アカウント1回を厳格記録）は
+  // 実装・検証済みのまま温存してある。有料プラン解禁時に true へ戻せば、
+  // 「サインインで7日間Pro体験」がそのまま復活する（src/lib/trial.ts / docs/trial-claims-setup.sql）。
+  // false の間: 体験の照会・付与・案内文を一切行わず、既存端末の体験状態も起動時に解除する。
+  proTrial: false,
 } as const;

@@ -3,6 +3,7 @@ import { createContext, ReactNode, useContext, useEffect, useState } from 'react
 
 import { setAiResponseLanguage } from '@/lib/ai-language';
 import { setAppTimeZone } from '@/lib/date';
+import { FEATURES } from '@/lib/feature-flags';
 
 const STORAGE_KEY = 'memory-twin:settings';
 
@@ -101,8 +102,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         if (raw) {
           const parsed = JSON.parse(raw) as Settings;
           const merged = { ...DEFAULT_SETTINGS, ...parsed, currentPlan: normalizePlan(parsed.currentPlan) };
-          // Pro無料体験の期限切れ判定（購入するとtrialEndsAtは消えるので、残っている=未購入）
-          if (merged.trialEndsAt && new Date(merged.trialEndsAt).getTime() < Date.now()) {
+          // Pro無料体験の期限切れ判定（購入するとtrialEndsAtは消えるので、残っている=未購入）。
+          // 体験機能を提供していない間(proTrial=false)は、過去に付与済みの体験も起動時に解除する
+          if (
+            merged.trialEndsAt &&
+            (!FEATURES.proTrial || new Date(merged.trialEndsAt).getTime() < Date.now())
+          ) {
             merged.currentPlan = 'free';
             merged.trialEndsAt = undefined;
           }
