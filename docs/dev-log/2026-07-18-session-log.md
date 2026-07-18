@@ -54,12 +54,31 @@
     **販売地域(subscriptionAvailabilities)を先に設定しないと409**
     （ENTITY_ERROR.RELATIONSHIP.INVALID/pricingの謎エラーの正体）
 
+## 4. RevenueCat設定 ✅（v2 APIで自動化）
+
+ゆずがアカウント作成（sarjavex.official@gmail.com・プロジェクト Memory Twin）
+＋使い捨てSecret API Key(claude-setup)を発行 → 残りはClaudeが
+**`scripts/revenuecat-setup.mjs`** で自動設定:
+- App Storeアプリ接続 app4843655563（bundle com.sarjavex.memorytwin）
+- 4商品・Entitlements standard/pro（商品ひも付け済み）
+- オファリング default（current・4パッケージ・商品ひも付け済み）
+- **iOS Public API Key も API経由で自動取得**: `appl_gTEbvkXgXnjoNehYOGzuOxtlBpS`
+  → .env と EAS production 環境変数に登録済み
+- **EAS Update配信済み**（update group a9806544・runtime 1.0.0）→ ビルド8で
+  課金UIが有効化。バンドルへの焼き込みをgrepで実測確認済み
+- ⚠️ 残り: **App内課金キー（In-App Purchase Key）が未設定**
+  （subscription_key_configured:false）。ASCの統合→App内課金でキー生成→
+  .p8をRevenueCatにアップロード（ファイルアップロードのためUI操作・ゆず）。
+  これが無いと購入のレシート検証が通らない
+- 後始末: 検証完了後に claude-setup (sk_) キーをRevenueCatから削除する
+
 ## 現在の残タスク（クリティカルパス順）
 
-1. 【ゆず＋Claude】RevenueCat設定（アカウント作成→ASC接続→Entitlements standard/pro→iOS Public API Key取得）
-2. 【Claude】キーを .env と EAS production env に登録 → **ビルド9** → TestFlight
-3. 【ゆず＋Claude】Sandboxテスト（購入・復元・アップグレード）・審査用スクショ撮影→各商品に添付
+1. 【ゆず】ASCで**App内課金キー**生成→.p8保存→RevenueCatへアップロード（Claudeが確認可能）
+2. 【ゆず＋Claude】Sandboxテスト（ビルド8でOK。購入・復元・アップグレード）・審査用スクショ撮影→各商品に添付
+3. 【Claude】**ビルド9**（キー焼き込み済みの審査用バイナリ）→ TestFlight
 4. 【ゆず＋Claude】審査提出（ビルド9添付・IAP同時提出・Review Notes=app-store-kit §8）
+5. 【ゆず】RevenueCatの claude-setup キー削除（全部終わってから）
 
 ## 状態スナップショット
 
