@@ -523,7 +523,7 @@ export const pt: Dict = {
   aiSourcesTitle: (n: number) => `Registros consultados (${n})`,
   aiSourcesMore: (n: number) => `Mostrar mais ${n}`,
   shareAnonLabel: 'Ocultar nomes ao compartilhar',
-  shareAnonNote: 'Quando ativado, os nomes no cartão acima e no conteúdo compartilhado são substituídos por apelidos como “A” — o que você vê é exatamente o que será compartilhado.',
+  shareAnonNote: 'Quando ativado, os nomes no cartão acima e no conteúdo compartilhado são substituídos por rótulos de papel como “colega veterano” — o que você vê é exatamente o que será compartilhado.',
   personMarkContacted: 'Definir “último registro” para hoje',
   personMuteStale: 'Ocultar lembretes desta pessoa',
   personUnmuteStale: 'Reativar lembretes',

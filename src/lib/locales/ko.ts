@@ -506,7 +506,7 @@ export const ko: Dict = {
   aiSourcesTitle: (n: number) => `참고한 기록 (${n}건)`,
   aiSourcesMore: (n: number) => `나머지 ${n}건 보기`,
   shareAnonLabel: '이름을 가리고 공유',
-  shareAnonNote: '켜면 위 카드와 공유 내용의 이름이 “A” 같은 별칭으로 바뀝니다(보이는 그대로 공유됩니다).',
+  shareAnonNote: '켜면 위 카드와 공유 내용의 이름이 “직장 선배” 같은 역할명으로 바뀝니다(보이는 그대로 공유됩니다).',
   personMarkContacted: '“마지막 기록”을 오늘로',
   personMuteStale: '이 사람의 알림 숨기기',
   personUnmuteStale: '알림 다시 받기',

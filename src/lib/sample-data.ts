@@ -395,12 +395,23 @@ export function refreshSamplePeople(people: Person[], language: Language): Perso
 // そのため「メモと約束まで未編集」の場合に限って引き上げる
 export function markLegacySamplePeople(people: Person[]): Person[] {
   const templates = samplePeopleFor('ja');
+  // 判定は「本当に一切編集していない」場合に限る。名前とメモだけでなく、
+  // updatePersonで変わり得る項目（最後の記録・お知らせ停止・関係・誕生日・タグ・好み）も全て
+  // テンプレートと一致して初めてサンプル扱いに戻す。ここが緩いと、編集内容が
+  // 次回起動時のサンプル刷新（refreshSamplePeople）で巻き戻されてしまう
+  const sameList = (a?: string[], b?: string[]) => JSON.stringify(a ?? []) === JSON.stringify(b ?? []);
   return people.map((p) => {
     if (p.sample) return p;
     const t = templates.find((s) => s.id === p.id);
     const untouched =
       t &&
       p.name === t.name &&
+      p.relation === t.relation &&
+      (p.birthday ?? null) === (t.birthday ?? null) &&
+      p.lastContact === t.lastContact &&
+      !p.muteStale &&
+      sameList(p.likes, t.likes) &&
+      sameList(p.tags, t.tags) &&
       p.memos.length === t.memos.length &&
       p.memos.every((m, i) => {
         const tm = t.memos[i];
@@ -416,7 +427,8 @@ export function markLegacySamplePeople(people: Person[]): Person[] {
 
 // ---- サンプル日記（Timeline・今年のあなた・感情タイムラインのデモを兼ねる） ----
 
-type JournalText = { text: string; tags: string[] };
+// projectは「プロジェクト絞り込み」機能のデモ用（タイムラインにチップ列が現れる）
+type JournalText = { text: string; tags: string[]; project?: string };
 
 const JOURNAL_SKELETON = [
   { id: 'j1', date: '2024-05-10', mood: 4, sleepHours: 7 },
@@ -435,8 +447,8 @@ const JOURNAL_TEXTS: Record<Language, JournalText[]> = {
     { text: '課題がうまく進まず落ち込んだ。睡眠時間を削って作業していた。', tags: ['課題', '不調'] },
     { text: '朝散歩してから作業したら頭がすっきりした。', tags: ['運動', '課題'] },
     { text: 'SNSに撮った写真を投稿し始めた。反応をもらえると続けたくなる。', tags: ['SNS', '発信'] },
-    { text: '写真教室を自分で開いてみる構想を考え始めた。ワクワクするが同時に不安もある。', tags: ['起業', '写真教室'] },
-    { text: '深夜まで準備を続けてしまい、翌朝の集中力が落ちた。', tags: ['準備', '不調'] },
+    { text: '写真教室を自分で開いてみる構想を考え始めた。ワクワクするが同時に不安もある。', tags: ['起業', '写真教室'], project: '写真教室' },
+    { text: '深夜まで準備を続けてしまい、翌朝の集中力が落ちた。', tags: ['準備', '不調'], project: '写真教室' },
   ],
   en: [
     { text: 'Went out to shoot photos on my day off. Lost track of time playing with composition.', tags: ['Photography', 'Hobby'] },
@@ -444,8 +456,8 @@ const JOURNAL_TEXTS: Record<Language, JournalText[]> = {
     { text: 'Assignments went badly and I felt down. I had been cutting sleep to work.', tags: ['Assignments', 'Slump'] },
     { text: 'A morning walk before work cleared my head.', tags: ['Exercise', 'Assignments'] },
     { text: 'Started posting my photos on social media. Reactions make me want to keep going.', tags: ['Social media', 'Sharing'] },
-    { text: 'Started sketching a plan to run my own photo class. Excited and nervous at once.', tags: ['Startup', 'Photo class'] },
-    { text: 'Kept preparing late into the night and my focus dropped the next morning.', tags: ['Prep', 'Slump'] },
+    { text: 'Started sketching a plan to run my own photo class. Excited and nervous at once.', tags: ['Startup', 'Photo class'], project: 'Photo class' },
+    { text: 'Kept preparing late into the night and my focus dropped the next morning.', tags: ['Prep', 'Slump'], project: 'Photo class' },
   ],
   zh: [
     { text: '休息日出门拍照。琢磨构图太开心，忘了时间。', tags: ['摄影', '爱好'] },
@@ -453,8 +465,8 @@ const JOURNAL_TEXTS: Record<Language, JournalText[]> = {
     { text: '课题进展不顺，情绪低落。一直在压缩睡眠赶工。', tags: ['课题', '低谷'] },
     { text: '早上散步后再开始干活，头脑清爽了很多。', tags: ['运动', '课题'] },
     { text: '开始在社交平台发布自己拍的照片。收到反馈就更想坚持。', tags: ['社交平台', '分享'] },
-    { text: '开始构思自己开一个摄影课。既兴奋又不安。', tags: ['创业', '摄影课'] },
-    { text: '准备工作忙到深夜，第二天早上注意力明显下降。', tags: ['准备', '低谷'] },
+    { text: '开始构思自己开一个摄影课。既兴奋又不安。', tags: ['创业', '摄影课'], project: '摄影课' },
+    { text: '准备工作忙到深夜，第二天早上注意力明显下降。', tags: ['准备', '低谷'], project: '摄影课' },
   ],
   ko: [
     { text: '쉬는 날 사진을 찍으러 나갔다. 구도를 고민하는 게 즐거워서 시간 가는 줄 몰랐다.', tags: ['사진', '취미'] },
@@ -462,8 +474,8 @@ const JOURNAL_TEXTS: Record<Language, JournalText[]> = {
     { text: '과제가 잘 안 풀려서 우울했다. 잠을 줄여 가며 작업하고 있었다.', tags: ['과제', '부진'] },
     { text: '아침에 산책하고 나서 작업했더니 머리가 맑아졌다.', tags: ['운동', '과제'] },
     { text: 'SNS에 찍은 사진을 올리기 시작했다. 반응이 오면 계속하고 싶어진다.', tags: ['SNS', '공유'] },
-    { text: '직접 사진 교실을 열어 보는 구상을 시작했다. 설레면서도 불안하다.', tags: ['창업', '사진 교실'] },
-    { text: '밤늦게까지 준비하다가 다음 날 아침 집중력이 떨어졌다.', tags: ['준비', '부진'] },
+    { text: '직접 사진 교실을 열어 보는 구상을 시작했다. 설레면서도 불안하다.', tags: ['창업', '사진 교실'], project: '사진 교실' },
+    { text: '밤늦게까지 준비하다가 다음 날 아침 집중력이 떨어졌다.', tags: ['준비', '부진'], project: '사진 교실' },
   ],
   fr: [
     { text: 'Sorti faire des photos pendant mon jour de repos. À jouer avec la composition, je n’ai pas vu le temps passer.', tags: ['Photo', 'Loisir'] },
@@ -471,8 +483,8 @@ const JOURNAL_TEXTS: Record<Language, JournalText[]> = {
     { text: 'Les devoirs n’avançaient pas, coup de mou. Je rognais sur le sommeil pour travailler.', tags: ['Devoirs', 'Baisse'] },
     { text: 'Une marche le matin avant de travailler, et les idées étaient claires.', tags: ['Sport', 'Devoirs'] },
     { text: 'Commencé à publier mes photos sur les réseaux. Les réactions donnent envie de continuer.', tags: ['Réseaux', 'Partage'] },
-    { text: 'Je commence à imaginer mon propre cours photo. Excitant et angoissant à la fois.', tags: ['Projet', 'Cours photo'] },
-    { text: 'Préparatifs jusqu’à tard dans la nuit ; concentration en berne le lendemain matin.', tags: ['Préparatifs', 'Baisse'] },
+    { text: 'Je commence à imaginer mon propre cours photo. Excitant et angoissant à la fois.', tags: ['Projet', 'Cours photo'], project: 'Cours photo' },
+    { text: 'Préparatifs jusqu’à tard dans la nuit ; concentration en berne le lendemain matin.', tags: ['Préparatifs', 'Baisse'], project: 'Cours photo' },
   ],
   pt: [
     { text: 'Saí pra fotografar na folga. Me diverti tanto pensando na composição que perdi a hora.', tags: ['Fotografia', 'Hobby'] },
@@ -480,8 +492,8 @@ const JOURNAL_TEXTS: Record<Language, JournalText[]> = {
     { text: 'As tarefas não andavam e fiquei pra baixo. Estava cortando sono pra trabalhar.', tags: ['Tarefas', 'Baixa'] },
     { text: 'Caminhei de manhã antes de trabalhar e a cabeça clareou.', tags: ['Exercício', 'Tarefas'] },
     { text: 'Comecei a postar minhas fotos nas redes. As reações dão vontade de continuar.', tags: ['Redes', 'Divulgação'] },
-    { text: 'Comecei a planejar abrir meu próprio curso de foto. Empolgante e assustador ao mesmo tempo.', tags: ['Empreender', 'Curso de foto'] },
-    { text: 'Fiquei preparando tudo até tarde e a concentração caiu na manhã seguinte.', tags: ['Preparação', 'Baixa'] },
+    { text: 'Comecei a planejar abrir meu próprio curso de foto. Empolgante e assustador ao mesmo tempo.', tags: ['Empreender', 'Curso de foto'], project: 'Curso de foto' },
+    { text: 'Fiquei preparando tudo até tarde e a concentração caiu na manhã seguinte.', tags: ['Preparação', 'Baixa'], project: 'Curso de foto' },
   ],
 };
 
@@ -495,6 +507,7 @@ export function sampleJournalFor(language: Language): JournalEntry[] {
     sleepHours: s.sleepHours,
     text: texts[i].text,
     tags: texts[i].tags,
+    project: texts[i].project,
     sample: true,
   }));
 }

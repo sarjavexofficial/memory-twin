@@ -495,7 +495,7 @@ export const zh: Dict = {
   aiSourcesTitle: (n: number) => `参考的记录（${n}条）`,
   aiSourcesMore: (n: number) => `显示其余${n}条`,
   shareAnonLabel: '共享时隐藏人名',
-  shareAnonNote: '开启后，上方卡片和共享内容中的人名会替换为「A」等别名（所见即所享）。',
+  shareAnonNote: '开启后，上方卡片和共享内容中的人名会替换为「职场前辈」等角色称呼（所见即所享）。',
   personMarkContacted: '将“最后记录”设为今天',
   personMuteStale: '不再显示此人的提醒',
   personUnmuteStale: '恢复提醒',

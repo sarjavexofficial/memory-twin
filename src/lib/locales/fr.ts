@@ -531,7 +531,7 @@ export const fr: Dict = {
   aiSourcesTitle: (n: number) => `Enregistrements consultés (${n})`,
   aiSourcesMore: (n: number) => `Afficher ${n} de plus`,
   shareAnonLabel: 'Masquer les noms lors du partage',
-  shareAnonNote: 'Si activé, les noms de la carte ci-dessus et du contenu partagé sont remplacés par des alias comme « A » — ce que vous voyez est exactement ce qui est partagé.',
+  shareAnonNote: 'Si activé, les noms de la carte ci-dessus et du contenu partagé sont remplacés par des libellés de rôle comme « collègue senior » — ce que vous voyez est exactement ce qui est partagé.',
   personMarkContacted: 'Définir le « dernier enregistrement » à aujourd’hui',
   personMuteStale: 'Masquer les rappels pour cette personne',
   personUnmuteStale: 'Réactiver les rappels',
