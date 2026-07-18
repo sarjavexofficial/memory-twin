@@ -44,21 +44,27 @@
     日英の表示名・説明 → 価格（JPN基準: ¥980/¥9,800/¥1,980/¥19,800）→
     全地域で販売
   - 実行: `node scripts/asc-iap.mjs <ISSUER_ID>`（冪等・再実行安全）
-- **残: ゆずが Issuer ID を貼る → スクリプト実行**（次セッション最初のタスク）
+- Issuer ID受領 → **実行完了 ✅（4商品すべて登録済み）**
+  - グループ 22245465「Memory Twin Plans」（ja/en-USローカリゼーション済み）
+  - mt_standard_monthly=6792165667 ¥980 / mt_standard_yearly=6792165904 ¥9,800 /
+    mt_pro_monthly=6792166164 ¥1,980 / mt_pro_yearly=6792166200 ¥19,800
+  - 全商品: 日英ローカリゼーション・販売175地域・JPN基準価格 設定済み
+  - 状態は MISSING_METADATA（審査用スクショ未添付のみ。Sandboxテスト時に添付予定）
+  - **APIの学び**: ①サブスク説明文は最大55文字 ②価格POSTは
+    **販売地域(subscriptionAvailabilities)を先に設定しないと409**
+    （ENTITY_ERROR.RELATIONSHIP.INVALID/pricingの謎エラーの正体）
 
 ## 現在の残タスク（クリティカルパス順）
 
-1. 【ゆず】**Issuer ID** をチャットに貼る（appstoreconnect.apple.com/access/integrations/api の上部）
-2. 【Claude】`node scripts/asc-iap.mjs <ISSUER_ID>` で4商品登録
-3. 【ゆず＋Claude】RevenueCat設定（アカウント作成→ASC接続→Entitlements standard/pro→iOS Public API Key取得）
-4. 【Claude】キーを .env と EAS production env に登録 → **ビルド9** → TestFlight
-5. 【ゆず＋Claude】Sandboxテスト（購入・復元・アップグレード）・審査用スクショ撮影
-6. 【ゆず＋Claude】審査提出（ビルド9添付・IAP同時提出・Review Notes=app-store-kit §8）
+1. 【ゆず＋Claude】RevenueCat設定（アカウント作成→ASC接続→Entitlements standard/pro→iOS Public API Key取得）
+2. 【Claude】キーを .env と EAS production env に登録 → **ビルド9** → TestFlight
+3. 【ゆず＋Claude】Sandboxテスト（購入・復元・アップグレード）・審査用スクショ撮影→各商品に添付
+4. 【ゆず＋Claude】審査提出（ビルド9添付・IAP同時提出・Review Notes=app-store-kit §8）
 
 ## 状態スナップショット
 
 - 有料App契約: **有効** / 銀行・税務: 完了
 - TestFlight: ビルド7（旧）、**ビルド8（最新・課金UI入り/購入は不可）**
-- サブスク商品: 未登録（スクリプト準備済み・Issuer ID待ち）
-- RevenueCat: 未着手
+- サブスク商品: **4商品登録済み**（審査用スクショのみ未添付）
+- RevenueCat: 未着手 ← いまここ
 - Gemini/Supabase/Render/キープウォーム: 正常稼働

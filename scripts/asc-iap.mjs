@@ -22,11 +22,11 @@ const PRODUCTS = [
 const LOCALIZATIONS = {
   standard: {
     ja:      { name: 'Standard', description: 'AI質問 月500回・取り込み無制限・週次/月次レポート' },
-    'en-US': { name: 'Standard', description: '500 AI questions/mo, unlimited imports, weekly & monthly reviews' },
+    'en-US': { name: 'Standard', description: '500 AI questions/mo, unlimited imports, AI reviews' },
   },
   pro: {
     ja:      { name: 'Pro', description: 'AI質問 月1,500回・Today Recall最大10件・過去比較' },
-    'en-US': { name: 'Pro', description: '1,500 AI questions/mo, up to 10 Today Recalls, past comparisons' },
+    'en-US': { name: 'Pro', description: '1,500 AI questions/mo, 10 Today Recalls, comparisons' },
   },
 };
 const GROUP_LOC = { ja: 'Memory Twin プラン', 'en-US': 'Memory Twin Plans' };
@@ -148,9 +148,30 @@ async function main() {
       log(`  loc ${locale} created`);
     }
 
-    // 4b. 価格（日本を基準に設定 → 他地域は自動換算）
-    const prices = await getAll(`/v1/subscriptions/${sub.id}/prices?limit=200&include=territory&filter[territory]=JPN`).catch(() => []);
-    if (prices.length) log(`  price JPN exists`);
+    // 4b. 販売地域（※価格設定より先に必須。逆順だと価格POSTが409になる）
+    let hasAvail = false;
+    try {
+      const avail = await api('GET', `/v1/subscriptions/${sub.id}/subscriptionAvailability`);
+      hasAvail = Boolean(avail?.data);
+    } catch { /* not set yet */ }
+    if (hasAvail) log(`  availability exists`);
+    else {
+      await api('POST', '/v1/subscriptionAvailabilities', {
+        data: {
+          type: 'subscriptionAvailabilities',
+          attributes: { availableInNewTerritories: true },
+          relationships: {
+            subscription: { data: { type: 'subscriptions', id: sub.id } },
+            availableTerritories: { data: territories.map((t) => ({ type: 'territories', id: t.id })) },
+          },
+        },
+      });
+      log(`  availability set (${territories.length} territories)`);
+    }
+
+    // 4c. 価格（日本を基準に設定 → 他地域は自動換算）
+    const prices = await getAll(`/v1/subscriptions/${sub.id}/prices?limit=200&include=territory`).catch(() => []);
+    if (prices.some((pr) => pr.relationships?.territory?.data?.id === 'JPN')) log(`  price JPN exists`);
     else {
       const points = await getAll(`/v1/subscriptions/${sub.id}/pricePoints?filter[territory]=JPN&limit=8000`);
       const point = points.find((pt) => pt.attributes.customerPrice === p.price);
@@ -166,23 +187,6 @@ async function main() {
       });
       log(`  price JPN ¥${p.price} set`);
     }
-
-    // 4c. 販売地域（全地域・新地域も自動で有効）
-    try {
-      const avail = await api('GET', `/v1/subscriptions/${sub.id}/subscriptionAvailability`);
-      if (avail?.data) { log(`  availability exists`); continue; }
-    } catch { /* not set yet */ }
-    await api('POST', '/v1/subscriptionAvailabilities', {
-      data: {
-        type: 'subscriptionAvailabilities',
-        attributes: { availableInNewTerritories: true },
-        relationships: {
-          subscription: { data: { type: 'subscriptions', id: sub.id } },
-          availableTerritories: { data: territories.map((t) => ({ type: 'territories', id: t.id })) },
-        },
-      },
-    });
-    log(`  availability set (${territories.length} territories)`);
   }
 
   log('DONE');
