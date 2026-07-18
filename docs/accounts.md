@@ -8,7 +8,7 @@
 | サービス | 何に使っているか | ログインID | 備考 |
 |---|---|---|---|
 | **Google** (Gmail) | サポート窓口メール。下記ほぼ全サービスの登録メールもこれ | sarjavex.official@gmail.com | 事業の土台。毎朝8時にClaudeがメール下書き対応 |
-| **GitHub** (sarjavexofficial) | コードの保管庫3つ（memory-twin / sarjavex-api / 会社サイト）＋会社サイトとプライバシーポリシーの公開（GitHub Pages）＋毎朝のサーバー起こし（Actions） | sarjavex.official@gmail.com | 無料枠 |
+| **GitHub** (sarjavexofficial) | コードの保管庫3つ（memory-twin / sarjavex-api / 会社サイト）＋会社サイトとプライバシーポリシーの公開（GitHub Pages）＋サーバー起こしActions（毎朝のSupabase起こし＋審査期間中の10分おきRenderウォーム。**2本とも公開の会社サイトリポジトリ側に設置**。非公開リポジトリだとActions無料枠が月2,000分で足りないため） | sarjavex.official@gmail.com | 無料枠 |
 | **Supabase** (プロジェクト名 sarjavex) | 暗号化クラウドバックアップの保管庫。こだま用のテーブルもあるが現在非公開 | sarjavex.official@gmail.com | 無料枠。1週間無アクセスで止まるがGitHub Actionsが毎朝起こしている |
 | **Render** (sarjavex-ai-api) | AIの中継サーバー（アプリ→Render→Gemini）。アプリにAIの鍵を持たせないための壁 | sarjavex.official@gmail.com | 無料枠。無通信でスリープし初回応答が遅いことがある |
 | **Google AI Studio / Google Cloud** (Gemini APIキー) | AIの本体。キーはRenderの管理画面にだけ保存 | sarjavex.official@gmail.com | ⚠️ 2026-07-16 旧プロジェクトがGoogleに利用停止され（403・無料キー×中継サーバー構成の誤検知）、**課金有効化に方針変更**。¥1,500デポジット支払い済み（返金可・残高充当）。**新キーは2026-07-17 18時に発行予定**（AI Studioで作成→Render差替え）。発行後に予算アラート¥1,000/月を設定すること |
