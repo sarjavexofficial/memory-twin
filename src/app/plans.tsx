@@ -1,11 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Redirect, router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppPalette } from '@/constants/app-colors';
-import { purchasePlan, restorePurchases } from '@/lib/billing';
+import { getStorePrices, purchasePlan, restorePurchases, StorePrices } from '@/lib/billing';
 import { FEATURES } from '@/lib/feature-flags';
 import { useStrings } from '@/lib/i18n';
 import { makeThemed, useTheme } from '@/lib/theme';
@@ -28,6 +28,19 @@ function perDayYen(prices: { monthly: string; yearly: string }, cycle: BillingCy
   return String(Math.round(total / (cycle === 'monthly' ? 30 : 365)));
 }
 
+// 通貨つきの金額表示（例: ¥1,650 / US$1.99）。国ごとの通貨・表記はストア取得値に従う
+function fmtCurrency(amount: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: currency === 'JPY' ? 0 : 2,
+    }).format(amount);
+  } catch {
+    return `${Math.round(amount * 100) / 100} ${currency}`;
+  }
+}
+
 export default function PlansScreen() {
   const { styles, AppColors } = useTheme(themed);
   const L = useStrings();
@@ -46,6 +59,22 @@ export default function PlansScreen() {
   // 購入処理中のプラン（Appleの購入シートが出ている間、ボタンを無効化する）
   const [purchasingPlan, setPurchasingPlan] = useState<PlanKey | null>(null);
 
+  // App Storeの実売価格。取得できるまで購入ボタンは無効（表示価格と請求額のズレを防ぐ）
+  const [priceState, setPriceState] = useState<'loading' | 'ready' | 'failed'>('loading');
+  const [storePrices, setStorePrices] = useState<StorePrices | null>(null);
+
+  async function loadPrices() {
+    setPriceState('loading');
+    const prices = await getStorePrices();
+    setStorePrices(prices);
+    setPriceState(prices ? 'ready' : 'failed');
+  }
+
+  useEffect(() => {
+    loadPrices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // 有料プランの購入・変更。Appleの購入シートがそのまま表示される（確認や認証はApple側が行う）。
   // 無料への変更（解約）はアプリからはできず、Appleのサブスクリプション管理画面で行う
   async function handleSelectPlan(planKey: 'standard' | 'pro') {
@@ -58,8 +87,12 @@ export default function PlansScreen() {
       if (result.success) {
         setCurrentPlan(planKey, cycle);
         setChangeResult(L.planChanged(PLAN_NAMES[planKey]));
-      } else {
+      } else if (result.cancelled) {
         setPurchaseError(result.error);
+      } else {
+        // 内部エラーの生文言（英語のSDKメッセージ等）は画面に出さず、開発者ログにのみ残す
+        console.warn('[plans] purchase failed:', result.error);
+        setPurchaseError(L.purchaseFailedGeneric);
       }
     } finally {
       setPurchasingPlan(null);
@@ -88,14 +121,51 @@ export default function PlansScreen() {
     }
   }
 
+  // 有料プランの表示価格を組み立てる。ストアから実価格が取れていればそれを優先し
+  // （国・通貨に自動追従）、取れるまでは日本向けの定価をプレースホルダーとして見せる
+  function paidPlanDisplay(key: 'standard' | 'pro') {
+    const sp = storePrices?.[key];
+    const price =
+      cycle === 'monthly'
+        ? sp
+          ? L.planPriceMonthly(sp.monthly.priceString)
+          : L.planPerMonth(PLAN_PRICES[key].monthly)
+        : sp
+          ? L.planPriceYearlyMain(sp.yearly.priceString)
+          : L.planPerYear(PLAN_PRICES[key].yearly);
+    const yearly =
+      cycle === 'monthly'
+        ? sp
+          ? L.planPriceYearlySub(sp.yearly.priceString)
+          : L.planYearly(PLAN_PRICES[key].yearly)
+        : L.billingYearlySave;
+    // 「1日あたり◯円」は円建てのときだけ（他通貨では実価格の月換算を出す）
+    const isJpy = !sp || sp.monthly.currencyCode === 'JPY';
+    const perDay = isJpy
+      ? sp
+        ? String(Math.round((cycle === 'monthly' ? sp.monthly.price : sp.yearly.price) / (cycle === 'monthly' ? 30 : 365)))
+        : perDayYen(PLAN_PRICES[key], cycle)
+      : null;
+    // 年払い選択中は「1か月あたり」の換算も見せて、月額との比較を分かりやすくする
+    const perMonthEquiv =
+      cycle === 'yearly'
+        ? fmtCurrency(
+            sp ? sp.yearly.price / 12 : Number(PLAN_PRICES[key].yearly.replace(/,/g, '')) / 12,
+            sp ? sp.yearly.currencyCode : 'JPY',
+          )
+        : null;
+    return { price, yearly, perDay, perMonthEquiv };
+  }
+
   const plans = [
     {
       key: 'free' as PlanKey,
       emoji: '🌱',
       name: 'Free',
       price: L.planFree,
-      yearly: null,
+      yearly: null as string | null,
       perDay: null as string | null,
+      perMonthEquiv: null as string | null,
       tag: L.planFreeTag,
       features: L.planFreeFeatures,
       accent: AppColors.success,
@@ -105,12 +175,7 @@ export default function PlansScreen() {
       key: 'standard' as PlanKey,
       emoji: '⭐',
       name: 'Standard',
-      price:
-        cycle === 'monthly'
-          ? L.planPerMonth(PLAN_PRICES.standard.monthly)
-          : L.planPerYear(PLAN_PRICES.standard.yearly),
-      yearly: cycle === 'monthly' ? L.planYearly(PLAN_PRICES.standard.yearly) : L.billingYearlySave,
-      perDay: perDayYen(PLAN_PRICES.standard, cycle),
+      ...paidPlanDisplay('standard'),
       tag: L.planStandardTag,
       features: L.planStandardFeatures,
       accent: AppColors.accent,
@@ -120,12 +185,7 @@ export default function PlansScreen() {
       key: 'pro' as PlanKey,
       emoji: '⚡',
       name: 'Pro',
-      price:
-        cycle === 'monthly'
-          ? L.planPerMonth(PLAN_PRICES.pro.monthly)
-          : L.planPerYear(PLAN_PRICES.pro.yearly),
-      yearly: cycle === 'monthly' ? L.planYearly(PLAN_PRICES.pro.yearly) : L.billingYearlySave,
-      perDay: perDayYen(PLAN_PRICES.pro, cycle),
+      ...paidPlanDisplay('pro'),
       tag: L.planProTag,
       features: L.planProFeatures,
       accent: AppColors.primary,
@@ -159,6 +219,25 @@ export default function PlansScreen() {
           <View style={styles.trialBanner}>
             <Ionicons name="flash" size={14} color={AppColors.primary} />
             <Text style={styles.trialBannerText}>{L.trialBadge(trialDaysLeft)}</Text>
+          </View>
+        )}
+
+        {/* 価格取得の状態表示。失敗時は内部エラーではなく分かりやすい日本語＋再試行導線を出す */}
+        {priceState === 'loading' && (
+          <View style={styles.priceStateRow}>
+            <ActivityIndicator size="small" color={AppColors.muted} />
+            <Text style={styles.priceStateText}>{L.plansPriceLoading}</Text>
+          </View>
+        )}
+        {priceState === 'failed' && (
+          <View style={styles.priceErrorBox}>
+            <Ionicons name="cloud-offline-outline" size={16} color={AppColors.danger} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.priceErrorText}>{L.plansPriceError}</Text>
+              <Pressable onPress={loadPrices} hitSlop={8}>
+                <Text style={styles.priceReloadText}>{L.plansReload}</Text>
+              </Pressable>
+            </View>
           </View>
         )}
 
@@ -214,6 +293,9 @@ export default function PlansScreen() {
               {plan.yearly && <Text style={styles.planYearly}>{plan.yearly}</Text>}
             </View>
             {plan.perDay && <Text style={styles.perDayText}>{L.planPerDay(plan.perDay)}</Text>}
+            {plan.perMonthEquiv && (
+              <Text style={styles.perDayText}>{L.planPerMonthEquiv(plan.perMonthEquiv)}</Text>
+            )}
             <View style={styles.featureList}>
               {plan.features.map((f) => (
                 <View key={f} style={styles.featureRow}>
@@ -229,14 +311,20 @@ export default function PlansScreen() {
                 style={[
                   styles.selectButton,
                   { backgroundColor: plan.accent },
-                  purchasingPlan !== null && { opacity: 0.6 },
+                  (purchasingPlan !== null || priceState !== 'ready') && { opacity: 0.55 },
                 ]}
-                disabled={purchasingPlan !== null}
+                disabled={purchasingPlan !== null || priceState !== 'ready'}
                 onPress={() => handleSelectPlan(plan.key as 'standard' | 'pro')}>
                 {purchasingPlan === plan.key ? (
                   <ActivityIndicator size="small" color={AppColors.background} />
                 ) : (
-                  <Text style={styles.selectButtonText}>{L.selectPlan}</Text>
+                  <Text style={styles.selectButtonText}>
+                    {priceState === 'failed'
+                      ? L.planUnavailableBtn
+                      : currentPlan === 'standard' && plan.key === 'pro'
+                        ? L.upgradeToPro
+                        : L.selectPlan}
+                  </Text>
                 )}
               </Pressable>
             )}
@@ -297,6 +385,26 @@ export default function PlansScreen() {
           <View style={styles.paymentRow}>
             <Ionicons name="exit-outline" size={16} color={AppColors.text} style={styles.paymentIcon} />
             <Text style={styles.paymentText}>{L.paymentCancel}</Text>
+          </View>
+          {/* 自動更新の条件（App Store審査で求められる定型の開示） */}
+          <View style={styles.paymentRow}>
+            <Ionicons name="repeat-outline" size={16} color={AppColors.text} style={styles.paymentIcon} />
+            <Text style={styles.paymentText}>{L.autoRenewNote}</Text>
+          </View>
+          {/* 規約類へのリンク（サブスク画面内にも設置：審査要件3.1.2） */}
+          <View style={styles.legalLinkRow}>
+            <Pressable
+              hitSlop={8}
+              onPress={() =>
+                Linking.openURL('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/').catch(() => {})
+              }>
+              <Text style={styles.footerLinkText}>{L.termsLink}</Text>
+            </Pressable>
+            <Pressable
+              hitSlop={8}
+              onPress={() => Linking.openURL('https://sarjavexofficial.github.io/privacy.html').catch(() => {})}>
+              <Text style={styles.footerLinkText}>{L.privacyPolicyLink}</Text>
+            </Pressable>
           </View>
           {/* 機種変更・再インストール時の復元窓口(App Store審査で必須のUI) */}
           <Pressable style={styles.footerLink} onPress={handleRestore} disabled={restoring}>
@@ -465,6 +573,27 @@ const makeStyles = (AppColors: AppPalette) =>
     paddingVertical: 9,
   },
   trialBannerText: { fontSize: 13, fontWeight: '800', color: AppColors.primary },
+  priceStateRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  priceStateText: { fontSize: 12, color: AppColors.muted },
+  priceErrorBox: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'flex-start',
+    backgroundColor: AppColors.dangerSoft,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: AppColors.danger,
+    padding: 12,
+  },
+  priceErrorText: { fontSize: 12, color: AppColors.text, lineHeight: 17 },
+  priceReloadText: {
+    fontSize: 12,
+    color: AppColors.primary,
+    fontWeight: '800',
+    marginTop: 6,
+    textDecorationLine: 'underline',
+  },
+  legalLinkRow: { flexDirection: 'row', justifyContent: 'center', gap: 20, flexWrap: 'wrap' },
 });
 
 const themed = makeThemed(makeStyles);

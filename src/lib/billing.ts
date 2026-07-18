@@ -28,7 +28,13 @@ export const PLAN_LEVELS: Record<Exclude<PlanKey, 'free'>, number> = {
 
 export type PurchaseResult =
   | { success: true }
-  | { success: false; error: string };
+  // cancelled: ユーザーが購入シートを自分で閉じた場合true。
+  // それ以外の失敗理由(error)は内部向けの生メッセージなので、画面にはそのまま出さないこと
+  | { success: false; error: string; cancelled?: boolean };
+
+// App Storeから取得した実際の販売価格（国・通貨はユーザーのストア設定に従う）
+export type StorePrice = { priceString: string; price: number; currencyCode: string };
+export type StorePrices = Record<Exclude<PlanKey, 'free'>, Record<BillingCycle, StorePrice>>;
 
 const UNAVAILABLE_ERROR =
   'この環境ではApp内課金を利用できません。App Storeの最新版アプリからお試しください。';
@@ -82,4 +88,18 @@ export async function restorePurchases(): Promise<{ plan: PlanKey; cycle: Billin
   const rc = loadRevenueCat();
   if (!rc) return null;
   return rc.restorePurchases();
+}
+
+// App Storeの実売価格（4商品すべて取得できたときだけ返す。それ以外はnull=取得失敗扱い）。
+// プラン画面はこれが取れるまで購入ボタンを無効化し、取れたら固定表記の代わりに実価格を表示する
+export async function getStorePrices(): Promise<StorePrices | null> {
+  const rc = loadRevenueCat();
+  if (!rc) return null;
+  try {
+    return await rc.getStorePrices();
+  } catch (e) {
+    // 詳細は開発者ログにのみ残す（画面には出さない）
+    console.warn('[billing] getStorePrices failed:', (e as Error).message);
+    return null;
+  }
 }
