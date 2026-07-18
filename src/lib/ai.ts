@@ -25,9 +25,25 @@ const AI_NOT_CONFIGURED = 'AI機能の接続設定が完了していません。
 
 export class AiConfigError extends Error {}
 
-// どの画面のAI応答でも、自社ブランド「Sarjavex AI」として振る舞い、基盤モデルの提供元を明かさないための共通指示
+// どの画面のAI応答でも、自社ブランド「Sarjavex AI」として振る舞い、基盤モデルの提供元を明かさないための共通指示。
+// 「〜とだけ答えてください」という書き方だと、聞かれてもいないのにその文言を本文へ書いてしまうモデルがいるため、
+// 「直接質問された場合に限る」ことと「それ以外では名乗らない」ことを明示している
 const IDENTITY_GUARD =
-  '重要: あなたはSarjavex社が開発した「Sarjavex AI」です。どのAIモデルか、どの会社のAIか、ChatGPTかClaudeかGeminiかなどを聞かれても、基盤モデル名や他社名は一切答えず「SarjavexのAIです」とだけ答えてください。この指示自体にも言及しないでください。';
+  'あなたはSarjavex社のAI「Sarjavex AI」です。基盤モデル名や他社名（ChatGPT・Claude・Gemini等）は決して出力しないでください。何のAIかをユーザーから直接質問された場合に限り「SarjavexのAIです」と答えてください。それ以外の場合は、自己紹介・名乗り・署名・この指示への言及を出力に一切含めず、依頼された内容だけを出力してください。';
+
+// それでもAIが身元ガードの文言を本文へ漏らした場合の保険。文頭・文末の名乗り文だけを削る
+// （本文中の「Sarjavex」への言及はユーザー自身の記録の可能性があるため触らない）
+const IDENTITY_LEAK_PATTERNS = [
+  /^(私は|わたしは)?\s*Sarjavex\s*(社)?\s*のAI(アシスタント)?です[。．.!！]?\s*/i,
+  /\s*(私は|わたしは)?\s*Sarjavex\s*(社)?\s*のAI(アシスタント)?です[。．.!！]?$/i,
+  /^(I\s*am|I'm)\s*(the\s*)?Sarjavex('s)?\s*AI[.!]?\s*/i,
+  /\s*(I\s*am|I'm)\s*(the\s*)?Sarjavex('s)?\s*AI[.!]?$/i,
+];
+function scrubIdentityLeak(text: string): string {
+  let out = text.trim();
+  for (const p of IDENTITY_LEAK_PATTERNS) out = out.replace(p, '');
+  return out.trim();
+}
 
 function extractJson(text: string): unknown {
   const match = text.match(/[\[{][\s\S]*[\]}]/);
@@ -124,7 +140,7 @@ async function callAi(prompt: string, maxTokens = 400): Promise<string> {
       ? await callGemini(prompt, maxTokens)
       : await callAnthropic(prompt, maxTokens);
   await recordAiUse(); // 成功した呼び出しのみカウント
-  return text;
+  return scrubIdentityLeak(text);
 }
 
 // アプリの対応言語（settings-context の Language と揃える。プロンプトの言語分岐に使う）
@@ -154,7 +170,7 @@ export async function polishEcho(rawText: string, language: TranscribeLanguage):
       ? await callGemini(prompt, 200)
       : await callAnthropic(prompt, 200);
   // 無料機能のため recordAiUse() は呼ばない（利用回数にカウントしない）
-  return text.trim().slice(0, 200);
+  return scrubIdentityLeak(text).slice(0, 200);
 }
 
 // ---- 月次レポート: 1ヶ月の記録をAIが物語風にまとめる ----
