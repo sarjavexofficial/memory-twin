@@ -72,13 +72,28 @@
   これが無いと購入のレシート検証が通らない
 - 後始末: 検証完了後に claude-setup (sk_) キーをRevenueCatから削除する
 
+## 5. App内課金キー（In-App Purchase Key）✅
+
+Chrome拡張（Claude in Chrome）でClaudeがブラウザを代行操作して完了:
+- ASC「統合→アプリ内購入」でキー生成（名前 RevenueCat・**Key ID ZLVZ3Q863W**）
+  → DL済み `C:\Sarjavex\apple store\SubscriptionKey_ZLVZ3Q863W.p8`
+- **ハマり①**: RevenueCatのアップロード欄は `AuthKey_～.p8` という名前しか
+  受け付けない → `AuthKey_ZLVZ3Q863W.p8` にリネームで解決
+- **ハマり②**: UIの保存時検証が「Credentials need attention」で通らない
+  （作りたてキーの伝播遅延と思われる）→ **v2 APIの隠しフィールドで直接設定**:
+  `POST /v2/projects/{pid}/apps/{app_id}` の
+  `app_store.subscription_private_key / subscription_key_id / subscription_key_issuer`
+  → 200で **subscription_key_configured: true** を確認
+- ログイン・ファイル選択のみゆず操作（パスワードはClaude不関与）
+
 ## 現在の残タスク（クリティカルパス順）
 
-1. 【ゆず】ASCで**App内課金キー**生成→.p8保存→RevenueCatへアップロード（Claudeが確認可能）
-2. 【ゆず＋Claude】Sandboxテスト（ビルド8でOK。購入・復元・アップグレード）・審査用スクショ撮影→各商品に添付
+1. 【ゆず】RevenueCatの**メール確認リンク**をクリック（ダッシュボードに青帯が出ている）
+2. 【ゆず＋Claude】**Sandboxテスト**: ビルド8＋配信済みUpdateで購入・復元を実測
+   （TestFlight経由なので実請求なし）・審査用スクショ撮影→4商品に添付
 3. 【Claude】**ビルド9**（キー焼き込み済みの審査用バイナリ）→ TestFlight
 4. 【ゆず＋Claude】審査提出（ビルド9添付・IAP同時提出・Review Notes=app-store-kit §8）
-5. 【ゆず】RevenueCatの claude-setup キー削除（全部終わってから）
+5. 【ゆず】RevenueCatの claude-setup (sk_) キー削除（全部終わってから）
 
 ## 状態スナップショット
 
