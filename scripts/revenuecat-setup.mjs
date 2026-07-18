@@ -128,8 +128,9 @@ async function main() {
       });
       log(`package ${p.pkg} created: ${pkg.id}`);
     }
+    // このエンドポイントは {eligibility_criteria, product:{...}} の形で返る（entitlements側と形が違う）
     const prods = await getAll(`/projects/${pid}/packages/${pkg.id}/products`).catch(() => []);
-    if (prods.some((x) => x.id === productIdByStore[p.sid])) { log(`package ${p.pkg}: product attached`); continue; }
+    if (prods.some((x) => (x.product?.id ?? x.id) === productIdByStore[p.sid])) { log(`package ${p.pkg}: product attached`); continue; }
     await api('POST', `/projects/${pid}/packages/${pkg.id}/actions/attach_products`, {
       products: [{ product_id: productIdByStore[p.sid], eligibility_criteria: 'all' }],
     });
