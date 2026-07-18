@@ -196,3 +196,36 @@ commit fe07821・EAS Update配信済み。
   → ストア表示は**「ユーザに関連付けられないデータ」のみ**（最良のラベル）
 - 特商法はApp内課金=Apple販売のため原則不要と整理
 - 学び: ASCはJS注入がCSPで無効。ref方式のクリックが確実（座標クリックはズレる）
+
+## 12. 午後の追加対応（価格エラー点検・AI名乗り漏れ修正・不安材料つぶし）
+
+### 価格取得エラーの総点検（結果: 設定は全部シロ、Apple反映待ちが濃厚）
+ゆず実機（ビルド9）でプラン画面が「料金情報を取得できません」→ 設定側を機械点検:
+- ASC: 4商品とも READY_TO_SUBMIT ✅
+- RevenueCat: バンドルID・課金キー・商品4・権利2・オファリングdefault(current)＋4パッケージ紐づけ ✅
+- → 残る説明は**Apple反映待ち（商品完成7/18 11時ごろ、最大24h）のみ**。7/19昼まで待って再テスト
+- 学び: RC APIの `packages/{id}/products` は `{eligibility_criteria, product:{...}}` の**ネスト形式**
+  （entitlements側はフラット）。revenuecat-setup.mjs の既存判定を修正（commit 6882b2e）
+
+### 月次レポート末尾に「SarjavexのAIです。」が漏れる問題 ✅ 修正・配信済み
+- 原因: 身元ガードの旧文面「〜とだけ答えてください」にGeminiが釣られ、聞かれてもいないのに名乗りを本文へ書く
+- 修正3段構え:
+  1. 指示文書き直し（app+server両方）「直接質問された場合に限り名乗る。それ以外は自己紹介・署名を書かない」
+  2. 保険: AI出力の文頭・文末の名乗り文を自動除去 scrubIdentityLeak()（本文中のSarjavex言及・JSONは無傷、6ケーステスト済み）
+  3. 保存済みレポートにも表示時に適用（再生成不要で消える）
+- 配信: EAS Update×2（6724e3e / 54935a1）＋サーバー（2ea4a45・Render自動デプロイ）
+- 検証: 本番サーバー相手に月次形式で2回生成→**2回とも漏れなし**
+
+### 本番AIモデルが「Gemini 3.1 Flash Lite」になっている件（正常）
+- render.yaml の `gemini-flash-lite-latest`（最安・7/16決定）は「Flash Lite系の最新を自動追従」する指定。
+  Googleが3.1を出したので自動で新しくなっただけ。料金クラスは最安のまま。異常なし
+- 特定バージョン固定はモデル引退時に止まるリスクがあるため -latest 維持が正解
+
+### 監視ワークフローの時限爆弾を解体 ✅
+- **発見**: sarjavex-api は非公開リポジトリ → Actions無料枠は月2,000分。10分おきの
+  review-keep-warm は月4,300分相当で**月の途中に全Actions停止**（Supabase起こしも死ぬ）だった
+- **対処**: keep-alive.yml と review-keep-warm.yml を公開リポジトリ
+  **sarjavexofficial.github.io** へ移設（公開リポジトリはActions無制限・秘密情報なし）。
+  api側からは削除（site 26b331a / api ae7778f）
+- 併せて確認: プライバシーポリシーURL/サポートURL実在(200)・復元ボタン・EULAリンク・
+  暗号化申告(usesNonExemptEncryption:false) → 審査3.1.2系の定番リジェクト要因はすべて対応済み
