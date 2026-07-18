@@ -499,6 +499,7 @@ export const zh: Dict = {
   personMarkContacted: '将“最后记录”设为今天',
   personMuteStale: '不再显示此人的提醒',
   personUnmuteStale: '恢复提醒',
+  supportReviewButton: '写评价支持我们',
   importLimitReached: '免费版最多可导入3次。',
   planRecommended: '推荐',
   planPerDay: (yen: string) => `每天约¥${yen}`,

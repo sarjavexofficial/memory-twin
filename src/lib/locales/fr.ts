@@ -535,6 +535,7 @@ export const fr: Dict = {
   personMarkContacted: 'Définir le « dernier enregistrement » à aujourd’hui',
   personMuteStale: 'Masquer les rappels pour cette personne',
   personUnmuteStale: 'Réactiver les rappels',
+  supportReviewButton: 'Nous soutenir par un avis',
   importLimitReached: 'La version gratuite permet 3 imports au maximum au total.',
   planRecommended: 'Recommandé',
   planPerDay: (yen: string) => `≈ ${yen} ¥/jour`,

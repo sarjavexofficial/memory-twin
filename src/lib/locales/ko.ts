@@ -510,6 +510,7 @@ export const ko: Dict = {
   personMarkContacted: '“마지막 기록”을 오늘로',
   personMuteStale: '이 사람의 알림 숨기기',
   personUnmuteStale: '알림 다시 받기',
+  supportReviewButton: '리뷰로 응원하기',
   importLimitReached: '무료 버전에서는 총 3회까지 가져올 수 있습니다.',
   planRecommended: '추천',
   planPerDay: (yen: string) => `하루 약 ¥${yen}`,

@@ -14,6 +14,7 @@ import { maybeAutoLearn } from '@/lib/auto-learn';
 import { daysUntilBirthday } from '@/lib/birthday';
 import { FEATURES } from '@/lib/feature-flags';
 import { computeStreak } from '@/lib/streak';
+import { maybeAskForReview } from '@/lib/store-review';
 import {
   candidateMessage,
   DailyCandidate,
@@ -373,6 +374,8 @@ export default function TodayScreen() {
       tags,
       project: selectedProject,
     });
+    // 自分の記録が節目の数に達した「役立っている瞬間」にだけ、App Storeの評価をお願いする
+    maybeAskForReview(entries.filter((e) => !e.sample).length + 1);
     setText('');
     setSleepHours('');
     setTagsInput('');

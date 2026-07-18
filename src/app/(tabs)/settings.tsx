@@ -898,6 +898,14 @@ export default function SettingsScreen() {
           </Text>
           {contactErr && <Text style={styles.errorText}>{contactErr}</Text>}
 
+          {/* App Storeのレビュー画面へ直行（星の数はアプリの発見されやすさに直結する） */}
+          <Pressable
+            style={styles.actionButton}
+            onPress={() => Linking.openURL('https://apps.apple.com/app/id6791472591?action=write-review')}>
+            <Ionicons name="star-outline" size={16} color={AppColors.primary} />
+            <Text style={styles.actionButtonText}>{L.supportReviewButton}</Text>
+          </Pressable>
+
           {/* ストア審査(3.1.2)対応: ポリシーと利用規約へのリンクをアプリ内に明記する */}
           <Pressable
             style={styles.actionButton}

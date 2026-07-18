@@ -527,6 +527,7 @@ export const pt: Dict = {
   personMarkContacted: 'Definir “último registro” para hoje',
   personMuteStale: 'Ocultar lembretes desta pessoa',
   personUnmuteStale: 'Reativar lembretes',
+  supportReviewButton: 'Apoie com uma avaliação',
   importLimitReached: 'A versão gratuita permite até 3 importações no total.',
   planRecommended: 'Recomendado',
   planPerDay: (yen: string) => `≈ ¥${yen}/dia`,
