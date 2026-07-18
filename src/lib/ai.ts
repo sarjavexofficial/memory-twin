@@ -39,7 +39,7 @@ const IDENTITY_LEAK_PATTERNS = [
   /^(I\s*am|I'm)\s*(the\s*)?Sarjavex('s)?\s*AI[.!]?\s*/i,
   /\s*(I\s*am|I'm)\s*(the\s*)?Sarjavex('s)?\s*AI[.!]?$/i,
 ];
-function scrubIdentityLeak(text: string): string {
+export function scrubIdentityLeak(text: string): string {
   let out = text.trim();
   for (const p of IDENTITY_LEAK_PATTERNS) out = out.replace(p, '');
   return out.trim();

@@ -8,7 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AiSendNote } from '@/components/ai-send-note';
 import { GlowBackground, GradientButton, TitleAccent } from '@/components/futuristic';
 import { AppPalette } from '@/constants/app-colors';
-import { AiConfigError, generateMonthlyNarrative } from '@/lib/ai';
+import { AiConfigError, generateMonthlyNarrative, scrubIdentityLeak } from '@/lib/ai';
 import { buildAliasMap } from '@/lib/alias';
 import { getAiProfile } from '@/lib/ai-profile';
 import { useTodayLocal } from '@/lib/date';
@@ -58,7 +58,9 @@ export default function MonthlyReportScreen() {
   useEffect(() => {
     let active = true;
     getSavedNarrative(month).then((saved) => {
-      if (active) setNarrative(saved);
+      if (!active) return;
+      // 修正前に生成・保存された文へ名乗り漏れが残っている場合もあるため、表示時にも取り除く
+      setNarrative(saved ? { ...saved, text: scrubIdentityLeak(saved.text) } : saved);
     });
     return () => {
       active = false;
