@@ -426,7 +426,7 @@ const makeStyles = (AppColors: AppPalette) =>
     tagFilterChipActive: { backgroundColor: AppColors.primary, borderColor: AppColors.primary },
     tagFilterChipText: { fontSize: 13, color: AppColors.muted, fontWeight: '700' },
     tagFilterChipTextActive: { color: AppColors.background },
-    list: { paddingHorizontal: 16, paddingBottom: 100, gap: 12 },
+    list: { paddingHorizontal: 16, paddingBottom: 120, gap: 12 },
     loading: { marginTop: 40 },
     empty: { textAlign: 'center', color: AppColors.muted, fontSize: 15, marginTop: 40, lineHeight: 22 },
     suggestBlock: { marginTop: 18, alignItems: 'center', gap: 10 },

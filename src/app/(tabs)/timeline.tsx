@@ -280,7 +280,7 @@ export default function TimelineScreen() {
 const makeStyles = (AppColors: AppPalette) =>
   StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: AppColors.background },
-  content: { padding: 20, paddingTop: 12, gap: 14, paddingBottom: 100 },
+  content: { padding: 20, paddingTop: 12, gap: 14, paddingBottom: 120 },
   title: { fontSize: 26, fontWeight: '800', color: AppColors.text, letterSpacing: -0.5 },
   desc: { fontSize: 13, color: AppColors.muted, lineHeight: 19, marginTop: -6 },
   analysisLink: {

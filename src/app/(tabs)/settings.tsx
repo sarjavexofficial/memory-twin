@@ -18,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AccountSection } from '@/components/account-section';
 import { AiSendNote } from '@/components/ai-send-note';
+import { ExpandableText } from '@/components/expandable-text';
 import { GlowBackground, GradientButton, TitleAccent } from '@/components/futuristic';
 import { AppPalette } from '@/constants/app-colors';
 import { AiConfigError, learnUserProfile } from '@/lib/ai';
@@ -33,6 +34,7 @@ import {
 } from '@/lib/ai-profile';
 import { getAiUsage, PLAN_AI_LIMITS } from '@/lib/ai-usage';
 import { materializePhotos } from '@/lib/backup';
+import { CloudBackupMeta, getBackupMeta, savePreRestoreSnapshot } from '@/lib/backup-meta';
 import {
   CloudBackupDecryptError,
   CloudBackupNotFoundError,
@@ -62,6 +64,13 @@ import { useTasks } from '@/store/tasks-context';
 
 // 運営への問い合わせ先（メールが開けない端末でも読めるよう、画面上にも表示する）
 const SUPPORT_EMAIL = 'sarjavex.official@gmail.com';
+
+// 最終バックアップの表示用（例: 2026/7/18 10:42）。端末のローカル時刻で示す
+function formatBackupDate(iso: string) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
 
 function formatConsentDate(iso?: string) {
   if (!iso) return null;
@@ -111,6 +120,9 @@ export default function SettingsScreen() {
       });
       getAiProfile().then((p) => {
         if (active) setAiProfile(p);
+      });
+      getBackupMeta().then((m) => {
+        if (active) setBackupMeta(m);
       });
       return () => {
         active = false;
@@ -225,6 +237,8 @@ export default function SettingsScreen() {
   const [cloudBusy, setCloudBusy] = useState<'save' | 'restore' | null>(null);
   const [cloudMsg, setCloudMsg] = useState<string | null>(null);
   const [cloudErr, setCloudErr] = useState<string | null>(null);
+  // 最終バックアップの日時・件数（端末内メタ情報）。「本当に保存されているのか」不安への答え
+  const [backupMeta, setBackupMeta] = useState<CloudBackupMeta | null>(null);
   // 自動クラウド同期: 一度手動でバックアップ/復元に成功した合言葉を端末に記憶しているかどうか
   const [passRemembered, setPassRemembered] = useState(false);
 
@@ -280,6 +294,7 @@ export default function SettingsScreen() {
         setPassRemembered(true);
       }
       setCloudMsg(L.cloudBackupSaved);
+      setBackupMeta(await getBackupMeta());
     } catch (e) {
       if (e instanceof CloudBackupRateLimitError) setCloudErr(L.cloudBackupRateLimited);
       else setCloudErr((e as Error).message);
@@ -303,6 +318,8 @@ export default function SettingsScreen() {
     setCloudBusy('restore');
     try {
       const backup = await downloadCloudBackup(account, pass);
+      // 万一に備えて、復元直前の状態を端末内へ丸ごと退避してから取り込む
+      await savePreRestoreSnapshot({ people, journal: entries, tasks });
       // ZIPからの復元と同じ経路: 既存データに追加され、同じIDは重複しない
       const j = restoreEntries(backup.journal);
       const p = restorePeople(await materializePhotos(backup.people));
@@ -385,12 +402,32 @@ export default function SettingsScreen() {
     setAiProfile(null);
   }
 
+  // 全削除は2段階: 確認ダイアログ → 合言葉（「削除」等）を自分でタイプして初めて実行できる。
+  // 指が滑っただけでは絶対に消えないようにするための誤操作対策
+  const [deleteArmed, setDeleteArmed] = useState(false);
+  const [deleteTyped, setDeleteTyped] = useState('');
+  const [deleteDone, setDeleteDone] = useState(false);
+  const deleteReady = deleteTyped.trim() === L.deleteAllKeyword;
+
   async function handleDeleteAll() {
+    setDeleteDone(false);
     const proceed = await confirmAsync(L.deleteAllTitle, L.deleteAllMessage(people.length, recordCount));
     if (!proceed) return;
+    setDeleteTyped('');
+    setDeleteArmed(true);
+  }
+
+  async function handleDeleteAllExecute() {
+    if (!deleteReady) return;
     clearAllPeople();
     clearAllEntries();
     clearAllTasks();
+    // 「すべて削除」の名に偽りが出ないよう、AIの理解ノートも一緒に消す
+    await clearAiProfile();
+    setAiProfile(null);
+    setDeleteArmed(false);
+    setDeleteTyped('');
+    setDeleteDone(true);
   }
 
   return (
@@ -576,7 +613,7 @@ export default function SettingsScreen() {
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>{L.aiProfileSection}</Text>
-          <Text style={styles.dataSummary}>{L.aiProfileDesc}</Text>
+          <ExpandableText text={L.aiProfileDesc} style={styles.dataSummary} linkColor={AppColors.primary} />
           {aiProfile ? (
             <View style={styles.profileBox}>
               <Text style={styles.profileLabel}>{L.aiProfileLabel}</Text>
@@ -634,7 +671,7 @@ export default function SettingsScreen() {
             <Ionicons name="sparkles-outline" size={18} color={AppColors.primary} />
             <Text style={styles.cardTitle}>{L.aiDisclosureTitle}</Text>
           </View>
-          <Text style={styles.privacyDesc}>{L.aiDisclosureDesc}</Text>
+          <ExpandableText text={L.aiDisclosureDesc} style={styles.privacyDesc} linkColor={AppColors.primary} lines={3} />
           <Pressable
             onPress={() => Linking.openURL('https://sarjavexofficial.github.io/privacy.html')}
             hitSlop={8}>
@@ -649,7 +686,7 @@ export default function SettingsScreen() {
               <Ionicons name={item.icon} size={18} color={AppColors.accent} style={styles.privacyIcon} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.privacyTitle}>{item.title}</Text>
-                <Text style={styles.privacyDesc}>{item.desc}</Text>
+                <ExpandableText text={item.desc} style={styles.privacyDesc} linkColor={AppColors.primary} />
               </View>
             </View>
           ))}
@@ -713,15 +750,69 @@ export default function SettingsScreen() {
           {exportDone && <Text style={styles.successText}>{L.exportDone}</Text>}
           {exportError && <Text style={styles.errorText}>{exportError}</Text>}
 
-          <Pressable style={styles.dangerButton} onPress={handleDeleteAll}>
-            <Ionicons name="trash-outline" size={16} color={AppColors.danger} />
-            <Text style={styles.dangerButtonText}>{L.deleteAllButton}</Text>
-          </Pressable>
+          {!deleteArmed ? (
+            <Pressable style={styles.dangerButton} onPress={handleDeleteAll}>
+              <Ionicons name="trash-outline" size={16} color={AppColors.danger} />
+              <Text style={styles.dangerButtonText}>{L.deleteAllButton}</Text>
+            </Pressable>
+          ) : (
+            <View style={styles.deleteArmedBox}>
+              <View style={styles.deleteWarnRow}>
+                <Ionicons name="warning-outline" size={16} color={AppColors.danger} />
+                <Text style={styles.deleteWarnText}>{L.deleteAllTypePrompt(L.deleteAllKeyword)}</Text>
+              </View>
+              <TextInput
+                style={styles.deleteInput}
+                value={deleteTyped}
+                onChangeText={setDeleteTyped}
+                placeholder={L.deleteAllKeyword}
+                placeholderTextColor={AppColors.muted}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              <View style={styles.deleteBtnRow}>
+                <Pressable
+                  style={[styles.actionButton, { flex: 1 }]}
+                  onPress={() => {
+                    setDeleteArmed(false);
+                    setDeleteTyped('');
+                  }}>
+                  <Text style={styles.actionButtonText}>{L.personCancel}</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.dangerButton, { flex: 1 }, !deleteReady && styles.dangerButtonDisabled]}
+                  disabled={!deleteReady}
+                  onPress={handleDeleteAllExecute}>
+                  <Ionicons name="trash-outline" size={16} color={AppColors.danger} />
+                  <Text style={styles.dangerButtonText}>{L.deleteAllExecute}</Text>
+                </Pressable>
+              </View>
+            </View>
+          )}
+          {deleteDone && <Text style={styles.successText}>{L.deleteAllDone}</Text>}
         </View>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>{L.cloudBackupSection}</Text>
-          <Text style={styles.dataSummary}>{L.cloudBackupDesc}</Text>
+          {/* 最終バックアップの日時と件数。まだ無ければ「ありません」を明示して不安を消す */}
+          <View style={styles.backupStatusRow}>
+            <Ionicons
+              name={backupMeta ? 'cloud-done-outline' : 'cloud-offline-outline'}
+              size={15}
+              color={backupMeta ? AppColors.success : AppColors.muted}
+            />
+            <Text style={[styles.backupStatusText, backupMeta && { color: AppColors.success }]}>
+              {backupMeta
+                ? L.cloudBackupLastAt(
+                    formatBackupDate(backupMeta.at),
+                    backupMeta.journal,
+                    backupMeta.people,
+                    backupMeta.tasks,
+                  )
+                : L.cloudBackupNever}
+            </Text>
+          </View>
+          <ExpandableText text={L.cloudBackupDesc} style={styles.dataSummary} linkColor={AppColors.primary} />
           {!account ? (
             // 保管場所はアカウントに紐づくため、サインインするまで操作できない
             <Text style={styles.exportHintText}>{L.cloudBackupNeedSignIn}</Text>
@@ -766,6 +857,7 @@ export default function SettingsScreen() {
                   {cloudBusy === 'restore' ? '…' : L.cloudBackupRestore}
                 </Text>
               </Pressable>
+              <Text style={styles.exportHintText}>{L.cloudRestoreSafetyNote}</Text>
               {passRemembered && (
                 <View style={styles.rememberedRow}>
                   <Ionicons name="checkmark-circle-outline" size={14} color={AppColors.success} />
@@ -830,7 +922,7 @@ export default function SettingsScreen() {
 const makeStyles = (AppColors: AppPalette) =>
   StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: AppColors.background },
-  content: { padding: 20, paddingTop: 12, gap: 16, paddingBottom: 100 },
+  content: { padding: 20, paddingTop: 12, gap: 16, paddingBottom: 120 },
   title: { fontSize: 26, fontWeight: '800', color: AppColors.text, letterSpacing: -0.5 },
   card: {
     backgroundColor: AppColors.card,
@@ -909,6 +1001,31 @@ const makeStyles = (AppColors: AppPalette) =>
     minHeight: 44,
   },
   dangerButtonText: { color: AppColors.danger, fontWeight: '700', fontSize: 14 },
+  // 無効状態は薄くするだけでなく破線にして「まだ押せない」を色以外でも伝える
+  dangerButtonDisabled: { opacity: 0.45, borderStyle: 'dashed' },
+  deleteArmedBox: {
+    borderWidth: 1.5,
+    borderColor: AppColors.danger,
+    borderRadius: 12,
+    padding: 12,
+    gap: 10,
+  },
+  deleteWarnRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  deleteWarnText: { flex: 1, fontSize: 12, color: AppColors.danger, fontWeight: '700', lineHeight: 17 },
+  deleteInput: {
+    borderWidth: 1,
+    borderColor: AppColors.line,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    minHeight: 44,
+    color: AppColors.text,
+    fontSize: 14,
+    backgroundColor: AppColors.background,
+  },
+  deleteBtnRow: { flexDirection: 'row', gap: 10 },
+  backupStatusRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: -4 },
+  backupStatusText: { flex: 1, fontSize: 12, color: AppColors.muted, fontWeight: '600' },
   aboutRow: { flexDirection: 'row', justifyContent: 'space-between' },
   contactEmail: { fontSize: 12, color: AppColors.muted, textAlign: 'center', marginTop: -6 },
   profileBox: {

@@ -129,7 +129,8 @@ function buildCandidates(
   // 30日以上連絡していない人（最も疎遠な1人だけ候補にする）
   const stale = people
     .map((p) => ({ p, days: daysSince(p.lastContact) }))
-    .filter(({ days }) => days >= 30)
+    // 本人が「この人のお知らせは不要」とした人物（muteStale）は候補から外す
+    .filter(({ p, days }) => days >= 30 && !p.muteStale)
     .sort((a, b) => b.days - a.days)[0];
   if (stale) {
     list.push({

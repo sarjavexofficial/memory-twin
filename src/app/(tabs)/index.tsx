@@ -315,7 +315,10 @@ export default function TodayScreen() {
   const stalePeople = useMemo(
     () =>
       people.filter(
-        (p) => !(hasRealData && p.sample) && daysSince(p.lastContact) >= STALE_THRESHOLD_DAYS,
+        (p) =>
+          !(hasRealData && p.sample) &&
+          !p.muteStale &&
+          daysSince(p.lastContact) >= STALE_THRESHOLD_DAYS,
       ),
     [people, hasRealData],
   );
@@ -855,7 +858,8 @@ export default function TodayScreen() {
 const makeStyles = (AppColors: AppPalette) =>
   StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: AppColors.background },
-  content: { padding: 20, paddingTop: 12, gap: 16, paddingBottom: 100 },
+  // 下端はセーフエリア＋タブバー高＋余裕を確保（最下部のボタンが隠れない）
+  content: { padding: 20, paddingTop: 12, gap: 16, paddingBottom: 120 },
   title: { fontSize: 26, fontWeight: '800', color: AppColors.text, letterSpacing: -0.5 },
   subtitle: { fontSize: 13, color: AppColors.muted, fontWeight: '700', marginTop: -10 },
   card: {

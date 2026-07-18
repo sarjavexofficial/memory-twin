@@ -21,7 +21,7 @@ import { daysAgoLocal, todayLocal } from '@/lib/date';
 import { FEATURES } from '@/lib/feature-flags';
 import { useStrings } from '@/lib/i18n';
 import { makeThemed, useTheme } from '@/lib/theme';
-import { buildMemoryRecords } from '@/lib/retrieval';
+import { buildMemoryRecords, MemoryRecord } from '@/lib/retrieval';
 import { useJournal } from '@/store/journal-context';
 import { usePeople } from '@/store/people-context';
 import { useSettings } from '@/store/settings-context';
@@ -45,6 +45,9 @@ export default function ReviewScreen() {
   const [pastOpen, setPastOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<ReviewResult | null>(null);
+  // AIに実際に送った記録（=回答の根拠）。生成時点のスナップショットを保持して表示する
+  const [sources, setSources] = useState<MemoryRecord[]>([]);
+  const [sourcesOpen, setSourcesOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
@@ -106,6 +109,9 @@ export default function ReviewScreen() {
     try {
       const review = await generateReview(periodRecords, periodLabel, buildAliasMap(people));
       setResult(review);
+      // generateReviewの送信仕様（先頭80件）と揃える。根拠の提示は「実際に送ったもの」に限る
+      setSources(periodRecords.slice(0, 80));
+      setSourcesOpen(false);
     } catch (e) {
       setError(e instanceof AiConfigError ? e.message : (e as Error).message);
     } finally {
@@ -290,6 +296,25 @@ export default function ReviewScreen() {
                   </View>
                 )}
 
+                {/* 回答の根拠: AIに送った記録の日付と冒頭を明示する（改善提案6対応） */}
+                {sources.length > 0 && (
+                  <View style={styles.sourcesBox}>
+                    <Text style={styles.sectionLabel}>{L.aiSourcesTitle(sources.length)}</Text>
+                    {(sourcesOpen ? sources : sources.slice(0, 3)).map((s, i) => (
+                      <Text key={i} style={styles.sourceRow} numberOfLines={1}>
+                        {s.date}　{s.text}
+                      </Text>
+                    ))}
+                    {sources.length > 3 && (
+                      <Pressable onPress={() => setSourcesOpen((v) => !v)} hitSlop={8}>
+                        <Text style={styles.sourceToggle}>
+                          {sourcesOpen ? L.showLess : L.aiSourcesMore(sources.length - 3)}
+                        </Text>
+                      </Pressable>
+                    )}
+                  </View>
+                )}
+
                 <View style={styles.actionRow}>
                   {saved ? (
                     <View style={styles.savedRow}>
@@ -416,6 +441,9 @@ const makeStyles = (AppColors: AppPalette) =>
     highlightText: { flex: 1, fontSize: 13, color: AppColors.text, lineHeight: 19 },
     nextStepBox: { backgroundColor: AppColors.accentSoft, borderRadius: 12, padding: 12, gap: 6 },
     nextStepText: { fontSize: 13, color: AppColors.text, lineHeight: 19 },
+    sourcesBox: { gap: 4, borderTopWidth: 1, borderTopColor: AppColors.line, paddingTop: 10 },
+    sourceRow: { fontSize: 11, color: AppColors.muted, lineHeight: 16 },
+    sourceToggle: { fontSize: 12, color: AppColors.primary, fontWeight: '700', marginTop: 2 },
     actionRow: { flexDirection: 'row', gap: 10 },
     saveButton: {
       flex: 1,

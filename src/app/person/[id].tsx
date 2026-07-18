@@ -19,7 +19,7 @@ export default function PersonDetailScreen() {
   const { styles, AppColors } = useTheme(themed);
   const L = useStrings();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { people, getPersonById, addMemoToPerson, deleteMemo, deletePerson, togglePromiseDone } =
+  const { people, getPersonById, addMemoToPerson, deleteMemo, deletePerson, togglePromiseDone, updatePerson } =
     usePeople();
   const person = getPersonById(id);
   const [draftMemo, setDraftMemo] = useState('');
@@ -150,6 +150,27 @@ export default function PersonDetailScreen() {
               {person.lastContact}
               {person.place ? `（${person.place}）` : ''}
             </Text>
+          </View>
+          {/* 疎遠お知らせの人物ごとの制御: 記録を作らずに「最後の記録」を今日へ／この人のお知らせを止める */}
+          <View style={styles.staleCtlRow}>
+            <Pressable
+              style={styles.staleCtlBtn}
+              onPress={() => updatePerson(person.id, { lastContact: today() })}>
+              <Ionicons name="checkmark-circle-outline" size={14} color={AppColors.primary} />
+              <Text style={styles.staleCtlText}>{L.personMarkContacted}</Text>
+            </Pressable>
+            <Pressable
+              style={styles.staleCtlBtn}
+              onPress={() => updatePerson(person.id, { muteStale: !person.muteStale })}>
+              <Ionicons
+                name={person.muteStale ? 'notifications-outline' : 'notifications-off-outline'}
+                size={14}
+                color={AppColors.primary}
+              />
+              <Text style={styles.staleCtlText}>
+                {person.muteStale ? L.personUnmuteStale : L.personMuteStale}
+              </Text>
+            </Pressable>
           </View>
           {person.tags && person.tags.length > 0 && (
             <View style={styles.tagSection}>
@@ -365,6 +386,19 @@ const makeStyles = (AppColors: AppPalette) =>
   infoRow: { flexDirection: 'row', justifyContent: 'space-between' },
   infoLabel: { fontSize: 14, color: AppColors.muted, fontWeight: '600' },
   infoValue: { fontSize: 14, color: AppColors.text },
+  staleCtlRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  staleCtlBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    borderWidth: 1,
+    borderColor: AppColors.line,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    minHeight: 36,
+  },
+  staleCtlText: { fontSize: 12, color: AppColors.primary, fontWeight: '700' },
   tagSection: { gap: 8 },
   tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tag: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999 },

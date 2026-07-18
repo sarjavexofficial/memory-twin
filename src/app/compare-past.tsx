@@ -13,7 +13,7 @@ import { daysAgoLocal, todayLocal } from '@/lib/date';
 import { FEATURES } from '@/lib/feature-flags';
 import { useStrings } from '@/lib/i18n';
 import { makeThemed, useTheme } from '@/lib/theme';
-import { buildMemoryRecords } from '@/lib/retrieval';
+import { buildMemoryRecords, MemoryRecord } from '@/lib/retrieval';
 import { useJournal } from '@/store/journal-context';
 import { usePeople } from '@/store/people-context';
 import { useSettings } from '@/store/settings-context';
@@ -35,6 +35,9 @@ export default function ComparePastScreen() {
   const [span, setSpan] = useState<Span>('half');
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<PastComparisonResult | null>(null);
+  // AIに実際に送った「あの頃」の記録（=比較の根拠）。生成時点のスナップショット
+  const [sources, setSources] = useState<MemoryRecord[]>([]);
+  const [sourcesOpen, setSourcesOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
@@ -80,6 +83,9 @@ export default function ComparePastScreen() {
         buildAliasMap(people),
       );
       setResult(comparison);
+      // generatePastComparisonの送信仕様（過去側は先頭60件）と揃える
+      setSources(pastRecords.slice(0, 60));
+      setSourcesOpen(false);
     } catch (e) {
       setError(e instanceof AiConfigError ? e.message : (e as Error).message);
     } finally {
@@ -202,6 +208,25 @@ export default function ComparePastScreen() {
                   </View>
                 )}
 
+                {/* 比較の根拠: 「あの頃」としてAIに送った記録の日付を明示する（改善提案6対応） */}
+                {sources.length > 0 && (
+                  <View style={styles.sourcesBox}>
+                    <Text style={styles.sectionLabel}>{L.aiSourcesTitle(sources.length)}</Text>
+                    {(sourcesOpen ? sources : sources.slice(0, 3)).map((s, i) => (
+                      <Text key={i} style={styles.sourceRow} numberOfLines={1}>
+                        {s.date}　{s.text}
+                      </Text>
+                    ))}
+                    {sources.length > 3 && (
+                      <Pressable onPress={() => setSourcesOpen((v) => !v)} hitSlop={8}>
+                        <Text style={styles.sourceToggle}>
+                          {sourcesOpen ? L.showLess : L.aiSourcesMore(sources.length - 3)}
+                        </Text>
+                      </Pressable>
+                    )}
+                  </View>
+                )}
+
                 {saved ? (
                   <View style={styles.savedRow}>
                     <Ionicons name="checkmark-circle" size={15} color={AppColors.success} />
@@ -294,6 +319,9 @@ const makeStyles = (AppColors: AppPalette) =>
     },
     messageLabel: { fontSize: 12, fontWeight: '800', color: AppColors.primary },
     messageText: { fontSize: 14, color: AppColors.text, lineHeight: 21, fontWeight: '600' },
+    sourcesBox: { gap: 4, borderTopWidth: 1, borderTopColor: AppColors.line, paddingTop: 10 },
+    sourceRow: { fontSize: 11, color: AppColors.muted, lineHeight: 16 },
+    sourceToggle: { fontSize: 12, color: AppColors.primary, fontWeight: '700', marginTop: 2 },
     saveButton: {
       flexDirection: 'row',
       justifyContent: 'center',

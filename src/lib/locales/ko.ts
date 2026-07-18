@@ -439,7 +439,11 @@ export const ko: Dict = {
   deleteAllButton: '모든 인물과 기록 삭제',
   deleteAllTitle: '모든 데이터를 삭제할까요?',
   deleteAllMessage: (people: number, records: number) =>
-    `인물 ${people}명·기록 ${records}건이 이 기기에서 완전히 삭제됩니다. 이 작업은 되돌릴 수 없습니다. 먼저 내보내기를 권장합니다.`,
+    `인물 ${people}명·기록 ${records}건·할 일·AI 이해 노트가 이 기기에서 완전히 삭제됩니다(클라우드 백업은 지워지지 않습니다). 이 작업은 되돌릴 수 없습니다. 먼저 내보내기를 권장합니다.`,
+  deleteAllKeyword: '삭제',
+  deleteAllTypePrompt: (kw: string) => `계속하려면 아래 칸에 “${kw}”를 입력하세요.`,
+  deleteAllExecute: '완전히 삭제',
+  deleteAllDone: '모든 데이터가 삭제되었습니다.',
   aboutSection: '이 앱에 대하여',
   aboutCompany: '개발사',
   aboutName: '앱 이름',
@@ -492,6 +496,20 @@ export const ko: Dict = {
     '암호에서 만든 키로 이 기기에서 암호화한 뒤, 로그인 중인 계정에 연결해 클라우드에 하나만 보관합니다(같은 계정＋같은 암호는 덮어쓰기). 운영자도 내용을 읽을 수 없습니다. 기기를 바꾼 후 같은 계정으로 로그인하고 같은 암호를 입력하면 복원할 수 있습니다. 암호를 잊으면 아무도 복원할 수 없습니다.',
   cloudBackupNeedSignIn:
     '클라우드 백업은 위의 “계정”에서 로그인하면 사용할 수 있습니다(보관 위치를 본인 전용으로 하기 위해서입니다).',
+  cloudBackupLastAt: (date: string, j: number, p: number, t: number) =>
+    `마지막 백업: ${date} (기록 ${j}·인물 ${p}·할 일 ${t})`,
+  cloudBackupNever: '이 기기에서 백업한 적이 아직 없습니다.',
+  cloudRestoreSafetyNote:
+    '복원은 추가 방식이라 기존 데이터가 지워지지 않습니다. 만일에 대비해 복원 직전에 현재 데이터를 기기 안에 자동으로 보관합니다.',
+  showMore: '자세히 보기',
+  showLess: '접기',
+  aiSourcesTitle: (n: number) => `참고한 기록 (${n}건)`,
+  aiSourcesMore: (n: number) => `나머지 ${n}건 보기`,
+  shareAnonLabel: '이름을 가리고 공유',
+  shareAnonNote: '켜면 위 카드와 공유 내용의 이름이 “A” 같은 별칭으로 바뀝니다(보이는 그대로 공유됩니다).',
+  personMarkContacted: '“마지막 기록”을 오늘로',
+  personMuteStale: '이 사람의 알림 숨기기',
+  personUnmuteStale: '알림 다시 받기',
   importLimitReached: '무료 버전에서는 총 3회까지 가져올 수 있습니다.',
   planRecommended: '추천',
   planPerDay: (yen: string) => `하루 약 ¥${yen}`,

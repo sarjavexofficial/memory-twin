@@ -431,7 +431,11 @@ export const zh: Dict = {
   deleteAllButton: '删除全部人物与记录',
   deleteAllTitle: '要删除全部数据吗？',
   deleteAllMessage: (people: number, records: number) =>
-    `人物${people}位・记录${records}条将从这台设备上被彻底删除。此操作无法撤销。建议先导出。`,
+    `人物${people}位・记录${records}条・任务・AI理解笔记将从这台设备上被彻底删除（云备份不受影响）。此操作无法撤销。建议先导出。`,
+  deleteAllKeyword: '删除',
+  deleteAllTypePrompt: (kw: string) => `要继续，请在下方输入「${kw}」。`,
+  deleteAllExecute: '永久删除',
+  deleteAllDone: '所有数据已删除。',
   aboutSection: '关于此应用',
   aboutCompany: '开发方',
   aboutName: '应用名称',
@@ -481,6 +485,20 @@ export const zh: Dict = {
   cloudBackupDesc:
     '用口令生成的密钥在本机加密后，绑定到当前登录的账号保存到云端（相同账号＋相同口令会覆盖）。运营方也无法读取内容。换机后用相同账号登录并输入相同口令即可恢复。忘记口令则任何人都无法恢复。',
   cloudBackupNeedSignIn: '请先在上方「账号」登录后再使用云备份（以确保存储位置仅属于你）。',
+  cloudBackupLastAt: (date: string, j: number, p: number, t: number) =>
+    `上次备份：${date}（记录${j}・人物${p}・任务${t}）`,
+  cloudBackupNever: '这台设备尚未进行过备份。',
+  cloudRestoreSafetyNote:
+    '恢复采用追加方式，不会删除现有数据。此外，恢复前会自动在设备内保留当前数据的快照，以防万一。',
+  showMore: '查看详情',
+  showLess: '收起',
+  aiSourcesTitle: (n: number) => `参考的记录（${n}条）`,
+  aiSourcesMore: (n: number) => `显示其余${n}条`,
+  shareAnonLabel: '共享时隐藏人名',
+  shareAnonNote: '开启后，上方卡片和共享内容中的人名会替换为「A」等别名（所见即所享）。',
+  personMarkContacted: '将“最后记录”设为今天',
+  personMuteStale: '不再显示此人的提醒',
+  personUnmuteStale: '恢复提醒',
   importLimitReached: '免费版最多可导入3次。',
   planRecommended: '推荐',
   planPerDay: (yen: string) => `每天约¥${yen}`,

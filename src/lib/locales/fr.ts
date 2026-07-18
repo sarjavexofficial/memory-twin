@@ -459,7 +459,11 @@ export const fr: Dict = {
   deleteAllButton: 'Supprimer toutes les personnes et notes',
   deleteAllTitle: 'Supprimer toutes les données ?',
   deleteAllMessage: (people: number, records: number) =>
-    `${people} personnes et ${records} enregistrements seront définitivement supprimés de cet appareil. Action irréversible. Export préalable recommandé.`,
+    `${people} personnes, ${records} enregistrements, les tâches et la note de compréhension de l’IA seront définitivement supprimés de cet appareil (les sauvegardes cloud ne sont pas affectées). Action irréversible. Export préalable recommandé.`,
+  deleteAllKeyword: 'SUPPRIMER',
+  deleteAllTypePrompt: (kw: string) => `Pour continuer, saisissez « ${kw} » dans le champ ci-dessous.`,
+  deleteAllExecute: 'Supprimer définitivement',
+  deleteAllDone: 'Toutes les données ont été supprimées.',
   aboutSection: 'À propos',
   aboutCompany: 'Développeur',
   aboutName: 'Nom de l’app',
@@ -517,6 +521,20 @@ export const fr: Dict = {
     'Vos données sont chiffrées sur cet appareil avec une clé dérivée de votre phrase secrète, puis stockées dans le cloud, liées à votre compte connecté (le même compte + la même phrase écrase la précédente). Nous ne pouvons pas en lire le contenu. Après un changement d’appareil, connectez-vous avec le même compte et restaurez avec la même phrase. Si vous l’oubliez, personne ne peut récupérer la sauvegarde.',
   cloudBackupNeedSignIn:
     'Connectez-vous dans « Compte » ci-dessus pour utiliser la sauvegarde cloud (votre espace de stockage reste ainsi personnel).',
+  cloudBackupLastAt: (date: string, j: number, p: number, t: number) =>
+    `Dernière sauvegarde : ${date} (${j} enregistrements, ${p} personnes, ${t} tâches)`,
+  cloudBackupNever: 'Aucune sauvegarde n’a encore été faite depuis cet appareil.',
+  cloudRestoreSafetyNote:
+    'La restauration ajoute vos données sans rien supprimer. Par précaution, un instantané de vos données actuelles est conservé sur l’appareil juste avant la restauration.',
+  showMore: 'Voir plus',
+  showLess: 'Réduire',
+  aiSourcesTitle: (n: number) => `Enregistrements consultés (${n})`,
+  aiSourcesMore: (n: number) => `Afficher ${n} de plus`,
+  shareAnonLabel: 'Masquer les noms lors du partage',
+  shareAnonNote: 'Si activé, les noms de la carte ci-dessus et du contenu partagé sont remplacés par des alias comme « A » — ce que vous voyez est exactement ce qui est partagé.',
+  personMarkContacted: 'Définir le « dernier enregistrement » à aujourd’hui',
+  personMuteStale: 'Masquer les rappels pour cette personne',
+  personUnmuteStale: 'Réactiver les rappels',
   importLimitReached: 'La version gratuite permet 3 imports au maximum au total.',
   planRecommended: 'Recommandé',
   planPerDay: (yen: string) => `≈ ${yen} ¥/jour`,

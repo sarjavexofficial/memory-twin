@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, Share, StyleSheet, Switch, Text, View } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -42,6 +42,10 @@ export default function MonthlyReportScreen() {
   const lastMonth = previousMonth(today);
   const [selected, setSelected] = useState<'this' | 'last'>('this');
   const month = selected === 'this' ? thisMonth : lastMonth;
+
+  // 匿名化共有: ONにすると画面上のカードごと別名表示になり、見たままが共有される（プレビューを兼ねる）
+  const [shareAnon, setShareAnon] = useState(false);
+  const aliasMap = useMemo(() => buildAliasMap(people), [people]);
 
   const stats = useMemo(() => computeMonthlyStats(month, entries, people), [month, entries, people]);
 
@@ -134,7 +138,7 @@ export default function MonthlyReportScreen() {
     if (stats.avgSleep !== null) lines.push(`${L.reportStatSleep}: ${L.reportSleepValue(stats.avgSleep)}`);
     if (stats.avgMood !== null)
       lines.push(`${L.reportStatMood}: ${MOOD_EMOJIS[Math.round(stats.avgMood) - 1]} ${stats.avgMood}/5`);
-    if (narrative) lines.push('', narrative.text);
+    if (narrative) lines.push('', shareAnon ? aliasMap.mask(narrative.text) : narrative.text);
     try {
       await Share.share({ message: lines.join('\n') });
     } catch {
@@ -239,7 +243,7 @@ export default function MonthlyReportScreen() {
                     {stats.topPeople.map((p) => (
                       <View key={p.name} style={styles.personChip}>
                         <Text style={styles.personChipText}>
-                          {p.name} ×{p.count}
+                          {shareAnon ? aliasMap.aliasFor(p.name) : p.name} ×{p.count}
                         </Text>
                       </View>
                     ))}
@@ -252,7 +256,9 @@ export default function MonthlyReportScreen() {
               <Text style={styles.narrativeLabel}>{L.reportNarrativeLabel}</Text>
               {narrative ? (
                 <>
-                  <Text style={styles.narrativeText}>{narrative.text}</Text>
+                  <Text style={styles.narrativeText}>
+                    {shareAnon ? aliasMap.mask(narrative.text) : narrative.text}
+                  </Text>
                   {/* 生成時より記録が増えたときだけ、更新（再生成）を提案する */}
                   {!isFreePlan && narrative.recordCount !== stats.totalRecords && (
                     <GradientButton
@@ -289,6 +295,20 @@ export default function MonthlyReportScreen() {
               {error && <Text style={styles.errorText}>{error}</Text>}
             </View>
             <Text style={styles.shotBrand}>Memory Twin — {monthLabel(month)}</Text>
+            </View>
+
+            {/* 匿名化共有: 人物名を別名にしてから共有できる。表示ごと切り替わるのでプレビューを兼ねる */}
+            <View style={styles.anonRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.anonLabel}>{L.shareAnonLabel}</Text>
+                <Text style={styles.anonNote}>{L.shareAnonNote}</Text>
+              </View>
+              <Switch
+                value={shareAnon}
+                onValueChange={setShareAnon}
+                trackColor={{ false: AppColors.line, true: AppColors.primary }}
+                thumbColor="#ffffff"
+              />
             </View>
 
             {/* 画像キャプチャはネイティブのみ（Webは従来のテキスト共有） */}
@@ -385,6 +405,18 @@ const makeStyles = (AppColors: AppPalette) =>
       minHeight: 44,
     },
     shareButtonText: { color: AppColors.primary, fontWeight: '700', fontSize: 14 },
+    anonRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      backgroundColor: AppColors.card,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: AppColors.line,
+      padding: 12,
+    },
+    anonLabel: { fontSize: 13, fontWeight: '700', color: AppColors.text },
+    anonNote: { fontSize: 11, color: AppColors.muted, lineHeight: 15, marginTop: 2 },
   });
 
 const themed = makeThemed(makeStyles);

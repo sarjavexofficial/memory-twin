@@ -26,6 +26,7 @@ export type Person = {
   likes: string[];
   dislikes: string[];
   lastContact: string;
+  muteStale?: boolean; // この人物を「しばらく記録がない人」のお知らせ対象から外す（本人の希望）
   place?: string;
   memos: Memo[];
   sample?: boolean; // 表示言語に追従するデモデータ。ユーザーが編集すると外れる（sample-data.ts参照）

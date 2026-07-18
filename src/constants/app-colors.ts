@@ -23,7 +23,8 @@ export const LightColors: AppPalette = {
   background: '#F2F3FC',
   card: '#FFFFFF',
   text: '#171B2E',
-  muted: '#6C7494',
+  // WCAG AA(4.5:1)を背景#F2F3FC上でも満たす濃さ（#6C7494は4.3:1で僅かに不足だった）
+  muted: '#5D6484',
   primary: '#7C3AED',
   primarySoft: 'rgba(124, 58, 237, 0.10)',
   accent: '#0891B2',

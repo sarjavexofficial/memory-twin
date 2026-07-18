@@ -453,7 +453,11 @@ export const pt: Dict = {
   deleteAllButton: 'Excluir todas as pessoas e registros',
   deleteAllTitle: 'Excluir todos os dados?',
   deleteAllMessage: (people: number, records: number) =>
-    `${people} pessoas e ${records} registros serão excluídos permanentemente deste aparelho. Isso não pode ser desfeito. Recomendamos exportar antes.`,
+    `${people} pessoas, ${records} registros, tarefas e a nota de entendimento da IA serão excluídos permanentemente deste aparelho (os backups na nuvem não são afetados). Isso não pode ser desfeito. Recomendamos exportar antes.`,
+  deleteAllKeyword: 'APAGAR',
+  deleteAllTypePrompt: (kw: string) => `Para continuar, digite “${kw}” no campo abaixo.`,
+  deleteAllExecute: 'Apagar permanentemente',
+  deleteAllDone: 'Todos os dados foram apagados.',
   aboutSection: 'Sobre',
   aboutCompany: 'Desenvolvedora',
   aboutName: 'Nome do app',
@@ -509,6 +513,20 @@ export const pt: Dict = {
     'Seus dados são criptografados neste aparelho com uma chave derivada da sua frase secreta e guardados na nuvem vinculados à conta conectada (a mesma conta + frase sobrescreve). Nós não conseguimos ler o conteúdo. Após trocar de aparelho, entre com a mesma conta e restaure com a mesma frase. Se esquecê-la, ninguém poderá recuperar o backup.',
   cloudBackupNeedSignIn:
     'Entre em “Conta” acima para usar o backup na nuvem (isso mantém seu espaço de armazenamento exclusivo).',
+  cloudBackupLastAt: (date: string, j: number, p: number, t: number) =>
+    `Último backup: ${date} (${j} registros, ${p} pessoas, ${t} tarefas)`,
+  cloudBackupNever: 'Ainda não há backup feito a partir deste aparelho.',
+  cloudRestoreSafetyNote:
+    'A restauração adiciona aos dados atuais sem apagar nada. Por segurança, um instantâneo dos dados atuais é guardado no aparelho imediatamente antes da restauração.',
+  showMore: 'Ver mais',
+  showLess: 'Ver menos',
+  aiSourcesTitle: (n: number) => `Registros consultados (${n})`,
+  aiSourcesMore: (n: number) => `Mostrar mais ${n}`,
+  shareAnonLabel: 'Ocultar nomes ao compartilhar',
+  shareAnonNote: 'Quando ativado, os nomes no cartão acima e no conteúdo compartilhado são substituídos por apelidos como “A” — o que você vê é exatamente o que será compartilhado.',
+  personMarkContacted: 'Definir “último registro” para hoje',
+  personMuteStale: 'Ocultar lembretes desta pessoa',
+  personUnmuteStale: 'Reativar lembretes',
   importLimitReached: 'A versão gratuita permite até 3 importações no total.',
   planRecommended: 'Recomendado',
   planPerDay: (yen: string) => `≈ ¥${yen}/dia`,

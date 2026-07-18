@@ -5,6 +5,7 @@ import { sha256 } from '@noble/hashes/sha2.js';
 import * as Crypto from 'expo-crypto';
 
 import { BackupPayload } from '@/lib/backup';
+import { saveBackupMeta } from '@/lib/backup-meta';
 import { getDeviceId } from '@/lib/device-id';
 
 // 暗号化クラウドバックアップ（E2E方式・アカウント紐付け）:
@@ -139,6 +140,8 @@ export async function uploadCloudBackup(
     payload: packed,
     device: await getDeviceId(), // サーバー側の回数制限（悪用対策）用の匿名ID
   });
+  // 成功時のみ「最終バックアップ」の表示用メタを端末内に残す（手動・自動同期の両経路が通る）
+  await saveBackupMeta(payload);
 }
 
 // 復元: アカウント＋合言葉からIDを導出して取得し、端末上で復号する

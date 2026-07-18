@@ -77,7 +77,7 @@ export function GradientButton({
     <Pressable
       onPress={onPress}
       disabled={isDisabled}
-      style={[styles.buttonWrap, glow(ORB_PURPLE), isDisabled && styles.buttonDisabled, style]}>
+      style={[styles.buttonWrap, !isDisabled && glow(ORB_PURPLE), isDisabled && styles.buttonDisabled, style]}>
       <LinearGradient
         colors={BRAND_GRADIENT}
         start={{ x: 0, y: 0 }}
