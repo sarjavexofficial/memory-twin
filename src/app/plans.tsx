@@ -5,7 +5,7 @@ import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, Text, Vi
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppPalette } from '@/constants/app-colors';
-import { getStorePrices, purchasePlan, restorePurchases, StorePrices } from '@/lib/billing';
+import { getLastPriceError, getStorePrices, purchasePlan, restorePurchases, StorePrices } from '@/lib/billing';
 import { FEATURES } from '@/lib/feature-flags';
 import { useStrings } from '@/lib/i18n';
 import { makeThemed, useTheme } from '@/lib/theme';
@@ -62,12 +62,15 @@ export default function PlansScreen() {
   // App Storeの実売価格。取得できるまで購入ボタンは無効（表示価格と請求額のズレを防ぐ）
   const [priceState, setPriceState] = useState<'loading' | 'ready' | 'failed'>('loading');
   const [storePrices, setStorePrices] = useState<StorePrices | null>(null);
+  // 失敗理由の診断コード。ユーザー向け文言とは別に、原因調査のため小さく併記する
+  const [priceErrorDetail, setPriceErrorDetail] = useState<string | null>(null);
 
   async function loadPrices() {
     setPriceState('loading');
     const prices = await getStorePrices();
     setStorePrices(prices);
     setPriceState(prices ? 'ready' : 'failed');
+    setPriceErrorDetail(prices ? null : getLastPriceError());
   }
 
   useEffect(() => {
@@ -234,6 +237,11 @@ export default function PlansScreen() {
             <Ionicons name="cloud-offline-outline" size={16} color={AppColors.danger} />
             <View style={{ flex: 1 }}>
               <Text style={styles.priceErrorText}>{L.plansPriceError}</Text>
+              {priceErrorDetail !== null && (
+                <Text style={styles.priceErrorDetail} selectable>
+                  {priceErrorDetail}
+                </Text>
+              )}
               <Pressable onPress={loadPrices} hitSlop={8}>
                 <Text style={styles.priceReloadText}>{L.plansReload}</Text>
               </Pressable>
@@ -575,6 +583,7 @@ const makeStyles = (AppColors: AppPalette) =>
   trialBannerText: { fontSize: 13, fontWeight: '800', color: AppColors.primary },
   priceStateRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   priceStateText: { fontSize: 12, color: AppColors.muted },
+  priceErrorDetail: { fontSize: 10, color: AppColors.muted, marginTop: 4, fontFamily: 'Courier' },
   priceErrorBox: {
     flexDirection: 'row',
     gap: 10,

@@ -103,3 +103,12 @@ export async function getStorePrices(): Promise<StorePrices | null> {
     return null;
   }
 }
+
+// 価格取得が失敗した理由の診断コード（プラン画面のエラー欄に小さく表示して原因調査に使う）
+export function getLastPriceError(): string | null {
+  try {
+    return loadRevenueCat()?.getLastPriceError() ?? null;
+  } catch {
+    return null;
+  }
+}

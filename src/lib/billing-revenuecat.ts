@@ -69,27 +69,61 @@ export async function purchasePlan(
   }
 }
 
+// 直近の価格取得失敗の理由（診断コード）。プラン画面のエラー欄に小さく添えて、
+// 実機で「どの段階で失敗しているか」を特定するために使う
+let lastPriceError: string | null = null;
+export function getLastPriceError(): string | null {
+  return lastPriceError;
+}
+
 // App Storeの実売価格を取得する。4商品すべて揃わない場合はnull（=まだ購入できない状態）。
 // 表示価格と請求額の不一致を防ぐため、プラン画面はこの実価格を優先して表示する
 export async function getStorePrices(): Promise<import('@/lib/billing').StorePrices | null> {
   initBilling();
-  if (!configured) return null;
-  const offerings = await Purchases.getOfferings();
-  const packages = offerings.current?.availablePackages ?? [];
-  const find = (productId: string) => packages.find((p) => p.product.identifier === productId)?.product;
-  const result = {} as NonNullable<Awaited<ReturnType<typeof getStorePrices>>>;
-  for (const plan of ['standard', 'pro'] as const) {
-    for (const cycle of ['monthly', 'yearly'] as const) {
-      const product = find(PRODUCT_IDS[plan][cycle]);
-      if (!product) return null;
-      (result[plan] ??= {} as (typeof result)[typeof plan])[cycle] = {
-        priceString: product.priceString,
-        price: product.price,
-        currencyCode: product.currencyCode,
-      };
-    }
+  if (!configured) {
+    lastPriceError = 'NO_KEY: このビルドに課金キーが入っていない（ビルド8以前）';
+    return null;
   }
-  return result;
+  try {
+    const offerings = await Purchases.getOfferings();
+    if (!offerings.current) {
+      lastPriceError = `NO_CURRENT_OFFERING: all=[${Object.keys(offerings.all ?? {}).join(',')}]`;
+      return null;
+    }
+    const packages = offerings.current.availablePackages ?? [];
+    const find = (productId: string) =>
+      packages.find((p) => p.product.identifier === productId)?.product;
+    const result = {} as NonNullable<Awaited<ReturnType<typeof getStorePrices>>>;
+    const missing: string[] = [];
+    for (const plan of ['standard', 'pro'] as const) {
+      for (const cycle of ['monthly', 'yearly'] as const) {
+        const product = find(PRODUCT_IDS[plan][cycle]);
+        if (!product) {
+          missing.push(PRODUCT_IDS[plan][cycle]);
+          continue;
+        }
+        (result[plan] ??= {} as (typeof result)[typeof plan])[cycle] = {
+          priceString: product.priceString,
+          price: product.price,
+          currencyCode: product.currencyCode,
+        };
+      }
+    }
+    if (missing.length > 0) {
+      lastPriceError = `MISSING ${4 - missing.length}/4商品: 欠け=[${missing.join(', ')}] パッケージ数=${packages.length}`;
+      return null;
+    }
+    lastPriceError = null;
+    return result;
+  } catch (e) {
+    // RevenueCatのエラーは code / message に加え underlyingErrorMessage にStoreKit側の詳細が入ることがある
+    const err = e as { code?: number | string; message?: string; underlyingErrorMessage?: string };
+    const underlying = err.underlyingErrorMessage
+      ? ` / ${String(err.underlyingErrorMessage).slice(0, 100)}`
+      : '';
+    lastPriceError = `ERR code=${err.code ?? '?'}: ${(err.message ?? String(e)).slice(0, 140)}${underlying}`;
+    return null;
+  }
 }
 
 // 機種変更・再インストール時の「購入を復元」
