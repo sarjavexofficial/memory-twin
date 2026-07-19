@@ -62,15 +62,19 @@ export default function PlansScreen() {
   // App Storeの実売価格。取得できるまで購入ボタンは無効（表示価格と請求額のズレを防ぐ）
   const [priceState, setPriceState] = useState<'loading' | 'ready' | 'failed'>('loading');
   const [storePrices, setStorePrices] = useState<StorePrices | null>(null);
-  // 失敗理由の診断コード。ユーザー向け文言とは別に、原因調査のため小さく併記する
+  // 失敗理由の診断コード。一般ユーザーには見せず、エラー文の長押しでのみ表示する（サポート用）。
+  // 常に開発ログ(console)へは記録する
   const [priceErrorDetail, setPriceErrorDetail] = useState<string | null>(null);
+  const [showErrorDetail, setShowErrorDetail] = useState(false);
 
   async function loadPrices() {
     setPriceState('loading');
     const prices = await getStorePrices();
     setStorePrices(prices);
     setPriceState(prices ? 'ready' : 'failed');
-    setPriceErrorDetail(prices ? null : getLastPriceError());
+    const detail = prices ? null : getLastPriceError();
+    setPriceErrorDetail(detail);
+    if (detail) console.warn('[plans] price error detail:', detail);
   }
 
   useEffect(() => {
@@ -236,8 +240,11 @@ export default function PlansScreen() {
           <View style={styles.priceErrorBox}>
             <Ionicons name="cloud-offline-outline" size={16} color={AppColors.danger} />
             <View style={{ flex: 1 }}>
-              <Text style={styles.priceErrorText}>{L.plansPriceError}</Text>
-              {priceErrorDetail !== null && (
+              {/* 長押しで診断コードの表示を切り替え（サポート用の隠し導線。通常は出さない） */}
+              <Pressable onLongPress={() => setShowErrorDetail((v) => !v)}>
+                <Text style={styles.priceErrorText}>{L.plansPriceError}</Text>
+              </Pressable>
+              {showErrorDetail && priceErrorDetail !== null && (
                 <Text style={styles.priceErrorDetail} selectable>
                   {priceErrorDetail}
                 </Text>
