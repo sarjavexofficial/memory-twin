@@ -508,6 +508,8 @@ export const fr: Dict = {
   aiProfileLearnedAt: (date: string, n: number) => `Appris le ${date} à partir de ${n} enregistrements`,
   aiProfileStaleHint:
     'Vos enregistrements ont augmenté depuis le dernier apprentissage. Mettez-le à jour pour garder une compréhension à jour.',
+  aiProfileNeedOwnRecords:
+    'Les données d’exemple ne peuvent pas servir à l’apprentissage (la compréhension de l’IA serait remplie de détails fictifs). Écrivez une entrée de journal, ou ajoutez un mémo à une personne, et l’apprentissage devient disponible.',
   aiProfileSendNote:
     'L’apprentissage envoie à l’IA jusqu’à 40 extraits récents et des statistiques globales (consomme 1 utilisation d’IA).',
   aiProfileLearnButton: 'Apprendre des enregistrements',

@@ -511,6 +511,9 @@ const ja = {
   aiProfileLabel: 'AIが学んだあなたの理解',
   aiProfileLearnedAt: (date: string, n: number) => `${date} に記録${n}件の時点で学習`,
   aiProfileStaleHint: '前回の学習から記録が増えています。学習を更新するとAIの理解が最新になります。',
+  // ボタンが押せない理由を必ず画面に出す（お試しデータは架空のため学習対象外＝押せないままだと故障に見える）
+  aiProfileNeedOwnRecords:
+    'お試しデータは学習に使えません（AIの理解が架空の内容で汚れてしまうため）。日記を1件書く、または人物にメモを1件追加すると学習できます。',
   aiProfileSendNote:
     '学習するときに、直近の記録の抜粋（最大40件）と全体の統計がAIに送信されます（AI利用回数を1回消費）。',
   aiProfileLearnButton: '記録から学習する',
@@ -1163,6 +1166,8 @@ const en: typeof ja = {
   aiProfileLabel: 'What the AI has learned about you',
   aiProfileLearnedAt: (date: string, n: number) => `Learned on ${date} from ${n} records`,
   aiProfileStaleHint: 'Your records have grown since the last learning. Update to keep the AI’s understanding fresh.',
+  aiProfileNeedOwnRecords:
+    'Sample data can’t be used for learning (it would fill the AI’s understanding with fictional details). Write one journal entry, or add one memo to a person, and learning becomes available.',
   aiProfileSendNote:
     'Learning sends up to 40 recent record excerpts plus overall stats to the AI (uses 1 AI credit).',
   aiProfileLearnButton: 'Learn from records',

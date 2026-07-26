@@ -500,6 +500,8 @@ export const pt: Dict = {
   aiProfileLabel: 'O que a IA aprendeu sobre você',
   aiProfileLearnedAt: (date: string, n: number) => `Aprendido em ${date} com ${n} registros`,
   aiProfileStaleHint: 'Seus registros aumentaram desde o último aprendizado. Atualize para manter a compreensão em dia.',
+  aiProfileNeedOwnRecords:
+    'Os dados de exemplo não podem ser usados no aprendizado (a compreensão da IA ficaria cheia de detalhes fictícios). Escreva uma entrada no diário, ou adicione um memo a uma pessoa, e o aprendizado ficará disponível.',
   aiProfileSendNote:
     'O aprendizado envia à IA até 40 trechos recentes e estatísticas gerais (consome 1 uso de IA).',
   aiProfileLearnButton: 'Aprender com os registros',

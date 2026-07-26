@@ -475,6 +475,8 @@ export const zh: Dict = {
   aiProfileLabel: 'AI学到的对你的理解',
   aiProfileLearnedAt: (date: string, n: number) => `${date} 基于${n}条记录学习`,
   aiProfileStaleHint: '距上次学习记录又增加了。更新学习可以让AI的理解保持最新。',
+  aiProfileNeedOwnRecords:
+    '示例数据无法用于学习（否则AI的理解会被虚构内容污染）。写一条日记，或给某个人物添加一条备忘，即可开始学习。',
   aiProfileSendNote: '学习时会把最近的记录摘录（最多40条）和整体统计发送给AI（消耗1次AI使用次数）。',
   aiProfileLearnButton: '从记录中学习',
   aiProfileClear: '删除学到的内容',

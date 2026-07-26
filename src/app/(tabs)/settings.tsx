@@ -629,6 +629,8 @@ export default function SettingsScreen() {
             <Text style={styles.profileHint}>{L.aiProfileStaleHint}</Text>
           )}
           <AiSendNote text={L.aiProfileSendNote} />
+          {/* 学習できる記録が0件のときはボタンが押せない。理由を出さないと故障に見えるため必ず明示する */}
+          {learnableCount === 0 && <Text style={styles.profileHint}>{L.aiProfileNeedOwnRecords}</Text>}
           <GradientButton
             label={L.aiProfileLearnButton}
             iconName="school-outline"

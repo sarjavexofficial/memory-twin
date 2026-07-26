@@ -484,6 +484,8 @@ export const ko: Dict = {
   aiProfileLabel: 'AI가 배운 당신에 대한 이해',
   aiProfileLearnedAt: (date: string, n: number) => `${date}에 기록 ${n}건 시점에서 학습`,
   aiProfileStaleHint: '지난 학습 이후 기록이 늘었습니다. 학습을 업데이트하면 AI의 이해가 최신이 됩니다.',
+  aiProfileNeedOwnRecords:
+    '샘플 데이터는 학습에 사용할 수 없습니다(AI의 이해가 가상의 내용으로 오염되기 때문입니다). 일기를 한 건 쓰거나 인물에 메모를 한 건 추가하면 학습할 수 있습니다.',
   aiProfileSendNote:
     '학습할 때 최근 기록 발췌(최대 40건)와 전체 통계가 AI로 전송됩니다(AI 사용 횟수 1회 소비).',
   aiProfileLearnButton: '기록에서 학습하기',
