@@ -1,4 +1,3 @@
-import JSZip from 'jszip';
 import { Platform } from 'react-native';
 
 import { JournalEntry } from '@/lib/journal-data';
@@ -39,32 +38,9 @@ export function classifyJsonText(text: string): PickedData {
   return { kind: 'text', text };
 }
 
-// ZIPを開いて中身を判別する。dataはbase64文字列（ネイティブ）またはArrayBuffer（Web）
-export async function readBackupZip(data: string | ArrayBuffer): Promise<PickedData> {
-  const zip =
-    typeof data === 'string'
-      ? await JSZip.loadAsync(data, { base64: true })
-      : await JSZip.loadAsync(data);
-
-  // 本アプリのエクスポート: data.json（完全バックアップ）を最優先で読む
-  const dataFile = zip.file('data.json');
-  if (dataFile) {
-    try {
-      const backup = asBackup(JSON.parse(await dataFile.async('string')));
-      if (backup) return { kind: 'backup', backup };
-    } catch {
-      // 壊れていたら conversations.json にフォールバック
-    }
-  }
-
-  // ChatGPT/Claudeの公式エクスポートZIPにも対応（conversations.jsonがどの階層にあっても拾う）
-  const conv = zip.file('conversations.json') ?? zip.file(/(^|\/)conversations\.json$/)[0];
-  if (conv) return { kind: 'text', text: await conv.async('string') };
-
-  throw new Error(
-    'このZIPの中に読み取れるファイルが見つかりませんでした。Memory Twinのバックアップ、またはChatGPT/Claudeのエクスポートを選んでください。',
-  );
-}
+// ZIPの読み取りは import-stream.ts の流し読み（readExportFile / readExportBytes）に移した。
+// 以前はここでZIPを丸ごとメモリに展開していたため、圧縮率の高いエクスポート
+// （20MBのZIPが展開後1GB超になり得る）でアプリが落ちていた。
 
 // バックアップに埋め込まれた写真（データURI）を端末のファイルに書き戻す。
 // AsyncStorageに巨大な画像文字列を残さないため、ネイティブでは実ファイル参照に変換する。

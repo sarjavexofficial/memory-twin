@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -10,10 +10,11 @@ import { AiSendNote } from '@/components/ai-send-note';
 import { AppColors } from '@/constants/app-colors';
 import { AiConfigError, ExtractedItem, extractCommitments } from '@/lib/ai';
 import { buildAliasMap } from '@/lib/alias';
-import { BackupPayload, classifyJsonText, materializePhotos, PickedData, readBackupZip } from '@/lib/backup';
+import { BackupPayload, classifyJsonText, materializePhotos, PickedData } from '@/lib/backup';
 import { FEATURES } from '@/lib/feature-flags';
 import { displayTag, useStrings } from '@/lib/i18n';
 import { ImportedRecord, parseAiHistory } from '@/lib/import';
+import { ImportProgress, readExportBytes, readExportFile, StreamResult } from '@/lib/import-stream';
 import { FREE_IMPORT_LIMIT, getImportCount, incrementImportCount } from '@/lib/usage-limits';
 import { useJournal } from '@/store/journal-context';
 import { usePeople } from '@/store/people-context';
@@ -23,10 +24,11 @@ import { useTasks } from '@/store/tasks-context';
 // 解析結果のプレビュー行数。画面を簡潔に保つため冒頭3件だけ見せ、残りは件数表示にまとめる
 const PREVIEW_LIMIT = 3;
 
-// ファイルサイズ上限。ZIPは画像などで大きくなりがち（ChatGPTのエクスポートは20MB超が普通）
-// なので大きめに許容し、生のJSON/テキストは解析メモリを考えて控えめにする
-const MAX_ZIP_MB = 100;
-const MAX_TEXT_MB = 30;
+// Webはファイル全体をメモリに読んでから渡すしかないため上限を置く。
+// ネイティブ（iOS）はディスクから1MBずつ流し読みするので、ファイルサイズの上限は設けない
+// （以前はZIPの圧縮後サイズで100MBまで許可していたが、圧縮率は30〜70倍になり得るため
+//  「20MBのZIP → 展開後1GB超」で端末が落ちていた。流し読みにしたことで前提が変わった）
+const MAX_WEB_MB = 200;
 
 export default function ImportHistoryScreen() {
   const L = useStrings();
@@ -130,22 +132,51 @@ export default function ImportHistoryScreen() {
 
   // 貼り付けと同時に自動解析する。成功すればその場で結果カードに切り替わり、
   // 「巨大なJSONが入力欄を占領して何が起きたか分からない」状態を避ける。
-  // 失敗（部分貼り付け等）は静かに無視し、明示的な「解析」ボタンでエラーを出す
+  // 失敗（部分貼り付け等）は静かに無視し、明示的な「解析」ボタンでエラーを出す。
+  //
+  // ただし入力が変わるたびにJSON.parseすると、大きな貼り付けで画面が固まる。
+  // そこで「入力が落ち着いてから」かつ「JSONの閉じ括弧で終わっているときだけ」試す
+  const pasteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   function handlePasteChange(text: string) {
     setRawText(text);
-    if (text.trim().length >= 200) {
-      applyPicked(classifyJsonText(text), true);
-    }
+    if (pasteTimer.current) clearTimeout(pasteTimer.current);
+    const trimmed = text.trim();
+    if (trimmed.length < 200) return;
+    if (!trimmed.endsWith(']') && !trimmed.endsWith('}')) return;
+    pasteTimer.current = setTimeout(() => applyPicked(classifyJsonText(text), true), 400);
   }
 
-  // 大きなZIPの読み込み・解凍は数秒〜数十秒かかることがある。
-  // 進行表示ゼロだと「読み取られない」ように見えるため、読み込み中の状態を持つ
+  // 画面を離れるときに待機中の解析を止める
+  useEffect(() => () => {
+    if (pasteTimer.current) clearTimeout(pasteTimer.current);
+  }, []);
+
+  // 大きなZIPの読み込み・解凍には時間がかかる。無反応に見えないよう、
+  // 読み込み中であることと「どこまで進んだか」の実数を持つ
   const [isReading, setIsReading] = useState(false);
+  const [progress, setProgress] = useState<ImportProgress | null>(null);
+
+  // 流し読みの結果を画面に反映する（記録の一覧 or バックアップ復元カード）
+  function applyStreamResult(result: StreamResult) {
+    setError(null);
+    setBackup(null);
+    setRecords(null);
+    setImportedCount(null);
+    setRestored(null);
+    if (result.kind === 'backup') {
+      setBackup(result.backup);
+      setRawText('');
+    } else {
+      setRecords(result.records);
+      setRawText('');
+    }
+  }
 
   // ファイル選択（全プラットフォーム対応）。ZIPは解凍まで自動で行うので、
   // 利用者は「エクスポートしたファイルを選ぶだけ」でよい
   async function handlePickFile() {
     setError(null);
+    setProgress(null);
     try {
       if (Platform.OS === 'web') {
         const input = document.createElement('input');
@@ -154,23 +185,21 @@ export default function ImportHistoryScreen() {
         input.onchange = async () => {
           const file = input.files?.[0];
           if (!file) return;
-          const webIsZip = /\.zip$/i.test(file.name);
-          const webMaxMb = webIsZip ? MAX_ZIP_MB : MAX_TEXT_MB;
-          if (file.size > webMaxMb * 1024 * 1024) {
-            setError(L.importFileTooLarge(webMaxMb));
+          // Webはファイル全体をメモリに載せる必要があるため上限あり（実機のiOSは制限なし）
+          if (file.size > MAX_WEB_MB * 1024 * 1024) {
+            setError(L.importFileTooLarge(MAX_WEB_MB));
             return;
           }
           setIsReading(true);
           try {
-            if (webIsZip) {
-              applyPicked(await readBackupZip(await file.arrayBuffer()));
-            } else {
-              applyPicked(classifyJsonText(await file.text()));
-            }
+            const webIsZip = /\.zip$/i.test(file.name);
+            const bytes = new Uint8Array(await file.arrayBuffer());
+            applyStreamResult(await readExportBytes(bytes, webIsZip, setProgress));
           } catch (e) {
             setError((e as Error).message);
           } finally {
             setIsReading(false);
+            setProgress(null);
           }
         };
         input.click();
@@ -186,27 +215,21 @@ export default function ImportHistoryScreen() {
       if (result.canceled) return;
       const asset = result.assets[0];
       const isZip = /\.zip$/i.test(asset.name ?? '') || asset.mimeType === 'application/zip';
-      const maxMb = isZip ? MAX_ZIP_MB : MAX_TEXT_MB;
-      if ((asset.size ?? 0) > maxMb * 1024 * 1024) {
-        setError(L.importFileTooLarge(maxMb));
-        return;
-      }
       setIsReading(true);
       try {
-        if (isZip) {
-          const base64 = await FileSystem.readAsStringAsync(asset.uri, {
-            encoding: FileSystem.EncodingType.Base64,
-          });
-          applyPicked(await readBackupZip(base64));
-        } else {
-          applyPicked(classifyJsonText(await FileSystem.readAsStringAsync(asset.uri)));
-        }
+        // ディスクから1MBずつ読んで解凍・解析する。ファイルの大きさに関係なく
+        // 使用メモリは一定に保たれるため、サイズ上限は設けていない
+        applyStreamResult(
+          await readExportFile(asset.uri, isZip, asset.size ?? 0, setProgress),
+        );
       } finally {
         setIsReading(false);
+        setProgress(null);
       }
     } catch (e) {
       setError((e as Error).message);
       setIsReading(false);
+      setProgress(null);
     }
   }
 
@@ -268,11 +291,19 @@ export default function ImportHistoryScreen() {
           <Text style={styles.fileButtonText}>{L.importPickFile}</Text>
         </Pressable>
 
-        {/* 大きなZIPは読み込みに時間がかかる。無反応に見えないよう進行中を明示する */}
+        {/* 大きなZIPは読み込みに時間がかかる。％と発見件数を出して「進んでいる」ことを見せる
+            （スピナーだけだと固まったと誤解される） */}
         {isReading && (
           <View style={styles.readingRow}>
             <ActivityIndicator size="small" color={AppColors.primary} />
-            <Text style={styles.readingText}>{L.importReading}</Text>
+            <Text style={styles.readingText}>
+              {progress && progress.totalBytes > 0
+                ? L.importReadingProgress(
+                    Math.min(100, Math.round((progress.bytesRead / progress.totalBytes) * 100)),
+                    progress.records,
+                  )
+                : L.importReading}
+            </Text>
           </View>
         )}
 

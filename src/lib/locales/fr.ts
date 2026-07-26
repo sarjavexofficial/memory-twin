@@ -198,6 +198,8 @@ export const fr: Dict = {
     `Restauré — ${j} notes, ${p} personnes${t > 0 ? `, ${t} tâches` : ''} ajoutées.`,
   importFileTooLarge: (mb: number) => `Fichier trop volumineux (${mb} Mo max).`,
   importReading: 'Lecture du fichier… (les gros ZIP peuvent prendre un moment)',
+  importReadingProgress: (percent: number, records: number) =>
+    `Analyse en cours… ${percent} % (${records} enregistrements trouvés)`,
   importPastedChars: (n: number) => `${n.toLocaleString()} caractères collés`,
   importParse: 'Analyser',
   importFound: (n: number, from: string, to: string) =>

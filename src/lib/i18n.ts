@@ -212,6 +212,9 @@ const ja = {
     `復元しました（記録 ${j}件・人物 ${p}人${t > 0 ? `・タスク ${t}件` : ''}を追加）。`,
   importFileTooLarge: (mb: number) => `ファイルが大きすぎます（${mb}MBまで対応）。`,
   importReading: 'ファイルを読み込んでいます…（大きなZIPは少し時間がかかります）',
+  // 実数の進捗を出す。スピナーだけだと「固まった」と誤解されるため、％と件数の両方を見せる
+  importReadingProgress: (percent: number, records: number) =>
+    `解析中… ${percent}%（${records}件の記録を発見）`,
   importPastedChars: (n: number) => `${n.toLocaleString()}文字を貼り付け中`,
   importParse: '解析する',
   importFound: (n: number, from: string, to: string) => `${n}件の会話が見つかりました（${from} 〜 ${to}）`,
@@ -885,6 +888,8 @@ const en: typeof ja = {
     `Restored — added ${j} records, ${p} people${t > 0 ? `, ${t} tasks` : ''}.`,
   importFileTooLarge: (mb: number) => `File is too large (up to ${mb} MB).`,
   importReading: 'Reading the file… (large ZIPs can take a moment)',
+  importReadingProgress: (percent: number, records: number) =>
+    `Analyzing… ${percent}% (${records} records found)`,
   importPastedChars: (n: number) => `${n.toLocaleString()} characters pasted`,
   importParse: 'Parse',
   importFound: (n: number, from: string, to: string) =>
