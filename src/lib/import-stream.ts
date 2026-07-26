@@ -216,14 +216,27 @@ class RecordCollector {
 
 // ---- チャンク供給元 ----
 
-// ネイティブ: ファイルを開いたまま少しずつ読む（全体をメモリに載せない）
-async function* nativeFileChunks(uri: string, size: number): AsyncGenerator<Uint8Array> {
+// ネイティブ: ファイルを開いたまま少しずつ読む（全体をメモリに載せない）。
+// 終端の振る舞い（0バイトを返すか例外か）は実装差がありうるため、
+// ①ファイルサイズに達したら終了 ②0バイトなら終了 ③例外も終端として扱う
+// の三重で必ず止まるようにしている
+async function* nativeFileChunks(uri: string, chunkSize: number): AsyncGenerator<Uint8Array> {
   const { File } = await import('expo-file-system');
-  const handle = new File(uri).open();
+  const file = new File(uri);
+  const total = file.size ?? 0;
+  const handle = file.open();
   try {
+    let read = 0;
     for (;;) {
-      const bytes = handle.readBytes(size);
+      if (total > 0 && read >= total) return;
+      let bytes: Uint8Array | null = null;
+      try {
+        bytes = handle.readBytes(chunkSize);
+      } catch {
+        return;
+      }
       if (!bytes || bytes.length === 0) return;
+      read += bytes.length;
       yield bytes;
     }
   } finally {
