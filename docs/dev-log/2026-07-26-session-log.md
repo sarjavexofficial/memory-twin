@@ -119,5 +119,46 @@ JSON.parse → `TopRecords`で新しい順に上限件数だけ保持。
 Web実機でバックアップZIPの検出と復元まで回帰なしを確認（人物2人・タスク1件を復元）。
 commit e71ec86 / 03d9ab3。
 
+## Googleサインインを有効化（ビルド13）
+
+ゆずの要望「Googleアカウントでログインできるようにして」。実装自体は既に書かれており、
+未設定だったのはOAuthクライアントIDだけ……のはずが、方式ごと変更が必要になった。
+
+### 方式変更: expo-auth-session → @react-native-google-signin
+SDK 57で `expo-auth-session/providers/google` は**非推奨**。さらにGoogle公式ドキュメントに
+**「アプリのなりすましリスクのためカスタムURIスキームは今後サポートされない」**と明記があり、
+旧方式は新規クライアントで最初から拒否される可能性があった。そのためGoogle自身のSDKを使う
+`@react-native-google-signin/google-signin` へ移行（ゆずの判断で方式変更）。
+- 標準のサインインシートが出る。本人情報は戻り値から取れるのでuserinfoを叩く通信が不要に
+- サインアウトでGoogle側の記憶も消去、アカウント削除では `revokeAccess` で連携解除
+- スコープは email/profile のみ＝Googleの審査不要
+- 非推奨の expo-auth-session は撤去
+
+### Google Cloud Console（プロジェクト sarjavex-ai-prod）
+iOS用OAuthクライアントを作成。バンドルID `com.sarjavex.memorytwin`／
+チームID `2B55HCJC7D`／App Store ID `6791472591`。公開ステータスは「本番」。
+- **チームIDはASC APIから取得した**（`/v1/profiles` のprofileContentを復号して
+  `TeamIdentifier` を読む。scripts流用。ゆずに探させずに済んだ）
+- クライアントID `80213874089-0pc30go0sc645duv3m49e3i2r0b811of.apps.googleusercontent.com`
+  は公開値なので app.json / .env / EAS本番環境変数に直接記載
+
+### ビルド12の失敗と修正
+Install podsで停止:
+`[!] The Swift pod AppCheckCore depends upon GoogleUtilities and RecaptchaInterop,
+which do not define modules.`
+GoogleSignIn 9.xが連れてくるAppCheckCore(Swift)が、ObjC製の2つの依存を読めないため
+静的ライブラリとして統合できない。CocoaPodsが示す2案のうち、
+**影響範囲の小さい「対象Podだけ :modular_headers => true」**を
+`plugins/with-google-signin-modular-headers.js` で実施（全体適用はRevenueCat等の
+ビルド方法まで変わるため回避）。Windowsではprebuildできないので、実際のExpo標準Podfileを
+再現して①挿入位置②冪等性③書式変更時に黙って素通りせず停止すること、を検証してからビルドした。
+- **学び: プラグインに設定を渡さないとFirebase用の分岐に入り、存在しない
+  GoogleService-Info.plistを要求してビルドが落ちる**（事前にプラグイン実装を読んで回避）
+- **学び: EASのビルドログは `eas build:view --json` の logFiles から取得できる**
+  （Webはログイン必須。curlは `--compressed` が必要）
+
+**ビルド13が成功・ASCアップロード完了**（buildNumber 13・version/runtime 1.0.0）。
+**審査に添付するのはビルド13**（12は失敗、11以前はGoogleログインなし）。
+
 ## 残タスク（変更なし）
 - ゆず: ストア用スクショ／審査提出／RevenueCat sk_キー削除・確認メールリンク。
