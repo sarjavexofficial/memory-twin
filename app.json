@@ -79,7 +79,8 @@
         {
           "iosUrlScheme": "com.googleusercontent.apps.80213874089-0pc30go0sc645duv3m49e3i2r0b811of"
         }
-      ]
+      ],
+      "./plugins/with-google-signin-modular-headers"
     ],
     "experiments": {
       "typedRoutes": true,
