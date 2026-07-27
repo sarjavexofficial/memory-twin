@@ -73,7 +73,8 @@
           "faceIDPermission": "アプリロック（記録の保護）のためにFace IDを使用します。"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "@react-native-google-signin/google-signin"
     ],
     "experiments": {
       "typedRoutes": true,

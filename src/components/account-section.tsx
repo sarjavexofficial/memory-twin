@@ -1,7 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import * as AppleAuthentication from 'expo-apple-authentication';
-import * as Google from 'expo-auth-session/providers/google';
-import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -21,13 +20,29 @@ import { useJournal } from '@/store/journal-context';
 import { usePeople } from '@/store/people-context';
 import { useTasks } from '@/store/tasks-context';
 
-// ブラウザ経由のOAuth（Google）から戻ってきたときにセッションを閉じる
-WebBrowser.maybeCompleteAuthSession();
-
-// GoogleのOAuthクライアントID（Google Cloud Consoleで発行し .env に設定する）
+// GoogleのOAuthクライアントID（Google Cloud Consoleで発行し .env / EASの環境変数に設定する）。
+// クライアントIDは秘密情報ではなくアプリに埋め込まれる公開値なので、EXPO_PUBLIC_で扱う。
+//
+// 方式について: 以前は expo-auth-session（ブラウザ経由・カスタムURIスキーム）を使っていたが、
+// Googleが「アプリのなりすましリスクのためカスタムURIスキームは今後サポートしない」と明記し、
+// 自社SDKの利用を推奨したため、Google公式SDKを使う@react-native-google-signinへ移行した。
 const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
-const googleConfigured = Boolean(GOOGLE_IOS_CLIENT_ID || GOOGLE_WEB_CLIENT_ID);
+// GoogleのSDKはネイティブ実装のためWebでは動かない。iOSでIDが設定済みのときだけ出す
+const googleConfigured = Platform.OS !== 'web' && Boolean(GOOGLE_IOS_CLIENT_ID);
+
+// サインイン前に1度だけ初期化する（configureは同期・副作用のみ）
+let googleConfigureDone = false;
+function ensureGoogleConfigured() {
+  if (googleConfigureDone || !googleConfigured) return;
+  GoogleSignin.configure({
+    iosClientId: GOOGLE_IOS_CLIENT_ID,
+    // webClientIdはidTokenをサーバーで検証したいとき用。今は端末内でしか使わないので任意
+    ...(GOOGLE_WEB_CLIENT_ID ? { webClientId: GOOGLE_WEB_CLIENT_ID } : {}),
+    scopes: ['email', 'profile'], // 本人識別に必要な最小限（Googleの審査が不要な範囲）
+  });
+  googleConfigureDone = true;
+}
 
 // 設定タブに置くアカウント欄。ログインは任意（未ログインでも全機能が使える）
 export function AccountSection() {
@@ -78,6 +93,14 @@ export function AccountSection() {
         }
       }
       if (account) await clearCachedPassphrase(account);
+      // アカウント削除ではGoogleとの連携自体を解除する（Apple 5.1.1(v)の趣旨に沿う）
+      if (account?.provider === 'google' && googleConfigured) {
+        try {
+          await GoogleSignin.revokeAccess();
+        } catch {
+          // 連携解除に失敗しても端末側の削除は進める
+        }
+      }
       clearAllPeople();
       clearAllEntries();
       clearAllTasks();
@@ -152,6 +175,14 @@ export function AccountSection() {
     const proceed = await confirmAsync(L.signOutConfirmTitle, L.signOutConfirmMessage);
     if (!proceed) return;
     if (account) await clearCachedPassphrase(account);
+    // Google側の記憶も消しておく（次回サインイン時にアカウント選択が出るようにする）
+    if (account?.provider === 'google' && googleConfigured) {
+      try {
+        await GoogleSignin.signOut();
+      } catch {
+        // 失敗してもアプリ側のサインアウトは進める
+      }
+    }
     signOut();
     // 体験はアカウントに紐づく特典なので、サインアウトした端末では終了する
     // （同じアカウントで再サインインすれば残り日数がサーバーから復元される）
@@ -270,7 +301,9 @@ export function AccountSection() {
   );
 }
 
-// Googleサインイン。クライアントID設定時のみマウントされる（フックの条件呼び出しを避けるため分離）
+// Googleサインイン。クライアントID設定時のみマウントされる。
+// Google公式SDKが標準のサインインシートを出すので、本人情報はその戻り値から取れる
+// （以前のようにアクセストークンでuserinfoを叩く通信は不要になった）
 function GoogleSignInButton({
   onDone,
   onError,
@@ -281,40 +314,36 @@ function GoogleSignInButton({
   label: string;
 }) {
   const { styles, AppColors } = useTheme(themed);
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    iosClientId: GOOGLE_IOS_CLIENT_ID,
-    webClientId: GOOGLE_WEB_CLIENT_ID,
-  });
+  const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    if (response?.type === 'success' && response.authentication?.accessToken) {
-      // アクセストークンで本人情報（ID・名前・メール）だけを取得する
-      fetch('https://www.googleapis.com/userinfo/v2/me', {
-        headers: { Authorization: `Bearer ${response.authentication.accessToken}` },
-      })
-        .then((r) => r.json())
-        .then((u: { id?: string | number; name?: string; email?: string }) => {
-          if (!u.id) throw new Error('no id');
-          onDone({
-            provider: 'google',
-            userId: String(u.id),
-            name: u.name,
-            email: u.email,
-            signedInAt: new Date().toISOString(),
-          });
-        })
-        .catch(onError);
-    } else if (response?.type === 'error') {
+  async function handlePress() {
+    setBusy(true);
+    try {
+      ensureGoogleConfigured();
+      const response = await GoogleSignin.signIn();
+      // ユーザー自身がやめた場合はエラー表示しない
+      if (response.type !== 'success') return;
+      const { user } = response.data;
+      if (!user.id) throw new Error('no id');
+      onDone({
+        provider: 'google',
+        userId: user.id,
+        name: user.name ?? undefined,
+        email: user.email ?? undefined,
+        signedInAt: new Date().toISOString(),
+      });
+    } catch {
       onError();
+    } finally {
+      setBusy(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [response]);
+  }
 
   return (
     <Pressable
-      style={[styles.providerButton, !request && { opacity: 0.5 }]}
-      disabled={!request}
-      onPress={() => promptAsync()}>
+      style={[styles.providerButton, busy && { opacity: 0.5 }]}
+      disabled={busy}
+      onPress={handlePress}>
       <Ionicons name="logo-google" size={16} color={AppColors.background} />
       <Text style={styles.providerButtonText}>{label}</Text>
     </Pressable>
