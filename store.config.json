@@ -80,7 +80,7 @@
       "ageRatingOverrideV2": "NONE",
       "developerAgeRatingInfoUrl": null,
       "gunsOrOtherWeapons": "NONE",
-      "healthOrWellnessTopics": false,
+      "healthOrWellnessTopics": true,
       "messagingAndChat": false,
       "parentalControls": false,
       "userGeneratedContent": false
