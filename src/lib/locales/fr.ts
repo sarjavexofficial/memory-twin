@@ -237,6 +237,7 @@ export const fr: Dict = {
     'AI検索': 'Recherche IA',
     '振り返り': 'Bilan',
     抽出: 'Extraction',
+    インポート: 'Importé',
     決定: 'Décision',
     約束: 'Promesse',
     未完了: 'En cours',

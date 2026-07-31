@@ -347,41 +347,52 @@ export default function TodayScreen() {
     return null;
   }, [entries, todayStr]);
 
+  // 連打ガード。isSaving(state)は再描画されるまでボタンを無効化できないため、
+  // 描画を待たない同期のrefで「1回目の保存が終わるまで2回目を弾く」。
+  // これが無いと、素早い2タップで保存が2回走り、記録が重複しAI利用回数も2消費する
+  const savingRef = useRef(false);
+
   async function handleSave() {
     if (!text.trim()) return;
+    if (savingRef.current) return;
+    savingRef.current = true;
     setIsSaving(true);
     setSavedMessage(false);
-    let tags: string[] = [];
-    if (useAiTagging) {
-      try {
-        const result = await organizeJournalEntry(text.trim(), buildAliasMap(people));
-        tags = result.tags;
-      } catch {
-        // AI未設定・失敗時はタグなしで保存
+    try {
+      let tags: string[] = [];
+      if (useAiTagging) {
+        try {
+          const result = await organizeJournalEntry(text.trim(), buildAliasMap(people));
+          tags = result.tags;
+        } catch {
+          // AI未設定・失敗時はタグなしで保存
+        }
       }
+      // 手動タグを先頭に置き、AIタグと重複したら手動側を優先する
+      const manualTags = tagsInput
+        .split(/[,、\s]+/)
+        .map((t) => t.trim().replace(/^#/, ''))
+        .filter(Boolean);
+      tags = [...new Set([...manualTags, ...tags])];
+      addEntry({
+        date: date.trim() || todayStr,
+        text: text.trim(),
+        mood,
+        sleepHours: sleepHours.trim() ? Number(sleepHours.trim()) : undefined,
+        tags,
+        project: selectedProject,
+      });
+      // 自分の記録が節目の数に達した「役立っている瞬間」にだけ、App Storeの評価をお願いする
+      maybeAskForReview(entries.filter((e) => !e.sample).length + 1);
+      setText('');
+      setSleepHours('');
+      setTagsInput('');
+      setMood(3);
+      setSavedMessage(true);
+    } finally {
+      savingRef.current = false;
+      setIsSaving(false);
     }
-    // 手動タグを先頭に置き、AIタグと重複したら手動側を優先する
-    const manualTags = tagsInput
-      .split(/[,、\s]+/)
-      .map((t) => t.trim().replace(/^#/, ''))
-      .filter(Boolean);
-    tags = [...new Set([...manualTags, ...tags])];
-    addEntry({
-      date: date.trim() || todayStr,
-      text: text.trim(),
-      mood,
-      sleepHours: sleepHours.trim() ? Number(sleepHours.trim()) : undefined,
-      tags,
-      project: selectedProject,
-    });
-    // 自分の記録が節目の数に達した「役立っている瞬間」にだけ、App Storeの評価をお願いする
-    maybeAskForReview(entries.filter((e) => !e.sample).length + 1);
-    setText('');
-    setSleepHours('');
-    setTagsInput('');
-    setMood(3);
-    setIsSaving(false);
-    setSavedMessage(true);
   }
 
   return (

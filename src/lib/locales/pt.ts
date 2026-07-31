@@ -234,6 +234,7 @@ export const pt: Dict = {
     'AI検索': 'Busca IA',
     '振り返り': 'Retrospectiva',
     抽出: 'Extração',
+    インポート: 'Importado',
     決定: 'Decisão',
     約束: 'Promessa',
     未完了: 'Pendência',

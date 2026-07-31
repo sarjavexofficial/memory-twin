@@ -14,8 +14,15 @@ const MONTH_NAMES: Record<string, number> = {
   julho: 7, agosto: 8, setembro: 9, outubro: 10, novembro: 11, dezembro: 12,
 };
 
+// 月ごとの最大日数（2月はうるう年生まれに合わせて29日まで許容）。
+// これを超える「2月30日」等は存在しない日付なので読めなかった扱いにする
+// （JSのDateに渡すと翌月へ繰り上がり、3月2日に誕生日通知が出てしまう）
+const MAX_DAY = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
 function valid(month: number, day: number): { month: number; day: number } | null {
-  return month >= 1 && month <= 12 && day >= 1 && day <= 31 ? { month, day } : null;
+  return month >= 1 && month <= 12 && day >= 1 && day <= MAX_DAY[month - 1]
+    ? { month, day }
+    : null;
 }
 
 export function parseBirthday(raw: string | undefined): { month: number; day: number } | null {

@@ -245,9 +245,15 @@ export default function ImportHistoryScreen() {
     setRawText('');
   }
 
+  // 連打ガード（同期）。取り込みは一度に最大1000件入るため、
+  // 素早い2タップで重複すると被害が大きい
+  const importingRef = useRef(false);
+
   function handleImport() {
     if (!records || records.length === 0) return;
     if (importLimitReached) return; // ボタンは出し分けているが、念のため処理側でも防ぐ
+    if (importingRef.current) return;
+    importingRef.current = true;
     addEntries(records.map((r) => ({ date: r.date, text: r.text, source: r.source })));
     incrementImportCount();
     setImportCount((c) => c + 1);
@@ -258,6 +264,8 @@ export default function ImportHistoryScreen() {
     // 初日の魔法: 取り込みが終わったら、忘れていた約束・決定を自動で発掘する
     // （取り込みボタンの下に「AIに送信される」旨を事前表示したうえでの自動実行）
     runExtract(records);
+    // 取り込みは完了し、結果カード（records）は消えているので次の解析に備えて解除する
+    importingRef.current = false;
   }
 
   return (
