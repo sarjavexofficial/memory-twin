@@ -232,8 +232,16 @@ async function* nativeFileChunks(uri: string, chunkSize: number): AsyncGenerator
       let bytes: Uint8Array | null = null;
       try {
         bytes = handle.readBytes(chunkSize);
-      } catch {
-        return;
+      } catch (e) {
+        // まだ1バイトも読めていないのに失敗した場合は「終端」ではなく本物の失敗。
+        // 黙って終端扱いにすると「ZIPに読み取れるファイルがない」という
+        // 誤ったエラーに化けて原因究明できなくなるため、明確に伝える
+        if (read === 0) {
+          throw new Error(
+            `ファイルを読み取れませんでした（${String((e as Error)?.message ?? e).slice(0, 80)}）。もう一度ファイルを選び直してください。`,
+          );
+        }
+        return; // 途中まで読めていれば終端の実装差とみなして正常終了
       }
       if (!bytes || bytes.length === 0) return;
       read += bytes.length;
@@ -317,9 +325,13 @@ async function readZipStream(
   // いったんここに積んで、pushの合間に少しずつスキャナへ流す
   let pending: Uint8Array<ArrayBufferLike>[] = [];
 
+  // 対象が見つからなかったとき、原因究明のために「中に何が入っていたか」を伝える
+  const seenNames: string[] = [];
+
   const unzip = new Unzip();
   unzip.register(UnzipInflate);
   unzip.onfile = (file) => {
+    if (seenNames.length < 20) seenNames.push(file.name);
     const conversations = isConversationsName(file.name);
     const backup = isBackupName(file.name);
     if (!conversations && !backup) return; // start()を呼ばなければ解凍されない
@@ -400,9 +412,19 @@ async function readZipStream(
     if (backup) return { kind: 'backup', backup };
   }
 
+  // 1バイトも読めていない場合は「中身がない」のではなく読み取り自体の失敗
+  if (bytesRead === 0) {
+    throw new Error('ファイルを読み取れませんでした（0バイト）。もう一度ファイルを選び直してください。');
+  }
+
   if (!sawConversations && !sawBackup) {
+    // 中身の一覧を添えて「名前が違う」のか「ZIP自体を読めていない」のかを判別できるようにする
+    const inside =
+      seenNames.length > 0
+        ? `中に入っていたファイル: ${seenNames.slice(0, 8).join('、')}${seenNames.length > 8 ? ` 他${seenNames.length - 8}件` : ''}`
+        : 'ZIPの中身を1件も読み取れませんでした（ZIP形式でない可能性があります）';
     throw new Error(
-      'このZIPの中に読み取れるファイルが見つかりませんでした。Memory Twinのバックアップ、またはChatGPT/Claudeのエクスポートを選んでください。',
+      `このZIPの中に conversations.json / data.json が見つかりませんでした。${inside}。ChatGPT/Claudeの設定画面からの公式エクスポート、またはMemory Twinのバックアップを選んでください。`,
     );
   }
 
@@ -458,6 +480,10 @@ async function readJsonStream(
     await pacer.breathe(() => onProgress?.({ bytesRead: read, totalBytes, records: collector.top.count }));
   }
   onProgress?.({ bytesRead, totalBytes, records: collector.top.count });
+
+  if (bytesRead === 0) {
+    throw new Error('ファイルを読み取れませんでした（0バイト）。もう一度ファイルを選び直してください。');
+  }
 
   if (mode === 'object') {
     const joined = new Uint8Array(objectBytes);
