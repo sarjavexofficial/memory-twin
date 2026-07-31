@@ -32,7 +32,7 @@ const MAX_WEB_MB = 200;
 
 export default function ImportHistoryScreen() {
   const L = useStrings();
-  const { addEntries, restoreEntries } = useJournal();
+  const { entries, addEntries, restoreEntries } = useJournal();
   const { people, restorePeople } = usePeople();
   const { restoreTasks } = useTasks();
   const { settings } = useSettings();
@@ -50,6 +50,8 @@ export default function ImportHistoryScreen() {
   const [restored, setRestored] = useState<{ j: number; p: number; t: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [importedCount, setImportedCount] = useState<number | null>(null);
+  // 再取り込みで内容が同一のためスキップした件数（0なら表示しない）
+  const [dupSkipped, setDupSkipped] = useState(0);
   const [lastImported, setLastImported] = useState<ImportedRecord[] | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractError, setExtractError] = useState<string | null>(null);
@@ -107,6 +109,7 @@ export default function ImportHistoryScreen() {
     setBackup(null);
     setRecords(null);
     setImportedCount(null);
+    setDupSkipped(0);
     setRestored(null);
     if (picked.kind === 'backup') {
       setBackup(picked.backup);
@@ -162,6 +165,7 @@ export default function ImportHistoryScreen() {
     setBackup(null);
     setRecords(null);
     setImportedCount(null);
+    setDupSkipped(0);
     setRestored(null);
     if (result.kind === 'backup') {
       setBackup(result.backup);
@@ -254,16 +258,34 @@ export default function ImportHistoryScreen() {
     if (importLimitReached) return; // ボタンは出し分けているが、念のため処理側でも防ぐ
     if (importingRef.current) return;
     importingRef.current = true;
-    addEntries(records.map((r) => ({ date: r.date, text: r.text, source: r.source })));
-    incrementImportCount();
-    setImportCount((c) => c + 1);
-    setImportedCount(records.length);
-    setLastImported(records);
+    // 同じエクスポートを取り込み直しても重複しないよう、既存の記録と
+    // 内容（日付・本文・出典）が一致するものはスキップする。
+    // 実ユーザーは数ヶ月ごとに最新のエクスポートを再取り込みするため、これが無いと
+    // 過去分が毎回二重になる（バックアップ復元のID照合はインポートには効かない）
+    const keyOf = (date: string, source: string | undefined, text: string) =>
+      `${date}\n${source ?? ''}\n${text}`;
+    const existing = new Set(entries.map((e) => keyOf(e.date, e.source, e.text)));
+    const fresh: ImportedRecord[] = [];
+    for (const r of records) {
+      const key = keyOf(r.date, r.source, r.text);
+      if (existing.has(key)) continue;
+      existing.add(key); // 同じファイル内に同一の会話が2度あっても1件にする
+      fresh.push(r);
+    }
+    if (fresh.length > 0) {
+      addEntries(fresh.map((r) => ({ date: r.date, text: r.text, source: r.source })));
+      // 全件スキップの「何も増えない取り込み」では無料枠を消費させない
+      incrementImportCount();
+      setImportCount((c) => c + 1);
+    }
+    setImportedCount(fresh.length);
+    setDupSkipped(records.length - fresh.length);
+    setLastImported(fresh);
     setRecords(null);
     setRawText('');
     // 初日の魔法: 取り込みが終わったら、忘れていた約束・決定を自動で発掘する
     // （取り込みボタンの下に「AIに送信される」旨を事前表示したうえでの自動実行）
-    runExtract(records);
+    runExtract(fresh);
     // 取り込みは完了し、結果カード（records）は消えているので次の解析に備えて解除する
     importingRef.current = false;
   }
@@ -437,7 +459,10 @@ export default function ImportHistoryScreen() {
         {importedCount !== null && (
           <View style={styles.doneBox}>
             <Ionicons name="checkmark-circle" size={16} color={AppColors.success} />
-            <Text style={styles.doneText}>{L.importDoneMsg(importedCount)}</Text>
+            <Text style={styles.doneText}>
+              {L.importDoneMsg(importedCount)}
+              {dupSkipped > 0 ? ` ${L.importDupSkipped(dupSkipped)}` : ''}
+            </Text>
           </View>
         )}
 

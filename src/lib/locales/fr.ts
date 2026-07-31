@@ -207,6 +207,7 @@ export const fr: Dict = {
   importMoreRecords: (n: number) => `${n} de plus (toutes seront importées)`,
   importDo: (n: number) => `Importer ${n} dans l’historique`,
   importDoneMsg: (n: number) => `${n} importée${n > 1 ? 's' : ''}. À retrouver dans l’onglet Historique.`,
+  importDupSkipped: (n: number) => `(${n} déjà importé${n > 1 ? 's' : ''}, ignoré${n > 1 ? 's' : ''})`,
   extractTitle: 'Trouver décisions, promesses et en-cours',
   extractDesc:
     'L’IA parcourt les conversations importées pour retrouver décisions, promesses et tâches inachevées peut-être oubliées. Vous choisissez une par une celles à garder.',

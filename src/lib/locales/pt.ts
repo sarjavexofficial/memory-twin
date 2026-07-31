@@ -204,6 +204,7 @@ export const pt: Dict = {
   importMoreRecords: (n: number) => `mais ${n} (todas serão importadas)`,
   importDo: (n: number) => `Importar ${n} para o histórico`,
   importDoneMsg: (n: number) => `${n} importada${n === 1 ? '' : 's'}. Veja na aba Histórico.`,
+  importDupSkipped: (n: number) => `(${n} já importado${n === 1 ? '' : 's'}, ignorado${n === 1 ? '' : 's'})`,
   extractTitle: 'Encontrar decisões, promessas e pendências',
   extractDesc:
     'A IA vasculha as conversas importadas em busca de decisões, promessas e pendências que você pode ter esquecido. Você escolhe uma a uma o que salvar.',

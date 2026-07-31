@@ -201,6 +201,7 @@ export const ko: Dict = {
   importMoreRecords: (n: number) => `외 ${n}건(모두 가져옵니다)`,
   importDo: (n: number) => `${n}건을 타임라인에 가져오기`,
   importDoneMsg: (n: number) => `${n}건을 가져왔습니다. 타임라인 탭에서 확인할 수 있습니다.`,
+  importDupSkipped: (n: number) => `(이미 가져온 ${n}건은 건너뜀)`,
   extractTitle: '결정·약속·미완료 찾기',
   extractDesc:
     '가져온 대화에서 잊고 있었을지 모를 "결정한 것" "약속" "미완료된 것"을 AI가 찾습니다. 저장 여부는 한 건씩 선택할 수 있습니다.',

@@ -199,6 +199,7 @@ export const zh: Dict = {
   importMoreRecords: (n: number) => `另外还有 ${n} 条（全部都会导入）`,
   importDo: (n: number) => `把 ${n} 条导入时间线`,
   importDoneMsg: (n: number) => `已导入 ${n} 条。可在“时间线”标签页查看。`,
+  importDupSkipped: (n: number) => `（已跳过 ${n} 条此前导入过的记录）`,
   extractTitle: '找出决定・约定・未完成',
   extractDesc:
     'AI会从导入的对话中寻找你可能已经忘记的“做过的决定”“约定”“未完成的事”。是否保存可以逐条选择。',

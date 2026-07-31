@@ -221,6 +221,7 @@ const ja = {
   importMoreRecords: (n: number) => `他 ${n} 件（すべて取り込まれます）`,
   importDo: (n: number) => `${n}件をタイムラインに取り込む`,
   importDoneMsg: (n: number) => `${n}件を取り込みました。「タイムライン」タブで確認できます。`,
+  importDupSkipped: (n: number) => `（取り込み済みの${n}件はスキップ）`,
   extractTitle: '決定・約束・未完了を見つける',
   extractDesc:
     '取り込んだ会話から、忘れているかもしれない「決定したこと」「約束」「未完了のこと」をAIが探します。保存するかどうかは1件ずつ選べます。',
@@ -898,6 +899,7 @@ const en: typeof ja = {
   importMoreRecords: (n: number) => `${n} more (all will be imported)`,
   importDo: (n: number) => `Import ${n} to timeline`,
   importDoneMsg: (n: number) => `Imported ${n}. Check the Timeline tab.`,
+  importDupSkipped: (n: number) => `(${n} already-imported record${n === 1 ? '' : 's'} skipped)`,
   extractTitle: 'Find decisions, promises & open items',
   extractDesc:
     'The AI searches your imported conversations for decisions, promises, and unfinished items you may have forgotten. You choose what to save, one by one.',
