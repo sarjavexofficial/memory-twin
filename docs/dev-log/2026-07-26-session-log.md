@@ -239,3 +239,16 @@ SDK57）。Windowsからは実行不能。ビルド13に焼き込み済みなの
    → キーボード回避がアプリ全体で未実装だった。入力欄のある6画面のScrollViewに
    automaticallyAdjustKeyboardInsets + keyboardShouldPersistTaps="handled" を一括適用。
    Web回帰なし。EAS Update配信済み（58a743f9）。
+
+### ゆずの実物conversations.jsonで検証（同日）
+ChatGPTに公式形式で作らせた実物ファイル（小数点つきcreate_time・UUID mapping・
+moderation_results等まで再現）を3経路（貼り付け/生JSON/ZIP）に通し、全経路で
+正しく1件解析されることを確認（日付2026-07-31・出典ChatGPT）。
+この検証中に**実運用の重複バグを発見→即修正**: インポートは毎回新IDを振るため
+同じエクスポートの再取り込みで過去分が二重になっていた（バックアップ復元のID照合は
+インポートに効かない）。→（日付・本文・出典）の内容一致でスキップ・完了表示に
+スキップ件数を6言語で表示・全件スキップ時は無料枠を消費しない。
+E2E実証: 1回目=Imported 1 → 2回目=Imported 0 (1 already-imported record skipped)。
+EAS Update配信済み（c78f9a5e）。
+仕様メモ: 取り込まれるのは各会話の「タイトル＋最初のユーザー発言」であり、
+アシスタント側の返答本文は取り込まれない（設計どおり・ゆずに説明済み）。
