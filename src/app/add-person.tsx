@@ -108,7 +108,10 @@ export default function AddPersonScreen() {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        automaticallyAdjustKeyboardInsets
+        keyboardShouldPersistTaps="handled">
         <Pressable style={styles.avatarPicker} onPress={handlePickPhoto}>
           {photoUri ? (
             <Image source={{ uri: photoUri }} style={styles.avatarPhoto} />

@@ -280,7 +280,10 @@ export default function ImportHistoryScreen() {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        automaticallyAdjustKeyboardInsets
+        keyboardShouldPersistTaps="handled">
         <View style={styles.iconCircle}>
           <Ionicons name="download-outline" size={28} color={AppColors.accent} />
         </View>

@@ -433,7 +433,10 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <GlowBackground />
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        automaticallyAdjustKeyboardInsets
+        keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>{L.settingsTitle}</Text>
         <TitleAccent style={{ marginTop: -8 }} />
 

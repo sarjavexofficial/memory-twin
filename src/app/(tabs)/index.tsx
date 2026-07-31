@@ -398,7 +398,10 @@ export default function TodayScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <GlowBackground />
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        automaticallyAdjustKeyboardInsets
+        keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>{L.tabToday}</Text>
         <TitleAccent />
         <Text style={styles.subtitle}>{todayStr}</Text>

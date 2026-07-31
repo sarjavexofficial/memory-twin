@@ -119,7 +119,10 @@ export default function PersonDetailScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        automaticallyAdjustKeyboardInsets
+        keyboardShouldPersistTaps="handled">
         <View style={styles.profileBlock}>
           {person.photoUri ? (
             <Image source={{ uri: person.photoUri }} style={styles.avatarPhoto} />
