@@ -56,7 +56,15 @@ async function main() {
     if (!sub) { log(`${productId}: subscription not found, skip`); continue; }
 
     const existing = await api('GET', `/v1/subscriptions/${sub.id}/appStoreReviewScreenshot`).catch(() => null);
-    if (existing?.data) { log(`${productId}: screenshot exists (${existing.data.attributes.assetDeliveryState?.state})`); continue; }
+    if (existing?.data) {
+      // --replace 指定時は既存（仮画像など）を削除して差し替える。無指定なら従来どおりスキップ
+      if (!process.argv.includes('--replace')) {
+        log(`${productId}: screenshot exists (${existing.data.attributes.assetDeliveryState?.state})`);
+        continue;
+      }
+      await api('DELETE', `/v1/subscriptionAppStoreReviewScreenshots/${existing.data.id}`);
+      log(`${productId}: 既存スクショを削除（差し替え）`);
+    }
 
     const file = path.join(SHOT_DIR, `${productId}.png`);
     const buf = fs.readFileSync(file);
