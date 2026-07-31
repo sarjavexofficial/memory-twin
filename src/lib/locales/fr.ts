@@ -208,6 +208,9 @@ export const fr: Dict = {
   importDo: (n: number) => `Importer ${n} dans l’historique`,
   importDoneMsg: (n: number) => `${n} importée${n > 1 ? 's' : ''}. À retrouver dans l’onglet Historique.`,
   importDupSkipped: (n: number) => `(${n} déjà importé${n > 1 ? 's' : ''}, ignoré${n > 1 ? 's' : ''})`,
+  importPickCanceled: 'La sélection du fichier est revenue comme annulée. Réessayez (si cela persiste, choisissez depuis Parcourir plutôt que Récents).',
+  importPickNoFile: "Les informations du fichier n'ont pas été reçues. Veuillez le sélectionner à nouveau.",
+  importReadUnknownError: 'Une erreur inconnue est survenue lors de la lecture du fichier',
   extractTitle: 'Trouver décisions, promesses et en-cours',
   extractDesc:
     'L’IA parcourt les conversations importées pour retrouver décisions, promesses et tâches inachevées peut-être oubliées. Vous choisissez une par une celles à garder.',

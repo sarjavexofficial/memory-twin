@@ -205,6 +205,9 @@ export const pt: Dict = {
   importDo: (n: number) => `Importar ${n} para o histórico`,
   importDoneMsg: (n: number) => `${n} importada${n === 1 ? '' : 's'}. Veja na aba Histórico.`,
   importDupSkipped: (n: number) => `(${n} já importado${n === 1 ? '' : 's'}, ignorado${n === 1 ? '' : 's'})`,
+  importPickCanceled: 'A seleção do arquivo voltou como cancelada. Tente novamente (se persistir, escolha em Procurar em vez de Recentes).',
+  importPickNoFile: 'As informações do arquivo não foram recebidas. Selecione o arquivo novamente.',
+  importReadUnknownError: 'Ocorreu um erro desconhecido ao ler o arquivo',
   extractTitle: 'Encontrar decisões, promessas e pendências',
   extractDesc:
     'A IA vasculha as conversas importadas em busca de decisões, promessas e pendências que você pode ter esquecido. Você escolhe uma a uma o que salvar.',

@@ -202,6 +202,9 @@ export const ko: Dict = {
   importDo: (n: number) => `${n}건을 타임라인에 가져오기`,
   importDoneMsg: (n: number) => `${n}건을 가져왔습니다. 타임라인 탭에서 확인할 수 있습니다.`,
   importDupSkipped: (n: number) => `(이미 가져온 ${n}건은 건너뜀)`,
+  importPickCanceled: '파일 선택이 취소로 처리되어 돌아왔습니다. 다시 시도해 주세요(계속되면 "최근 항목" 대신 "둘러보기"에서 선택해 주세요).',
+  importPickNoFile: '파일 정보를 받지 못했습니다. 파일을 다시 선택해 주세요.',
+  importReadUnknownError: '파일을 읽는 중 알 수 없는 오류가 발생했습니다',
   extractTitle: '결정·약속·미완료 찾기',
   extractDesc:
     '가져온 대화에서 잊고 있었을지 모를 "결정한 것" "약속" "미완료된 것"을 AI가 찾습니다. 저장 여부는 한 건씩 선택할 수 있습니다.',

@@ -216,8 +216,17 @@ export default function ImportHistoryScreen() {
         copyToCacheDirectory: true,
         type: ['application/json', 'application/zip', 'text/plain'],
       });
-      if (result.canceled) return;
+      if (result.canceled) {
+        // iOSはユーザーが実際にファイルを選んでも「キャンセル」として返すことが稀にある。
+        // 黙って何も起きないと故障に見えるため、キャンセル扱いになったことを必ず表示する
+        setError(L.importPickCanceled);
+        return;
+      }
       const asset = result.assets[0];
+      if (!asset?.uri) {
+        setError(L.importPickNoFile);
+        return;
+      }
       const isZip = /\.zip$/i.test(asset.name ?? '') || asset.mimeType === 'application/zip';
       setIsReading(true);
       try {
@@ -231,7 +240,9 @@ export default function ImportHistoryScreen() {
         setProgress(null);
       }
     } catch (e) {
-      setError((e as Error).message);
+      // messageが空の例外（ネイティブ由来など）でも沈黙せず、必ず何かを表示する
+      const msg = e instanceof Error && e.message ? e.message : null;
+      setError(msg ?? `${L.importReadUnknownError}（${String(e).slice(0, 80)}）`);
       setIsReading(false);
       setProgress(null);
     }

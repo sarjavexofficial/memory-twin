@@ -200,6 +200,9 @@ export const zh: Dict = {
   importDo: (n: number) => `把 ${n} 条导入时间线`,
   importDoneMsg: (n: number) => `已导入 ${n} 条。可在“时间线”标签页查看。`,
   importDupSkipped: (n: number) => `（已跳过 ${n} 条此前导入过的记录）`,
+  importPickCanceled: '文件选择被系统当作已取消。请再试一次（若持续出现，请从“浏览”而非“最近项目”中选择）。',
+  importPickNoFile: '未能接收文件信息。请重新选择文件。',
+  importReadUnknownError: '读取文件时发生未知错误',
   extractTitle: '找出决定・约定・未完成',
   extractDesc:
     'AI会从导入的对话中寻找你可能已经忘记的“做过的决定”“约定”“未完成的事”。是否保存可以逐条选择。',
