@@ -252,3 +252,21 @@ E2E実証: 1回目=Imported 1 → 2回目=Imported 0 (1 already-imported record 
 EAS Update配信済み（c78f9a5e）。
 仕様メモ: 取り込まれるのは各会話の「タイトル＋最初のユーザー発言」であり、
 アシスタント側の返答本文は取り込まれない（設計どおり・ゆずに説明済み）。
+
+## 2026-07-31 審査提出の準備をASC APIで実施（Chrome拡張なしで前進）
+
+Chrome拡張が復帰しないため、ブラウザ作業と思い込んでいた項目をASC APIで実施:
+- **ストア用スクショ日英10枚を登録**（scripts/asc-screenshots.mjs 新規作成・
+  APP_IPHONE_67セット作成→予約→PUT→checksum確定。status/uploadの2コマンド・冪等）
+- **ビルド13をバージョン1.0に紐付け**（PATCH relationships/build・確認済み）
+- サブスク4商品=READY_TO_SUBMIT を確認
+- 審査メモ（app-store-kit.md §8の英文）を抽出済み
+- **審査連絡先の登録はcontactPhoneがAPI必須**のため保留（ゆずの電話番号待ち）
+
+### 残り（提出まで）
+1. ゆず: 電話番号 → appStoreReviewDetails をAPIで登録
+2. ゆず: iPhoneでプラン画面（実価格表示）のスクショ1枚 → asc-review-screenshot.mjsで
+   4商品の審査用画像を本物に差し替え
+3. Appプライバシー申告「健康とフィットネス」追加（ブラウザ必須・拡張復帰待ち）
+4. 提出（reviewSubmissions API または ASC画面）
+5. ゆず実機テスト2件（バックアップZIP往復・Googleログイン）は引き続き未実施
